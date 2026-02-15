@@ -1,0 +1,8 @@
+﻿services:
+  wa:
+    image: ghcr.io/gielvangaal/cine.net/wa:{{ image_tag }}
+    container_name: wa-{{ env_name }}
+    restart: always
+
+    ports:
+      - "127.0.0.1:{{ wa_port }}:80"

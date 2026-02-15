@@ -1,24 +1,60 @@
-- name: Check if TLS certificate exists
+# ======================
+# API
+# ======================
+
+- name: Check API TLS certificate
   stat:
     path: /etc/letsencrypt/live/{{ api_domain }}/fullchain.pem
-  register: cert_file
+  register: api_cert
 
-- name: Fail if TLS certificate is missing
+- name: Fail if API TLS certificate is missing
   fail:
-    msg: "TLS certificate for {{ api_domain }} is missing. Provision certs before running nginx."
-  when: not cert_file.stat.exists
+    msg: "TLS certificate for {{ api_domain }} is missing."
+  when: not api_cert.stat.exists
 
-- name: Place nginx config
+- name: Place API nginx config
   template:
     src: webapi.conf.j2
     dest: /etc/nginx/sites-available/webapi-{{ api_domain }}.conf
 
-- name: Enable site
+- name: Enable API site
   file:
     src: /etc/nginx/sites-available/webapi-{{ api_domain }}.conf
     dest: /etc/nginx/sites-enabled/webapi-{{ api_domain }}.conf
     state: link
     force: true
+
+
+# ======================
+# WA
+# ======================
+
+- name: Check WA TLS certificate
+  stat:
+    path: /etc/letsencrypt/live/{{ wa_domain }}/fullchain.pem
+  register: wa_cert
+
+- name: Fail if WA TLS certificate is missing
+  fail:
+    msg: "TLS certificate for {{ wa_domain }} is missing."
+  when: not wa_cert.stat.exists
+
+- name: Place WA nginx config
+  template:
+    src: wa.conf.j2
+    dest: /etc/nginx/sites-available/wa-{{ wa_domain }}.conf
+
+- name: Enable WA site
+  file:
+    src: /etc/nginx/sites-available/wa-{{ wa_domain }}.conf
+    dest: /etc/nginx/sites-enabled/wa-{{ wa_domain }}.conf
+    state: link
+    force: true
+
+
+# ======================
+# Validate + Reload
+# ======================
 
 - name: Validate nginx config
   command: nginx -t
