@@ -1,0 +1,28 @@
+﻿- name: Create WA directory
+  file:
+    path: /opt/wa/{{ env_name }}
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Render docker-compose
+  template:
+    src: docker-compose-wa.yml.j2
+    dest: /opt/wa/{{ env_name }}/docker-compose-{{ env_name }}.yml
+
+- name: Render env file
+  template:
+    src: env-wa.j2
+    dest: /opt/wa/{{ env_name }}/.env-{{ env_name }}
+    mode: "0600"
+
+- name: Deploy WA
+  command: >
+    docker compose
+    -p wa-{{ env_name }}
+    --env-file .env-{{ env_name }}
+    -f docker-compose-{{ env_name }}.yml
+    up -d --pull always --no-build
+  args:
+    chdir: /opt/wa/{{ env_name }}
