@@ -1,0 +1,9 @@
+- name: restart webapi
+  command: >
+    docker compose
+    -p p3api-{{ env_name }}
+    --env-file .env-{{ env_name }}
+    -f docker-compose-{{ env_name }}.yml
+    up -d --no-build
+  args:
+    chdir: /opt/p3api/{{ env_name }}

@@ -1,0 +1,24 @@
+﻿@page "/users"
+@using Cine.NET_WA.Domain
+@using Cine.NET_WA.Services
+@inject IUserService UserService
+
+<h3>Users</h3>
+
+<button @onclick="LoadUsers">Load users</button>
+
+<ul>
+    @foreach (var u in _users)
+    {
+        <li>@u.Name (@u.Id)</li>
+    }
+</ul>
+
+@code {
+    private IReadOnlyList<User> _users = [];
+
+    private async Task LoadUsers()
+    {
+        _users = await UserService.GetUsersAsync();
+    }
+}

@@ -1,0 +1,9 @@
+﻿services:
+  cine.net_wa:
+    image: cine.net_wa
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "5031:5031"
+    restart: unless-stopped

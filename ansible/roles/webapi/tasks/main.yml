@@ -1,0 +1,51 @@
+- name: Create app directory
+  file:
+    path: /opt/p3api/{{ env_name }}
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create db init directory
+  file:
+    path: /opt/p3api/{{ env_name }}/db/init
+    state: directory
+
+- name: Copy db init scripts
+  copy:
+    src: db-init/
+    dest: /opt/p3api/db/init/
+
+- name: Render docker-compose
+  template:
+    src: docker-compose-p3api-{{ env_name }}.yml.j2
+    dest: /opt/p3api/{{ env_name }}/docker-compose-{{ env_name }}.yml
+
+- name: Render env file
+  template:
+    src: env-{{ env_name }}.j2
+    dest: /opt/p3api/{{ env_name }}/.env-{{ env_name }}
+
+- name: Pull docker images
+  command: >
+    docker compose
+    -p p3api-{{ env_name }}
+    --env-file .env-{{ env_name }}
+    -f docker-compose-{{ env_name }}.yml
+    pull
+  args:
+    chdir: /opt/p3api/{{ env_name }}
+  register: pull_result
+  retries: 3
+  delay: 5
+  until: pull_result.rc == 0
+
+- name: Start containers
+  command: >
+    docker compose
+    -p p3api-{{ env_name }}
+    --env-file .env-{{ env_name }}
+    -f docker-compose-{{ env_name }}.yml
+    up -d
+  args:
+    chdir: /opt/p3api/{{ env_name }}

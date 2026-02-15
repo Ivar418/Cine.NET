@@ -1,0 +1,9 @@
+env_name: prod
+
+# API
+api_domain: p3api-prod.gielvangaal.dev
+
+# WA
+wa_domain: cine.net-prod.gielvangaal.dev
+
+certbot_email: gielvangaal@gmail.com

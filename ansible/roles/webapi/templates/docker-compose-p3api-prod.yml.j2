@@ -1,0 +1,48 @@
+services:
+  api:
+    image: ghcr.io/gielvangaal/l2p3-webapi-poc/backend:{{ image_tag }}
+    environment:
+      ASPNETCORE_ENVIRONMENT: PROD
+      ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=p3api_prod;User=appuser_prod;Password=apppassword_prod;"
+    env_file:
+      - .env-{{ env_name }}
+    ports:
+      - "127.0.0.1:{{ api_port }}:8080"
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql_data_p3api-{{ env_name }}:/var/lib/mysql
+      - ../db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "127.0.0.1:{{ pma_port }}:80"
+    env_file:
+      - .env-{{ env_name }}
+    environment:
+      PMA_HOST: ${PHP_MYADMIN_HOST}
+      PMA_USER: ${DB_ROOT_USER}
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD}
+      PMA_ABSOLUTE_URI: https://{{ api_domain }}/pma/
+      PMA_FORCE_SSL: true
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data_p3api-{{ env_name }}:

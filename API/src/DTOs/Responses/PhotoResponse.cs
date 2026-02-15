@@ -1,0 +1,10 @@
+﻿namespace WebApi_PocV1.DTOs.Responses;
+
+public record PhotoResponse
+{
+    public required string Id { get; init; }
+    public required string Url { get; init; }
+    public required long Size { get; init; }
+    public required string ContentType { get; init; }
+    public required string creatorId { get; init; }
+}
