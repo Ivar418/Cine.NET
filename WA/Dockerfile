@@ -1,9 +1,21 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+﻿ARG DOTNET_SDK_VERSION=10.0
+
+# ===== Build stage =====
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_SDK_VERSION} AS build
 WORKDIR /src
+
 COPY . .
-WORKDIR /src
+RUN dotnet publish -c Release -o /app/out
 
-ENV ASPNETCORE_URLS=http://0.0.0.0:5031
-EXPOSE 5031
+# ===== Runtime stage =====
+FROM nginx:alpine
 
-CMD ["dotnet", "run", "--no-launch-profile", "--urls", "http://0.0.0.0:5031"]
+# SPA routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy static files
+COPY --from=build /app/out/wwwroot /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
