@@ -1,6 +1,6 @@
 services:
   api:
-    image: ghcr.io/gielvangaal/l2p3-webapi-poc/backend:{{ image_tag }}
+    image: ghcr.io/gielvangaal/cine.net/api:{{ image_tag }}
     environment:
       ASPNETCORE_ENVIRONMENT: PROD
       ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=p3api_prod;User=appuser_prod;Password=apppassword_prod;"
