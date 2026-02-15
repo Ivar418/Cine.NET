@@ -8,7 +8,6 @@ using Cine.NET_WA.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 using WA;
-using WA.src;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
