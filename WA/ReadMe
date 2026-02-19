@@ -40,23 +40,19 @@ Cine.NET_WA/
 
 ### Running Locally
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd Cine.NET_WA
-   ```
+1. **Run the application**
 
-2. **Navigate to the project directory**
-   ```bash
-   cd Cine.NET_WA
-   ```
+Clean the project first:
+```bash
+dotnet clean
+```
 
-3. **Run the application**
-   ```bash
+Then run the application:
+```bash
    dotnet run
    ```
 
-4. **Open your browser**
+2**Open your browser**
    - Navigate to `http://localhost:5031`
    - HTTPS: `https://localhost:7169`
 
