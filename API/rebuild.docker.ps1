@@ -1,12 +1,11 @@
-﻿﻿# powershell
-param(
+﻿param(
 [switch]$SkipTests,
 [switch]$skiptest,
 [switch]$nonDestructive
 )
 $ErrorActionPreference = "Stop"
 
-dotnet.exe build
+dotnet build
 if ($LASTEXITCODE -ne 0)
 {
     Write-Host "==> Build failed."
