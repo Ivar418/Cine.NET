@@ -24,5 +24,5 @@ else
 }
 Write-Host "==> Bringing up compose stack (rebuild images)..."
 docker compose -f docker-compose.yml up --build -d
-
+Start-Process "http://localhost:8080/swagger/"
 Write-Host "==> Done."
