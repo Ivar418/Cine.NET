@@ -1,7 +1,7 @@
 ﻿param(
-[switch]$SkipTests,
-[switch]$skiptest,
-[switch]$nonDestructive
+    [switch]$SkipTests,
+    [switch]$skiptest,
+    [switch]$nonDestructive
 )
 $ErrorActionPreference = "Stop"
 
@@ -23,6 +23,6 @@ else
     docker compose -f .\docker-compose.yml down -v
 }
 Write-Host "==> Bringing up compose stack (rebuild images)..."
-docker compose -f docker-compose.yml up --build
+docker compose -f docker-compose.yml up --build -d
 
 Write-Host "==> Done."

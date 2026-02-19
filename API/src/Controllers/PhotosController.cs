@@ -19,7 +19,7 @@ namespace WebApi_PocV1.Controllers
         [HttpPost]
         [Route("new")]
         [RequestSizeLimit(25_000_000)] // 25 MB (also configure server limits)
-        public async Task<IActionResult> Upload([FromForm] IFormFile file, [FromForm] string creatorId,
+        public async Task<IActionResult> Upload(IFormFile file, [FromForm] string creatorId,
             [FromForm] string? folder = null, [FromForm] Boolean overwrite = false,
             CancellationToken ct = default)
         {
