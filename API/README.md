@@ -143,6 +143,15 @@ This will:
 
 The API will be available at: **http://localhost:8080**
 
+Be aware! 8080 will not show anything, you'll have to navigate to a endpoint to
+see the response. For example: **http://localhost:8080/api/users**
+
+
+Start full stack in detached mode:
+```
+docker compose up -d
+```
+
 ### Rebuild Docker Image
 
 If you modify the application code:
