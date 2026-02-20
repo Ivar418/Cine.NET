@@ -7,6 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.*" />
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />

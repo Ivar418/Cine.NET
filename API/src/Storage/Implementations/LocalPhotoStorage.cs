@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.StaticFiles;
-using WebApi_PocV1.Domain.Entities;
+using SharedLibrary.Domain.Entities;
 
-namespace WebApi_PocV1.Storage.Implementations;
+namespace API.Storage.Implementations;
 
 public class LocalPhotoStorage : IPhotoStorage
 {

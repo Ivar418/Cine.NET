@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApi_PocV1.DTOs.Responses;
-using WebApi_PocV1.Storage;
+using SharedLibrary.DTOs.Responses;
+using API.Storage;
 
-namespace WebApi_PocV1.Controllers
+namespace API.Controllers
 {
     [ApiController]
     [Route("api/photos")]

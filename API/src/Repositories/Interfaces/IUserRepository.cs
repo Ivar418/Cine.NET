@@ -1,6 +1,6 @@
-﻿using WebApi_PocV1.Domain.Entities;
+﻿using SharedLibrary.Domain.Entities;
 
-namespace WebApi_PocV1.Repositories.Interfaces
+namespace API.Repositories.Interfaces
 {
     public interface IUserRepository
     {
