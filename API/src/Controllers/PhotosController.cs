@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApi_PocV1.DTOs.Requests;
 using WebApi_PocV1.DTOs.Responses;
 using WebApi_PocV1.Storage;
 
@@ -19,7 +18,7 @@ namespace WebApi_PocV1.Controllers
         [HttpPost]
         [Route("new")]
         [RequestSizeLimit(25_000_000)] // 25 MB (also configure server limits)
-        public async Task<IActionResult> Upload([FromForm] IFormFile file, [FromForm] string creatorId,
+        public async Task<IActionResult> Upload(IFormFile file, [FromForm] string creatorId,
             [FromForm] string? folder = null, [FromForm] Boolean overwrite = false,
             CancellationToken ct = default)
         {
@@ -62,20 +61,18 @@ namespace WebApi_PocV1.Controllers
             return Created(result.Url, result);
         }
 
-        [HttpPost]
-        [Consumes("application/json")]
-        [Produces("application/json")]
-        public async Task<IActionResult> GetPhoto([FromBody] PhotoRequest request)
+        [HttpGet("{PhotoType}/{CreatorId}")]
+        public async Task<IActionResult> GetPhoto(String PhotoType, String CreatorId)
         {
-            if (request.CreatorId is null)
+            if (CreatorId is null)
                 return BadRequest(new { error = "Missing creatorId." });
-            if (request.PhotoType is null)
+            if (PhotoType is null)
                 return BadRequest(new { error = "Missing photoType." });
  
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _storage.GetByCreatorAndType(request.CreatorId, request.PhotoType);
+            var result = await _storage.GetByCreatorAndType(CreatorId, PhotoType);
             if (result is null)
                 return NotFound();
 
