@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebApi_PocV1.Domain.Entities;
-using WebApi_PocV1.Infrastructure.Database;
-using WebApi_PocV1.Repositories.Interfaces;
+using SharedLibrary.Domain.Entities;
+using API.Infrastructure.Database;
+using API.Repositories.Interfaces;
 
-namespace WebApi_PocV1.Repositories.Implementations;
+namespace API.Repositories.Implementations;
 
 public class UserRepository : IUserRepository
 {

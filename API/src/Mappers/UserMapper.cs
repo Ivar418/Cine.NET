@@ -1,7 +1,7 @@
-﻿using WebApi_PocV1.Domain.Entities;
-using WebApi_PocV1.DTOs.Responses;
+﻿using SharedLibrary.Domain.Entities;
+using SharedLibrary.DTOs.Responses;
 
-namespace WebApi_PocV1.Mappers
+namespace API.Mappers
 {
     public static class UserMapper
     {

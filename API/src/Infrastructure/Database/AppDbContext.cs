@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebApi_PocV1.Domain.Entities;
+using SharedLibrary.Domain.Entities;
 
-namespace WebApi_PocV1.Infrastructure.Database
+namespace API.Infrastructure.Database
 {
     public class AppDbContext : DbContext
     {
