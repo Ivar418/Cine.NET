@@ -66,6 +66,36 @@ Then run the application:
 2. **Access the application**
    - Navigate to `http://localhost:5031`
 
+## Testing 1-2-3
+### API Environment Configuration
+
+The Blazor WebAssembly client is configured to use the production API by default to ensure stable and predictable behavior in deployments.
+
+The API base URL is defined in the Blazor WebAssembly startup file:
+
+```
+WA/Program.cs
+```
+
+By default, the HttpClient is configured with:
+
+```
+https://p3api-prod.gielvangaal.dev/
+```
+
+#### Switching to ACC (Testing)
+
+To test against the ACC environment, temporarily update the API BaseAddress in the Blazor WebAssembly `Program.cs` file:
+
+```csharp
+const string ApiBaseUrl = "https://p3api-acc.gielvangaal.dev/";
+```
+
+After testing, revert the BaseAddress back to the production URL.
+
+> Note: The API URL is intentionally hardcoded in the WA `Program.cs` to keep the default configuration aligned with production and avoid accidental environment mismatches during development and deployment.
+
+
 ## Key Features
 
 - **User Management** - View and manage users

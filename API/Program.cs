@@ -47,9 +47,11 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "http://localhost:5031",              // dev
-                "https://p3api-acc.gielvangaal.dev",     // acc
-                "https://p3api-prod.gielvangaal.dev"
+                "http://localhost:5031",                    // wa local
+                "https://p3api-acc.gielvangaal.dev",        // api acc
+                "https://p3api-prod.gielvangaal.dev",       // api prod
+                "https://cine.net-acc.gielvangaal.dev",     // wa acc
+                "https://cine.net-prod.gielvangaal.dev"     // wa prod
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
