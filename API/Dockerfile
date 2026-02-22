@@ -3,19 +3,21 @@ ARG DOTNET_SDK_VERSION=10.0
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_SDK_VERSION} AS build
 WORKDIR /src
 
-# Copy csproj for better layer caching
-ARG PROJECT_NAME=API
-COPY ${PROJECT_NAME}.csproj .
-RUN dotnet restore ${PROJECT_NAME}.csproj
+# Copy csproj files from root
+COPY API/API.csproj API/
+COPY SharedLibrary/SharedLibrary.csproj SharedLibrary/
 
-# Copy everything else and build
-COPY . .
-RUN dotnet test ${PROJECT_NAME}.csproj --no-restore
-RUN dotnet publish ${PROJECT_NAME}.csproj -c Release -o /app/out /p:UseAppHost=false
+RUN dotnet restore API/API.csproj
+
+# Copy rest from source
+COPY API/ API/
+COPY SharedLibrary/ SharedLibrary/
+
+RUN dotnet test API/API.csproj --no-restore
+RUN dotnet publish API/API.csproj -c Release -o /app/out /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_SDK_VERSION} AS runtime
 WORKDIR /app
-
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl \
