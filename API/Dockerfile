@@ -31,7 +31,7 @@ ENV DOTNET_EnableDiagnostics=0
 EXPOSE 8080
 
 COPY --from=build /app/out ./
-
+RUN mkdir /app/wwwroot/
 # Run as non-root user for better security
 RUN useradd -m appuser \
     && chown -R appuser:appuser /app
