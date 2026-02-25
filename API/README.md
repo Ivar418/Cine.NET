@@ -143,6 +143,15 @@ This will:
 
 The API will be available at: **http://localhost:8080**
 
+Be aware! 8080 will not show anything, you'll have to navigate to a endpoint to
+see the response. For example: **http://localhost:8080/api/users**
+
+
+Start full stack in detached mode:
+```
+docker compose up -d
+```
+
 ### Rebuild Docker Image
 
 If you modify the application code:
@@ -182,10 +191,38 @@ All endpoints are async and return JSON. Base URL: `http://localhost:8080`
 
 ### API Documentation
 
-Swagger/OpenAPI documentation is available in Development environment:
+#### Docker Build Context
+
+The Docker build context is set to the repository root instead of the `API/` directory.
+
+This is required because the solution consists of multiple projects:
+
+- `API/`
+- `SharedLibrary/`
+
+When the build context is limited to the `API/` folder, Docker cannot access the `SharedLibrary` project.  
+This results in missing project references during `dotnet restore` and `dotnet publish`, which can cause the application (including Swagger) to fail.
+
+To solve this, the Docker Compose configuration uses:
+
+```yaml
+build:
+  context: ..
+  dockerfile: API/Dockerfile
+```
+  
+This ensures that:
+- The entire solution is available during build
+- Project references resolve correctly
+- Swagger and all application features function as expected
+- The setup remains consistent across Windows, Linux, CI, and server environments
+- CI/CD deployment on Ubuntu server compatiblilty
+
+#### Swagger / OpenAPI
 - **URL:** `http://localhost:8080/swagger`
 - View all endpoints, their parameters, and response models
 - Try endpoints directly from the UI
+
 
 ## Technology Stack
 

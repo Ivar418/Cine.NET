@@ -1,4 +1,4 @@
-﻿namespace WebApi_PocV1.Mappers;
+﻿namespace API.Mappers;
 
 public class PhotoMapper
 {

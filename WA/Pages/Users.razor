@@ -1,7 +1,8 @@
 ﻿@page "/users"
-@using Cine.NET_WA.Domain
-@using Cine.NET_WA.Services
-@inject IUserService UserService
+@using SharedLibrary.Domain.Entities
+@using SharedLibrary.DTOs.Responses
+@using WA.ApiClients
+@inject IUserApi UserApi
 
 <h3>Users</h3>
 
@@ -15,10 +16,10 @@
 </ul>
 
 @code {
-    private IReadOnlyList<User> _users = [];
+    private IReadOnlyList<UserResponse> _users = [];
 
     private async Task LoadUsers()
     {
-        _users = await UserService.GetUsersAsync();
+        _users = await UserApi.GetUsersAsync();
     }
 }

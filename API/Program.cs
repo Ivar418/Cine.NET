@@ -1,11 +1,12 @@
+using API.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using WebApi_PocV1.Infrastructure.Database;
-using WebApi_PocV1.Repositories.Implementations;
-using WebApi_PocV1.Repositories.Interfaces;
-using WebApi_PocV1.Services.Implementations;
-using WebApi_PocV1.Services.Interfaces;
-using WebApi_PocV1.Storage;
-using WebApi_PocV1.Storage.Implementations;
+using API.Infrastructure.Database;
+using API.Repositories.Implementations;
+using API.Repositories.Interfaces;
+using API.Services.Implementations;
+using API.Services.Interfaces;
+using API.Storage;
+using API.Storage.Implementations;
 
 // App setup: create builder + dependency container
 var builder = WebApplication.CreateBuilder(args);
@@ -47,9 +48,11 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "http://localhost:5031",              // dev
-                "https://p3api-acc.gielvangaal.dev",     // acc
-                "https://p3api-prod.gielvangaal.dev"
+                "http://localhost:5031",                    // wa local
+                "https://p3api-acc.gielvangaal.dev",        // api acc
+                "https://p3api-prod.gielvangaal.dev",       // api prod
+                "https://cine.net-acc.gielvangaal.dev",     // wa acc
+                "https://cine.net-prod.gielvangaal.dev"     // wa prod
             )
             .AllowAnyHeader()
             .AllowAnyMethod();

@@ -1,4 +1,4 @@
-﻿namespace WebApi_PocV1.DTOs.Responses
+﻿namespace SharedLibrary.DTOs.Responses
 {
     public class UserResponse
     {

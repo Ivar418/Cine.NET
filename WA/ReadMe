@@ -17,17 +17,12 @@ Cine.NET_WA is a client-side Blazor WebAssembly application that provides a web 
 ## Project Structure
 
 ```
-Cine.NET_WA/
-├── Api/                    # API client implementations
+WA/
+├── ApiClients/                    # API client implementations
 ├── Auth/                   # Authentication state management
-├── Domain/                 # Domain models
-├── Dto/                    # Data transfer objects
 ├── Layout/                 # Layout components
-├── Mapping/                # Object mapping utilities
 ├── Pages/                  # Razor page components
 ├── Properties/             # Launch settings
-├── Repositories/           # Data repositories
-├── Services/               # Business logic services
 └── wwwroot/                # Static assets
 ```
 
@@ -40,23 +35,19 @@ Cine.NET_WA/
 
 ### Running Locally
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd Cine.NET_WA
-   ```
+1. **Run the application**
 
-2. **Navigate to the project directory**
-   ```bash
-   cd Cine.NET_WA
-   ```
+Clean the project first:
+```bash
+dotnet clean
+```
 
-3. **Run the application**
-   ```bash
+Then run the application:
+```bash
    dotnet run
    ```
 
-4. **Open your browser**
+2**Open your browser**
    - Navigate to `http://localhost:5031`
    - HTTPS: `https://localhost:7169`
 
@@ -69,6 +60,36 @@ Cine.NET_WA/
 
 2. **Access the application**
    - Navigate to `http://localhost:5031`
+
+## Testing 1-2-3
+### API Environment Configuration
+
+The Blazor WebAssembly client is configured to use the production API by default to ensure stable and predictable behavior in deployments.
+
+The API base URL is defined in the Blazor WebAssembly startup file:
+
+```
+WA/Program.cs
+```
+
+By default, the HttpClient is configured with:
+
+```
+https://p3api-prod.gielvangaal.dev/
+```
+
+#### Switching to ACC (Testing)
+
+To test against the ACC environment, temporarily update the API BaseAddress in the Blazor WebAssembly `Program.cs` file:
+
+```csharp
+const string ApiBaseUrl = "https://p3api-acc.gielvangaal.dev/";
+```
+
+After testing, revert the BaseAddress back to the production URL.
+
+> Note: The API URL is intentionally hardcoded in the WA `Program.cs` to keep the default configuration aligned with production and avoid accidental environment mismatches during development and deployment.
+
 
 ## Key Features
 
@@ -100,18 +121,6 @@ builder.Services.AddScoped(sp =>
 ### API Layer (`Api/`)
 - Handles HTTP communication with backend services
 - Implements API client interfaces
-
-### Repository Layer (`Repositories/`)
-- Manages data access and persistence
-- Abstracts data operations
-
-### Service Layer (`Services/`)
-- Contains business logic
-- Orchestrates between repositories and UI
-
-### Domain Layer (`Domain/`)
-- Core domain models and entities
-- Business rules and validation
 
 ## Authentication
 
