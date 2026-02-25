@@ -1,4 +1,4 @@
-﻿name: Build WA image
+name: Build WA image on push to develop/main, check which branch is the source →
 
 on:
   push:

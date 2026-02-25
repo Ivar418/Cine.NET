@@ -1,4 +1,4 @@
-name: Build API image
+name: Build API image on push to develop/main, check which branch is the source →
 
 on:
   push:
