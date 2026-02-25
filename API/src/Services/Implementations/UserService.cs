@@ -1,8 +1,8 @@
-﻿using WebApi_PocV1.Domain.Entities;
-using WebApi_PocV1.Repositories.Interfaces;
-using WebApi_PocV1.Services.Interfaces;
+﻿using SharedLibrary.Domain.Entities;
+using API.Repositories.Interfaces;
+using API.Services.Interfaces;
 
-namespace WebApi_PocV1.Services.Implementations
+namespace API.Services.Implementations
 {
     public class UserService : IUserService
     {

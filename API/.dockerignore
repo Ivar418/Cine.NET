@@ -4,3 +4,4 @@ ansible
 .gitignore
 docker-compose*
 README*
+wwwroot/uploads

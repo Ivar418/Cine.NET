@@ -1,4 +1,4 @@
-﻿namespace WebApi_PocV1.Domain.Entities;
+﻿namespace SharedLibrary.Domain.Entities;
 
 public record Photo
 {

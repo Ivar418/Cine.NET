@@ -1,6 +1,6 @@
-﻿using WebApi_PocV1.Domain.Entities;
+﻿using SharedLibrary.Domain.Entities;
 
-namespace WebApi_PocV1.Services.Interfaces
+namespace API.Services.Interfaces
 {
     public interface IUserService
     {

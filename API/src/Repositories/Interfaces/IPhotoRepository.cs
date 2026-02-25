@@ -1,4 +1,4 @@
-﻿namespace WebApi_PocV1.Repositories.Interfaces;
+﻿namespace API.Repositories.Interfaces;
 
 public interface IPhotoRepository
 {

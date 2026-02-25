@@ -1,4 +1,4 @@
-﻿namespace WebApi_PocV1.Services.Interfaces;
+﻿namespace API.Services.Interfaces;
 
 public interface IPhotoService
 {
