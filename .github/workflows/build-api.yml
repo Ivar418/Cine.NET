@@ -26,5 +26,5 @@ jobs:
             TAG=prod
           fi
 
-          docker build -t ghcr.io/gielvangaal/cine.net/api:$TAG ./API
+          docker build -f API/Dockerfile -t ghcr.io/gielvangaal/cine.net/api:$TAG .
           docker push ghcr.io/gielvangaal/cine.net/api:$TAG
