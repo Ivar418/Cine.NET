@@ -1,4 +1,4 @@
-﻿namespace WebApi_PocV1.DTOs.Requests;
+﻿namespace SharedLibrary.DTOs.Requests;
 
 public record PhotoRequest
 {

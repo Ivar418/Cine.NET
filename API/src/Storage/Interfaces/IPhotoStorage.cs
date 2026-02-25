@@ -1,6 +1,6 @@
-﻿using WebApi_PocV1.Domain.Entities;
+﻿using SharedLibrary.Domain.Entities;
 
-namespace WebApi_PocV1.Storage;
+namespace API.Storage;
 
 public record PhotoSaveResult(string Id, string Url, string StorageKey, long Size, string ContentType, string creatorId);
 

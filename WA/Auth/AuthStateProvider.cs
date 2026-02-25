@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace Cine.NET_WA.Auth;
+namespace WA.Auth;
 
 public class AuthStateProvider : AuthenticationStateProvider
 {

@@ -17,17 +17,12 @@ Cine.NET_WA is a client-side Blazor WebAssembly application that provides a web 
 ## Project Structure
 
 ```
-Cine.NET_WA/
-├── Api/                    # API client implementations
+WA/
+├── ApiClients/                    # API client implementations
 ├── Auth/                   # Authentication state management
-├── Domain/                 # Domain models
-├── Dto/                    # Data transfer objects
 ├── Layout/                 # Layout components
-├── Mapping/                # Object mapping utilities
 ├── Pages/                  # Razor page components
 ├── Properties/             # Launch settings
-├── Repositories/           # Data repositories
-├── Services/               # Business logic services
 └── wwwroot/                # Static assets
 ```
 
@@ -126,18 +121,6 @@ builder.Services.AddScoped(sp =>
 ### API Layer (`Api/`)
 - Handles HTTP communication with backend services
 - Implements API client interfaces
-
-### Repository Layer (`Repositories/`)
-- Manages data access and persistence
-- Abstracts data operations
-
-### Service Layer (`Services/`)
-- Contains business logic
-- Orchestrates between repositories and UI
-
-### Domain Layer (`Domain/`)
-- Core domain models and entities
-- Business rules and validation
 
 ## Authentication
 

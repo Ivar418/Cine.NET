@@ -1,11 +1,12 @@
+using API.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using WebApi_PocV1.Infrastructure.Database;
-using WebApi_PocV1.Repositories.Implementations;
-using WebApi_PocV1.Repositories.Interfaces;
-using WebApi_PocV1.Services.Implementations;
-using WebApi_PocV1.Services.Interfaces;
-using WebApi_PocV1.Storage;
-using WebApi_PocV1.Storage.Implementations;
+using API.Infrastructure.Database;
+using API.Repositories.Implementations;
+using API.Repositories.Interfaces;
+using API.Services.Implementations;
+using API.Services.Interfaces;
+using API.Storage;
+using API.Storage.Implementations;
 
 // App setup: create builder + dependency container
 var builder = WebApplication.CreateBuilder(args);

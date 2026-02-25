@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApi_PocV1.Mappers;
-using WebApi_PocV1.Services.Interfaces;
+using API.Mappers;
+using API.Services.Interfaces;
 
-namespace WebApi_PocV1.Controllers
+namespace API.Controllers
 {
     [ApiController]
     [Route("api/users")]
