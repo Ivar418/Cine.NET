@@ -46,6 +46,6 @@
     -p p3api-{{ env_name }}
     --env-file .env-{{ env_name }}
     -f docker-compose-{{ env_name }}.yml
-    up -d
+    up -d --force-recreate
   args:
     chdir: /opt/p3api/{{ env_name }}
