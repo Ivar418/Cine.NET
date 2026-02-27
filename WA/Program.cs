@@ -6,6 +6,7 @@ using MudBlazor.Services;
 using WA;
 using WA.ApiClients;
 using WA.Auth;
+using WA.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -18,7 +19,7 @@ builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri("https://p3api-prod.gielvangaal.dev/") });
     // new HttpClient { BaseAddress = new Uri("https://p3api-acc.gielvangaal.dev/") });
     // new HttpClient { BaseAddress = new Uri("http://localhost:8080/") });
-
 builder.Services.AddScoped<IUserApi, UserApi>();
+builder.Services.AddScoped<LayoutStateService>();
 
 await builder.Build().RunAsync();

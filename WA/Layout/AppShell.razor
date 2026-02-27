@@ -1,14 +1,5 @@
-﻿@inherits LayoutComponentBase
-@using WA.Theme
-@* @using WA.Components *@
+@implements IDisposable
 @inject WA.Services.LayoutStateService LayoutState
-
-<MudThemeProvider Theme="AppTheme.Dark" />
-
-@if (LayoutState.EnableSnackbar)
-{
-    <MudSnackbarProvider />
-}
 
 <div class="app-shell">
 
@@ -18,7 +9,7 @@
     }
 
     <div class="main-content">
-        @Body
+        @ChildContent
     </div>
 
     @if (LayoutState.ShowFooter)
@@ -36,6 +27,8 @@
 </div>
 
 @code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
     protected override void OnInitialized()
     {
         LayoutState.OnChange += StateHasChanged;
