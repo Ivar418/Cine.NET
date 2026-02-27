@@ -1,14 +1,11 @@
 ﻿@inherits LayoutComponentBase
 @using WA.Theme
-@* @using WA.Components *@
 @inject WA.Services.LayoutStateService LayoutState
 
-<MudThemeProvider Theme="AppTheme.Dark" />
-
-@if (LayoutState.EnableSnackbar)
-{
-    <MudSnackbarProvider />
-}
+<MudThemeProvider Theme="@AppTheme.Dark" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
 <div class="app-shell">
 

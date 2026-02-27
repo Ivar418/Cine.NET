@@ -9,7 +9,7 @@ public static class AppTheme
         PaletteLight = new PaletteLight
         {
             Primary = Colors.BlueGray.Default,
-            Secondary = Colors.Teal.Accent4,
+            Secondary = Colors.Yellow.Accent4,
             Background = Colors.Gray.Lighten5
         }
     };
@@ -19,7 +19,7 @@ public static class AppTheme
         PaletteDark = new PaletteDark
         {
             Primary = Colors.BlueGray.Lighten2,
-            Secondary = Colors.Teal.Accent2,
+            Secondary = Colors.DeepOrange.Accent2,
             Background = Colors.Gray.Darken4,
             Surface = Colors.Gray.Darken3
         }
