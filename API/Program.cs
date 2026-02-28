@@ -7,7 +7,9 @@ using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.Storage;
 using API.Storage.Implementations;
+using DotNetEnv;
 
+Env.Load(); 
 // App setup: create builder + dependency container
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,11 +39,25 @@ builder.Services.AddHealthChecks();
 // ORM: configure EF Core with MySQL
 builder.Services.AddDbContextPool<ApiDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                           ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    // Try to get connection string from environment/Docker
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-    Console.WriteLine("Waiting for MySQL to be available...");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        var database = Environment.GetEnvironmentVariable("DB_NAME") ?? "my_local_db";
+        var user = Environment.GetEnvironmentVariable("DB_USER") ?? "root";
+        var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "secret";
 
+        // Fallback for local debugging
+        Console.WriteLine("DefaultConnection not found in environment. Using local MySQL connection.");
+        connectionString = $"Server=localhost;Port=3306;Database={database};User={user};Password={password};";
+    }
+    else
+    {
+        Console.WriteLine("Using DefaultConnection from environment.");
+    }
+
+    // Wait for MySQL if needed (optional for local debugging, you can skip retries locally)
     ServerVersion serverVersion = null;
     int retries = 0;
     int maxRetries = 10;

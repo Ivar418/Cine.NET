@@ -4,7 +4,7 @@ public class Movie
 {
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
-    public string TmdbId { get; set; } = string.Empty;
+    public int TmdbId { get; set; } = 0;
     public string? Language { get; set; }
     public string? PosterUrl { get; set; }
     public int? Runtime { get; set; }
