@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using SharedLibrary.DTOs.Responses;
 using System.Text.Json;
+using API.Repositories.Implementations;
 using SharedLibrary.DTOs.Responses.TMDB;
 using DotNetEnv;
 
@@ -14,41 +15,11 @@ namespace API.Infrastructure.Database
 
     public static class DbSeeder
     {
-        public static async Task<TmdbMovieDetailsResponse> GetMovies()
+        public static async Task SeedAsync(ApiDbContext db, MovieRepository movieRepository)
         {
-            Env.Load();
-            // Get the API key from environment variables
-            var apiKey = Environment.GetEnvironmentVariable("TMDB_API_KEY_READ_ONLY");
-            if (string.IsNullOrEmpty(apiKey))
+            if (!db.Users.Any())
             {
-                throw new InvalidOperationException("TMDB API key is not set in environment variables.");
-            }
-
-            using (var client = new HttpClient())
-            {
-                // Set the authorization header
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-
-                // Make the GET request
-                var url = "https://api.themoviedb.org/3/movie/285";
-                var response = await client.GetAsync(url);
-
-                // Ensure success status code
-                response.EnsureSuccessStatusCode();
-
-                // Read response content
-                // var content = await response.Content.ReadAsStringAsync();
-                var content = await response.Content.ReadAsStringAsync();
-                var movie = JsonSerializer.Deserialize<TmdbMovieDetailsResponse>(content);
-                return movie;
-            }
-        }
-
-        public static void Seed(ApiDbContext context)
-        {
-            if (!context.Users.Any())
-            {
-                context.Users.AddRange(
+                db.Users.AddRange(
                     new User("Admin"),
                     new User("TestUser"),
                     new User("John Doe"),
@@ -56,12 +27,12 @@ namespace API.Infrastructure.Database
                 );
             }
 
-            if (!context.Movies.Any())
+            if (!db.Movies.Any())
             {
                 Console.WriteLine("Getting movie data from TMDB with id 285");
-                var movie = GetMovies().Result;
+                var movie = await movieRepository.GetTmdbMovieDetailsAsync(285);
                 Console.WriteLine(movie);
-                context.Movies.AddRange(
+                db.Movies.AddRange(
                     new Movie
                     {
                         Title = movie.OriginalTitle,
@@ -129,7 +100,7 @@ namespace API.Infrastructure.Database
                 );
             }
 
-            context.SaveChanges();
+            db.SaveChanges();
         }
     }
 }

@@ -9,7 +9,7 @@ using API.Storage;
 using API.Storage.Implementations;
 using DotNetEnv;
 
-Env.Load(); 
+Env.Load();
 // App setup: create builder + dependency container
 var builder = WebApplication.CreateBuilder(args);
 
@@ -146,7 +146,9 @@ app.MapControllers();
 // Database: apply pending migrations at startup and seed some mock data
 using (var scope = app.Services.CreateScope())
 {
+    var services = scope.ServiceProvider;
     var db = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
+    var movieRepository = services.GetRequiredService<MovieRepository>();
 
     // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
     // Since this is a school project which always destroys the database on recreation it does not matter
@@ -155,7 +157,7 @@ using (var scope = app.Services.CreateScope())
     // Seed data
     try
     {
-        DbSeeder.Seed(db);
+        await DbSeeder.SeedAsync(db, movieRepository);
     }
     catch (Exception ex)
     {
