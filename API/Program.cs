@@ -31,6 +31,7 @@ builder.Services.AddSwaggerGen();
  */
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IMovieRepository>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 
 // Monitoring: health check endpoint

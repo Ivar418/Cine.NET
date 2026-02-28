@@ -1,6 +1,6 @@
 ﻿namespace SharedLibrary.DTOs.Responses.TMDB
 {
-    public class ReleaseDateDto
+    public class ReleaseInformationDto
     {
         public string Certification { get; set; } // e.g., "PG-13", "12", "M/12"
         public List<string> Descriptors { get; set; } // usually empty

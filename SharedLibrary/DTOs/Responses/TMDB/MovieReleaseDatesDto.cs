@@ -3,5 +3,5 @@
 public class MovieReleaseDatesDto
 {
     public int Id { get; set; } // TMDB movie ID
-    public List<ReleaseDateResultDto> Results { get; set; }
+    public List<ReleaseInformationPerCountryDto> Results { get; set; }
 }
