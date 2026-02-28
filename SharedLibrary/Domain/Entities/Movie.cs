@@ -1,5 +1,6 @@
-﻿namespace SharedLibrary.Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
+namespace SharedLibrary.Domain.Entities;
 public class Movie
 {
     public int Id { get; set; }
