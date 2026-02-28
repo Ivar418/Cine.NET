@@ -23,9 +23,7 @@ html, body {
     display: flex;
     align-items: center;
     padding: 0 24px;
-
-    background: var(--mud-palette-primary);
-    color: var(--mud-palette-primary-text);
+    
 }
 
 /* Main */
@@ -85,6 +83,14 @@ html, body {
 .demo-card {
     max-width: 400px;
     margin-bottom: 24px;
+}
+
+/* snackbar */
+
+.mud-snackbar {
+    border-radius: 12px;
+    font-weight: 500;
+    padding: 16px 20px;
 }
 
 /* BELOW IS ALL TEMPLATE STUFF, YET TO BE SORTED */
