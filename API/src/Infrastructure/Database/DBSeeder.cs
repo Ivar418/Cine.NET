@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using SharedLibrary.DTOs.Responses;
 using System.Text.Json;
 using API.Repositories.Implementations;
+using API.Repositories.Interfaces;
 using SharedLibrary.DTOs.Responses.TMDB;
 using DotNetEnv;
 
@@ -15,7 +16,7 @@ namespace API.Infrastructure.Database
 
     public static class DbSeeder
     {
-        public static async Task SeedAsync(ApiDbContext db, MovieRepository movieRepository)
+        public static async Task SeedAsync(ApiDbContext db, IMovieRepository movieRepository)
         {
             if (!db.Users.Any())
             {

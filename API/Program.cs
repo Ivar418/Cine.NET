@@ -31,7 +31,7 @@ builder.Services.AddSwaggerGen();
  */
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IMovieRepository>();
+builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 
 // Monitoring: health check endpoint
@@ -147,8 +147,8 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var db = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
-    var movieRepository = services.GetRequiredService<MovieRepository>();
+    var db = services.GetRequiredService<ApiDbContext>();
+    var movieRepository = services.GetRequiredService<IMovieRepository>();
 
     // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
     // Since this is a school project which always destroys the database on recreation it does not matter

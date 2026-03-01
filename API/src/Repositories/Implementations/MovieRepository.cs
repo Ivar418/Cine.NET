@@ -8,10 +8,13 @@ using DotNetEnv;
 
 namespace API.Repositories.Implementations;
 
-public class MovieRepository(ApiDbContext db) : IMovieRepository
+public class MovieRepository : IMovieRepository
 {
-    private readonly ApiDbContext _db = db;
-
+    private readonly ApiDbContext _db;
+    public MovieRepository(ApiDbContext db)
+    {
+        _db = db;
+    }
     public async Task<Movie?> GetMovieAsync(int id)
     {
         throw new NotImplementedException();
