@@ -1,5 +1,4 @@
-﻿
-using API.Repositories.Implementations;
+﻿using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using SharedLibrary.DTOs.Responses.TMDB;
 using Microsoft.EntityFrameworkCore;
@@ -54,7 +53,19 @@ namespace API.Infrastructure.Database
             }
 
             await db.SaveChangesAsync();
+            var searchMovie = await movieRepository.GetMovieAsync(9);
+            if (searchMovie.IsSuccess)
+            {
+                Console.WriteLine(searchMovie.Value.Title);
+            }
+            else if (searchMovie.IsFailure)
+            {
+                Console.WriteLine("Error fetching movie: " + searchMovie.Error);
+            }
+            else if (searchMovie.IsNotFound)
+            {
+                Console.WriteLine("Movie not found.");
+            }
         }
-        
     }
 }

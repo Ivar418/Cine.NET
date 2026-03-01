@@ -1,11 +1,12 @@
-﻿using SharedLibrary.Domain.Entities;
+﻿using API.Domain.Common;
+using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses.TMDB;
 
 namespace API.Repositories.Interfaces;
 
 public interface IMovieRepository
 {
-    Task<Movie?> GetMovieAsync(int id);
+    Task<ResultOf<Movie>> GetMovieAsync(int id);
     Task<IEnumerable<Movie>> GetMoviesAsync();
     Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie);
     Task<Movie> UpdateMovieAsync(Movie movie);

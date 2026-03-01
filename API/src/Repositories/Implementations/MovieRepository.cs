@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
+using API.Domain.Common;
 using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
 using SharedLibrary.Domain.Entities;
@@ -17,10 +18,17 @@ public class MovieRepository : IMovieRepository
         _db = db;
     }
 
-    public async Task<Movie?> GetMovieAsync(int id)
+    public async Task<ResultOf<Movie>> GetMovieAsync(int id)
     {
-      return await _db.Movies.FindAsync(id);
-
+        try
+        {
+            var movie = await _db.Movies.FindAsync(id);
+            return movie == null ? ResultOf<Movie>.NotFound() : ResultOf<Movie>.Success(movie);
+        }
+        catch (Exception e)
+        {
+            return ResultOf<Movie>.Failure(e.Message);
+        }
     }
 
     public async Task<IEnumerable<Movie>> GetMoviesAsync()
