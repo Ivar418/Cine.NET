@@ -47,7 +47,7 @@ Then run the application:
    dotnet run
    ```
 
-2**Open your browser**
+**Open your browser**
    - Navigate to `http://localhost:5031`
    - HTTPS: `https://localhost:7169`
 
