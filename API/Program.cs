@@ -1,6 +1,5 @@
 using API.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using API.Infrastructure.Database;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Implementations;
@@ -9,7 +8,7 @@ using API.Storage;
 using API.Storage.Implementations;
 using DotNetEnv;
 
-Env.Load(); 
+Env.Load();
 // App setup: create builder + dependency container
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +30,7 @@ builder.Services.AddSwaggerGen();
  */
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 
 // Monitoring: health check endpoint
@@ -58,10 +58,10 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     }
 
     // Wait for MySQL if needed (optional for local debugging, you can skip retries locally)
-    ServerVersion serverVersion = null;
-    int retries = 0;
-    int maxRetries = 10;
-    TimeSpan delay = TimeSpan.FromSeconds(5);
+    ServerVersion? serverVersion = null;
+    var retries = 0;
+    const int maxRetries = 10;
+    var delay  = TimeSpan.FromSeconds(5);
 
     while (serverVersion == null && retries < maxRetries)
     {
@@ -145,7 +145,9 @@ app.MapControllers();
 // Database: apply pending migrations at startup and seed some mock data
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<ApiDbContext>();
+    var movieRepository = services.GetRequiredService<IMovieRepository>();
 
     // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
     // Since this is a school project which always destroys the database on recreation it does not matter
@@ -154,7 +156,7 @@ using (var scope = app.Services.CreateScope())
     // Seed data
     try
     {
-        DbSeeder.Seed(db);
+        await DbSeeder.SeedAsync(db, movieRepository);
     }
     catch (Exception ex)
     {
