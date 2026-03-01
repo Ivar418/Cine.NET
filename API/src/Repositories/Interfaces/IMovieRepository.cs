@@ -7,7 +7,7 @@ namespace API.Repositories.Interfaces;
 public interface IMovieRepository
 {
     Task<ResultOf<Movie>> GetMovieAsync(int id);
-    Task<IEnumerable<Movie>> GetMoviesAsync();
+    Task<ResultOf<List<Movie>>> GetMoviesAsync();
     Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie);
     Task<Movie> UpdateMovieAsync(Movie movie);
     Task DeleteMovieAsync(int id);

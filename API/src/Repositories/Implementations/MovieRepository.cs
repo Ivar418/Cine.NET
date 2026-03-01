@@ -6,6 +6,7 @@ using API.Repositories.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses.TMDB;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
@@ -31,9 +32,21 @@ public class MovieRepository : IMovieRepository
         }
     }
 
-    public async Task<IEnumerable<Movie>> GetMoviesAsync()
+    public async Task<ResultOf<List<Movie>>> GetMoviesAsync()
     {
-        throw new NotImplementedException();
+        try
+        {
+            var movies = await _db.Movies.ToListAsync();
+
+            if (movies == null || !movies.Any())
+                return ResultOf<List<Movie>>.NotFound();
+
+            return ResultOf<List<Movie>>.Success(movies);
+        }
+        catch (Exception e)
+        {
+            return ResultOf<List<Movie>>.Failure(e.Message);
+        }
     }
 
     public async Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie)
