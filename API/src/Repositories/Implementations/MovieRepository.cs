@@ -46,7 +46,7 @@ public class MovieRepository : IMovieRepository
             SpokenLanguageName = firstLanguage?.EnglishName,
             SpokenLanguageCodeIso6391 = firstLanguage?.Iso_639_1,
             GenresIds = movie.Genres.Select(genreDto => genreDto.Id).ToList(),
-            RowCreatedTimestampUtc = DateTimeOffset.UtcNow.ToString("O")
+            RowCreatedTimestampUtc = Movie.CurrentUtcTimestamp()
         });
         await _db.SaveChangesAsync();
         return result.Entity;
