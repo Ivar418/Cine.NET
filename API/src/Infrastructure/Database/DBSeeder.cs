@@ -1,12 +1,7 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
-using SharedLibrary.DTOs.Responses;
-using System.Text.Json;
+﻿
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using SharedLibrary.DTOs.Responses.TMDB;
-using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -54,30 +49,12 @@ namespace API.Infrastructure.Database
 
                 foreach (var movie in Movies)
                 {
-                    Console.WriteLine($"Adding movie: {movie.OriginalTitle}");
-                    var firstLanguage = movie.SpokenLanguages?.FirstOrDefault();
-            
-                    movieEntities.Add(new Movie
-                    {
-                        Title = movie.OriginalTitle,
-                        TmdbId = movie.Id,
-                        Language = movie.OriginalLanguage,
-                        PosterUrl = movie.PosterPath,
-                        Runtime = movie.Runtime,
-                        ImdbId = movie.ImdbId,
-                        ReleaseDate = movie.ReleaseDate,
-                        About = movie.Overview,
-                        AgeIndication = "PG-13",
-                        SpokenLanguageName = firstLanguage?.EnglishName,
-                        SpokenLanguageCodeIso6391 = firstLanguage?.Iso_639_1,
-                        GenresIds = movie.Genres.Select(genreDto => genreDto.Id).ToList(),
-                        RowCreatedTimestampUtc = Movie.CurrentUtcTimestamp()
-                    });
+                    await movieRepository.AddMovieAsync(movie);
                 }
             }
 
-            await db.Movies.AddRangeAsync(movieEntities);
             await db.SaveChangesAsync();
         }
+        
     }
 }

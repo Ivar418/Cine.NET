@@ -5,17 +5,51 @@ namespace SharedLibrary.Domain.Entities;
 
 public class Movie
 {
+    [Column("id")]
+
     public int Id { get; set; }
+
+    [Column("title")]
+
     public string Title { get; set; } = string.Empty;
+
+    [Column("tmdb_id")]
+
     public int TmdbId { get; set; } = 0;
+
+    [Column("language")]
+
     public string? Language { get; set; }
+
+    [Column("poster_url")]
+
     public string? PosterUrl { get; set; }
+
+    [Column("runtime")]
+
     public int? Runtime { get; set; }
+
+    [Column("imdb_id")]
+
     public string? ImdbId { get; set; }
+
+    [Column("release_date")]
+
     public string? ReleaseDate { get; set; }
+
+    [Column("about")]
+
     public string? About { get; set; }
+
+    [Column("age_indication")]
+
     public string? AgeIndication { get; set; }
+
+    [Column("spoken_language_name")]
+
     public string? SpokenLanguageName { get; set; }
+
+    [Column("spoken_language_code_iso6391")]
     public string? SpokenLanguageCodeIso6391 { get; set; }
 
     public List<int>? GenresIds { get; set; }
@@ -65,13 +99,13 @@ public class Movie
     // --- Helper method to validate UTC timestamp ---
     private static bool IsValidUtcTimestamp(string timestamp)
     {
-        if (DateTimeOffset.TryParse(timestamp, out var dto))
-        {
-            // Must be UTC offset +00:00
-            return dto.Offset == TimeSpan.Zero;
-        }
-
-        return false;
+        return DateTimeOffset.TryParseExact(
+            timestamp,
+            "O", // Exact ISO 8601 round-trip format
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,
+            out var dto
+        ) && dto.Offset == TimeSpan.Zero; // Must be +00:00
     }
 
     // --- Helper factory method to generate current UTC string ---

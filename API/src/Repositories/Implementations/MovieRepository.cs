@@ -19,7 +19,8 @@ public class MovieRepository : IMovieRepository
 
     public async Task<Movie?> GetMovieAsync(int id)
     {
-        throw new NotImplementedException();
+      return await _db.Movies.FindAsync(id);
+
     }
 
     public async Task<IEnumerable<Movie>> GetMoviesAsync()
