@@ -16,13 +16,13 @@ public class LocalPhotoStorage : IPhotoStorage
     }
 
     public async Task<PhotoSaveResult> SaveAsync(Stream stream, string contentType, string originalFileName,
-        string folder, CancellationToken ct, string creatorId)
+        string folder, CancellationToken ct, int creatorId)
     {
         var ext = Path.GetExtension(originalFileName).ToLowerInvariant();
         var id = Guid.NewGuid().ToString("n");
         var safeFolder = string.IsNullOrWhiteSpace(folder) ? "default" : SanitizeFolder(folder);
         var uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(AppContext.BaseDirectory, "wwwroot"), "uploads",
-            safeFolder, creatorId);
+            safeFolder, creatorId.ToString());
         Directory.CreateDirectory(uploadsRoot);
 
         var fileName = $"{id}{ext}";
@@ -38,7 +38,7 @@ public class LocalPhotoStorage : IPhotoStorage
         if (req is null) throw new InvalidOperationException("No HTTP context for URL building.");
 
         var baseUrl = $"{req.Scheme}://{req.Host}";
-        var urlPath = $"/uploads/{Uri.EscapeDataString(safeFolder)}/{Uri.EscapeDataString(creatorId)}/{Uri.EscapeDataString(fileName)}";
+        var urlPath = $"/uploads/{Uri.EscapeDataString(safeFolder)}/{Uri.EscapeDataString(creatorId.ToString())}/{Uri.EscapeDataString(fileName)}";
         var url = baseUrl + urlPath;
 
         var size = new FileInfo(fullPath).Length;
@@ -47,13 +47,13 @@ public class LocalPhotoStorage : IPhotoStorage
         return new PhotoSaveResult(id, url, storageKey, size, contentType, creatorId);
     }
 
-    public async Task<Photo> GetByCreatorAndType(string creatorId, string type)
+    public async Task<Photo> GetByCreatorAndType(int EntityId, string type)
     {
         // Determine sanitized folder name (same rules as SaveAsync)
         var safeType = string.IsNullOrWhiteSpace(type) ? "default" : SanitizeFolder(type);
 
         var uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(AppContext.BaseDirectory, "wwwroot"), "uploads",
-            safeType, creatorId);
+            safeType, EntityId.ToString());
         Debug.WriteLine(uploadsRoot);
         if (!Directory.Exists(uploadsRoot))
             return null!; // no photo for this creator/type
@@ -75,7 +75,7 @@ public class LocalPhotoStorage : IPhotoStorage
         if (req is null) throw new InvalidOperationException("No HTTP context for URL building.");
 
         var baseUrl = $"{req.Scheme}://{req.Host}";
-        var urlPath = $"/uploads/{Uri.EscapeDataString(safeType)}/{Uri.EscapeDataString(creatorId)}/{Uri.EscapeDataString(fileName)}";
+        var urlPath = $"/uploads/{Uri.EscapeDataString(safeType)}/{Uri.EscapeDataString(EntityId.ToString())}/{Uri.EscapeDataString(fileName)}";
         var url = baseUrl + urlPath;
 
         // Try to infer content type from extension
@@ -92,7 +92,7 @@ public class LocalPhotoStorage : IPhotoStorage
             StorageKey = storageKey,
             Size = latest.Length,
             ContentType = contentType,
-            creatorId = creatorId
+            EntityId = EntityId
         };
 
         return await Task.FromResult(photo);

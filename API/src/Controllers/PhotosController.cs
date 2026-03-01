@@ -18,7 +18,7 @@ namespace API.Controllers
         [HttpPost]
         [Route("new")]
         [RequestSizeLimit(25_000_000)] // 25 MB (also configure server limits)
-        public async Task<IActionResult> Upload(IFormFile file, [FromForm] string creatorId,
+        public async Task<IActionResult> Upload(IFormFile file, [FromForm] int creatorId,
             [FromForm] string? folder = null, [FromForm] Boolean overwrite = false,
             CancellationToken ct = default)
         {
@@ -46,43 +46,35 @@ namespace API.Controllers
 
             // Save
             //TODO move to a service layer
-            //TODO check if creatorId actually is an existing movie or user
+            //TODO check if ownerId actually is an existing movie or user
             await using var stream = file.OpenReadStream();
             var result = await _storage.SaveAsync(
                 stream: stream,
                 contentType: file.ContentType,
                 originalFileName: file.FileName,
                 folder: folder,
-                creatorId: creatorId,
-                ct: ct
-            );
+                ct: ct, creatorId: creatorId);
 
             // result could include: id, url, key/path, size, etc.
             return Created(result.Url, result);
         }
 
-        [HttpGet("{PhotoType}/{CreatorId}")]
-        public async Task<IActionResult> GetPhoto(String PhotoType, String CreatorId)
+        [HttpGet("{PhotoType}/{EntityId}")]
+        public async Task<IActionResult> GetPhoto(String PhotoType, int EntityId)
         {
-            if (CreatorId is null)
-                return BadRequest(new { error = "Missing creatorId." });
-            if (PhotoType is null)
-                return BadRequest(new { error = "Missing photoType." });
- 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _storage.GetByCreatorAndType(CreatorId, PhotoType);
+            var result = await _storage.GetByCreatorAndType(EntityId, PhotoType);
             if (result is null)
                 return NotFound();
-
             var response = new PhotoResponse
             {
                 Id = result.Id,
                 Url = result.Url,
                 Size = result.Size,
                 ContentType = result.ContentType,
-                creatorId = result.creatorId
+                EntityId = EntityId
             };
 
             return Ok(response);
