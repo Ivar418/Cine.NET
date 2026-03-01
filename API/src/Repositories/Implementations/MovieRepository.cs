@@ -11,10 +11,12 @@ namespace API.Repositories.Implementations;
 public class MovieRepository : IMovieRepository
 {
     private readonly ApiDbContext _db;
+
     public MovieRepository(ApiDbContext db)
     {
         _db = db;
     }
+
     public async Task<Movie?> GetMovieAsync(int id)
     {
         throw new NotImplementedException();
@@ -25,9 +27,29 @@ public class MovieRepository : IMovieRepository
         throw new NotImplementedException();
     }
 
-    public async Task<Movie> AddMovieAsync(Movie movie)
+    public async Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie)
     {
-        throw new NotImplementedException();
+        Console.WriteLine($"Adding movie: {movie.OriginalTitle}");
+        var firstLanguage = movie.SpokenLanguages?.FirstOrDefault();
+
+        var result = await _db.Movies.AddAsync(new Movie
+        {
+            Title = movie.OriginalTitle,
+            TmdbId = movie.Id,
+            Language = movie.OriginalLanguage,
+            PosterUrl = movie.PosterPath,
+            Runtime = movie.Runtime,
+            ImdbId = movie.ImdbId,
+            ReleaseDate = movie.ReleaseDate,
+            About = movie.Overview,
+            AgeIndication = "PG-13",
+            SpokenLanguageName = firstLanguage?.EnglishName,
+            SpokenLanguageCodeIso6391 = firstLanguage?.Iso_639_1,
+            GenresIds = movie.Genres.Select(genreDto => genreDto.Id).ToList(),
+            RowCreatedTimestampUtc = DateTimeOffset.UtcNow.ToString("O")
+        });
+        await _db.SaveChangesAsync();
+        return result.Entity;
     }
 
     public async Task<Movie> UpdateMovieAsync(Movie movie)

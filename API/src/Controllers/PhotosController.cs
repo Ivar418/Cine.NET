@@ -19,7 +19,7 @@ namespace API.Controllers
         [Route("new")]
         [RequestSizeLimit(25_000_000)] // 25 MB (also configure server limits)
         public async Task<IActionResult> Upload(IFormFile file, [FromForm] int creatorId,
-            [FromForm] string? folder = null, [FromForm] Boolean overwrite = false,
+            [FromForm] string folder, [FromForm] Boolean overwrite = false,
             CancellationToken ct = default)
         {
             if (file is null || file.Length == 0)

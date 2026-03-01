@@ -1,6 +1,5 @@
 using API.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using API.Infrastructure.Database;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Implementations;
@@ -59,10 +58,10 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     }
 
     // Wait for MySQL if needed (optional for local debugging, you can skip retries locally)
-    ServerVersion serverVersion = null;
-    int retries = 0;
-    int maxRetries = 10;
-    TimeSpan delay = TimeSpan.FromSeconds(5);
+    ServerVersion? serverVersion = null;
+    var retries = 0;
+    const int maxRetries = 10;
+    var delay  = TimeSpan.FromSeconds(5);
 
     while (serverVersion == null && retries < maxRetries)
     {
