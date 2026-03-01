@@ -3,7 +3,7 @@
 public class ResultOf<T>
 {
     public bool IsSuccess { get; }
-    public bool IsFailure => !IsSuccess;
+    public bool IsFailure => !IsSuccess && !IsNotFound;
     public bool IsNotFound { get; }
 
     public T? Value { get; }
