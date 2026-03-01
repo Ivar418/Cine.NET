@@ -53,19 +53,6 @@ namespace API.Infrastructure.Database
             }
 
             await db.SaveChangesAsync();
-            var searchMovie = await movieRepository.GetMovieAsync(9);
-            if (searchMovie.IsSuccess)
-            {
-                Console.WriteLine(searchMovie.Value.Title);
-            }
-            else if (searchMovie.IsFailure)
-            {
-                Console.WriteLine("Error fetching movie: " + searchMovie.Error);
-            }
-            else if (searchMovie.IsNotFound)
-            {
-                Console.WriteLine("Movie not found.");
-            }
         }
     }
 }
