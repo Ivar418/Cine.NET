@@ -7,6 +7,7 @@ using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses.TMDB;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 
 namespace API.Repositories.Implementations;
 
@@ -21,15 +22,8 @@ public class MovieRepository : IMovieRepository
 
     public async Task<ResultOf<Movie>> GetMovieAsync(int id)
     {
-        try
-        {
-            var movie = await _db.Movies.FindAsync(id);
-            return movie == null ? ResultOf<Movie>.NotFound() : ResultOf<Movie>.Success(movie);
-        }
-        catch (Exception e)
-        {
-            return ResultOf<Movie>.Failure(e.Message);
-        }
+        var movie = await _db.Movies.FindAsync(id);
+        return movie == null ? ResultOf<Movie>.Failure("Movie not found") : ResultOf<Movie>.Success(movie);
     }
 
     public async Task<ResultOf<List<Movie>>> GetMoviesAsync()

@@ -3,9 +3,8 @@
 public class ResultOf<T>
 {
     public bool IsSuccess { get; }
-    public bool IsFailure => !IsSuccess && !IsNotFound;
-    public bool IsNotFound { get; }
-
+    public bool IsFailure => !IsSuccess;
+    
     public T? Value { get; }
     public string? Error { get; }
     public IReadOnlyDictionary<string, string[]>? ValidationErrors { get; }
@@ -18,7 +17,6 @@ public class ResultOf<T>
         IReadOnlyDictionary<string, string[]>? validationErrors = null)
     {
         IsSuccess = isSuccess;
-        IsNotFound = isNotFound;
         Value = value;
         Error = error;
         ValidationErrors = validationErrors;
