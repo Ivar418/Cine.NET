@@ -16,6 +16,25 @@ namespace API.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var movies = await _movieRepository.GetMoviesAsync();
+                return movies switch
+                {
+                    { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                    { IsSuccess: true } => Ok(movies.Value),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
+        }
+
+        [HttpGet]
         [Route("{id:int}")]
         public async Task<IActionResult> GetMovieById(int id)
         {
@@ -29,7 +48,8 @@ namespace API.Controllers
                     { IsSuccess: true } => Ok(movie.Value),
                     _ => StatusCode(500, new { error = "Unexpected result" })
                 };
-            } catch (Exception ex)
+            }
+            catch (Exception)
             {
                 return StatusCode(500, new { error = "An error occurred" });
             }

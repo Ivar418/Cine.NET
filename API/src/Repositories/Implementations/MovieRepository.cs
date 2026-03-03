@@ -31,10 +31,7 @@ public class MovieRepository : IMovieRepository
         try
         {
             var movies = await _db.Movies.ToListAsync();
-
-            if (movies == null || !movies.Any())
-                return ResultOf<List<Movie>>.NotFound();
-
+            
             return ResultOf<List<Movie>>.Success(movies);
         }
         catch (Exception e)
