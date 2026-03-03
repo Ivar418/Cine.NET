@@ -1,7 +1,8 @@
 ﻿name: Deploy WA ACC
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [develop, main]
 
 jobs:
   deploy:
