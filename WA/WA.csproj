@@ -34,4 +34,8 @@
       <AdditionalFiles Include="_Imports.razor" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Pages\Admin\MovieOverview.razor" />
+    </ItemGroup>
+
 </Project>
