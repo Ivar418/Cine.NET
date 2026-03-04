@@ -6,18 +6,42 @@ using SharedLibrary.Domain.Entities;
 
 namespace API.Controllers
 {
+    /// <summary>
+    /// Controller for managing movie-related operations and handling movie requests.
+    /// </summary>
+    /// <remarks>
+    /// The MoviesController provides endpoints to retrieve all movies, fetch a specific movie by its ID,
+    /// search for movies using an external API, and add a movie to the system based on external data.
+    /// All actions rely on the injected IMovieRepository for data operations.
+    /// </remarks>
     [ApiController]
     [Route("api/movies")]
     public class MoviesController : ControllerBase
     {
+        /// <summary>
+        /// Represents the repository responsible for providing data access functionalities
+        /// related to movies. The repository abstracts interactions with the data sources,
+        /// such as databases or external APIs, to perform operations including retrieval,
+        /// search, creation, updating, and deletion of movie records.
+        /// </summary>
         private readonly IMovieRepository _movieRepository;
 
+        /// <summary>
+        /// A controller for managing movie-related operations, providing endpoints to retrieve,
+        /// search, and manage movie data.
+        /// </summary>
         public MoviesController(IMovieRepository movieRepository)
         {
             _movieRepository = movieRepository;
         }
 
 
+        /// Retrieves a list of all movies from the repository.
+        /// The method attempts to fetch all movies using the injected repository.
+        /// If the operation fails, it will return an appropriate HTTP status code
+        /// indicating the error (e.g., 500 Internal Server Error). If successful,
+        /// it returns the list of movies.
+        /// <return>Returns an IActionResult containing a list of movies on success, or an error message on failure.</return>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -37,6 +61,9 @@ namespace API.Controllers
             }
         }
 
+        /// Retrieves a movie by its unique identifier.
+        /// <param name="id">The unique identifier of the movie to retrieve.</param>
+        /// <returns>An IActionResult containing the movie details if found, a 404 Not Found response if the movie is not found, or a 500 Internal Server Error response if an unexpected error occurs.</returns>
         [HttpGet]
         [Route("{id:int}")]
         public async Task<IActionResult> GetMovieById(int id)
@@ -58,6 +85,13 @@ namespace API.Controllers
             }
         }
 
+        /// <summary>
+        /// Searches for movies in TMDB (The Movie Database) based on the provided query string and returns the matching results.
+        /// </summary>
+        /// <param name="query">The search query string used to look for movies in TMDB.</param>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing the search results, or an appropriate error response if an issue occurs during the search.
+        /// </returns>
         [HttpGet]
         [Route("tmdb/search")]
         public async Task<IActionResult> SearchTmdb([FromQuery] string query)
@@ -73,6 +107,18 @@ namespace API.Controllers
             }
         }
 
+        /// <summary>
+        /// Adds a movie to the database based on its TMDB ID.
+        /// </summary>
+        /// <param name="tmdbId">The TMDB ID of the movie to be added. Must be a positive integer.</param>
+        /// <returns>
+        /// Returns a status indicating the result of the operation:
+        /// - 201 Created if the movie was successfully added.
+        /// - 409 Conflict if the movie already exists in the database.
+        /// - 404 Not Found if the movie is not found locally or on TMDB.
+        /// - 400 Bad Request if the TMDB ID is invalid.
+        /// - 500 Internal Server Error in case of any unexpected errors.
+        /// </returns>
         [HttpPost]
         public async Task<IActionResult> AddMovie([FromQuery] int tmdbId)
         {
