@@ -65,6 +65,32 @@ public class MovieRepository : IMovieRepository
         return result.Entity;
     }
 
+    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId)
+    {
+        try
+        {
+            // Check if movie already exists
+            var existingMovie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+            if (existingMovie != null)
+            {
+                return ResultOf<Movie>.Failure("Movie already exists");
+            }
+
+            // Fetch details from TMDB
+            var details = await GetTmdbMovieDetailsAsync(tmdbId);
+            if (details == null)
+            {
+                return ResultOf<Movie>.Failure("Movie not found on TMDB");
+            }
+
+            return ResultOf<Movie>.Success(await AddMovieAsync(details));
+        }
+        catch (HttpRequestException)
+        {
+            return ResultOf<Movie>.Failure("Movie not found on TMDB");
+        }
+    }
+
     public async Task<Movie> UpdateMovieAsync(Movie movie)
     {
         throw new NotImplementedException();
@@ -75,7 +101,7 @@ public class MovieRepository : IMovieRepository
         throw new NotImplementedException();
     }
 
-    public async Task<TmdbMovieDetailsResponse> GetTmdbMovieDetailsAsync(int id)
+    public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id)
     {
         try
         {
@@ -96,32 +122,22 @@ public class MovieRepository : IMovieRepository
             var response = await client.GetAsync(url);
 
             // Ensure success status code
-            response.EnsureSuccessStatusCode();
-
+            if (!response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+            {
+                return null;
+            }
+            
             // Read response content
             // var content = await response.Content.ReadAsStringAsync();
             var content = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<TmdbMovieDetailsResponse>(content) ??
                    throw new Exception("Could not deserialize movie details");
         }
-        catch (HttpRequestException e)
-        {
-            throw new Exception("Error fetching movie details from TMDB", e);
-        }
         catch (JsonException e)
         {
             throw new Exception("Error parsing movie details", e);
         }
-        catch (InvalidOperationException e)
-        {
-            // API key missing
-            throw;
-        }
-        catch (Exception e)
-        {
-            // Fallback for unexpected exceptions
-            throw new Exception("An unexpected error occurred while getting movie details", e);
-        }
+        
     }
 
     public async Task<IEnumerable<ReleaseInformationPerCountryDto>> GetMovieReleaseDatesAllCountriesAsync(int id)
@@ -135,11 +151,6 @@ public class MovieRepository : IMovieRepository
     }
 
     public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<List<MovieSearchItemDto>> GetMovieSearchResultsAsync(string query)
     {
         Env.Load();
         // Get the API key from environment variables
@@ -163,7 +174,12 @@ public class MovieRepository : IMovieRepository
         // Read response content
         // var content = await response.Content.ReadAsStringAsync();
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<MovieSearchItemDto>>(content) ??
+        return JsonSerializer.Deserialize<MovieSearchResultListDto>(content) ??
                throw new Exception("Could not deserialize movie details");
+    }
+
+    public async Task<List<MovieSearchItemDto>> GetMovieSearchResultsAsync(string query)
+    {
+        throw new NotImplementedException();
     }
 }
