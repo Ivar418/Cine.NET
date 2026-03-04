@@ -1,4 +1,5 @@
-﻿using API.Repositories.Interfaces;
+﻿using API.Domain.Common;
+using API.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,6 +15,7 @@ namespace API.Controllers
         {
             _movieRepository = movieRepository;
         }
+        
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -48,6 +50,20 @@ namespace API.Controllers
                     { IsSuccess: true } => Ok(movie.Value),
                     _ => StatusCode(500, new { error = "Unexpected result" })
                 };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
+        }
+        [HttpGet]
+        [Route("/tmdb/search/{query}")]
+        public async Task<IActionResult> SearchTmdb(string query)
+        {
+            try
+            {
+                var result = await _movieRepository.GetMovieTmdbSearchResultsAsync(query);
+                return Ok(result);
             }
             catch (Exception)
             {

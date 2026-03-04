@@ -31,7 +31,7 @@ public class MovieRepository : IMovieRepository
         try
         {
             var movies = await _db.Movies.ToListAsync();
-            
+
             return ResultOf<List<Movie>>.Success(movies);
         }
         catch (Exception e)
@@ -134,8 +134,36 @@ public class MovieRepository : IMovieRepository
         throw new NotImplementedException();
     }
 
-    public async Task<MovieSearchResultListDto> GetMovieSearchResultsAsync(string query)
+    public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<List<MovieSearchItemDto>> GetMovieSearchResultsAsync(string query)
+    {
+        Env.Load();
+        // Get the API key from environment variables
+        var apiKey = Environment.GetEnvironmentVariable("TMDB_API_KEY_READ_ONLY");
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new InvalidOperationException("TMDB API key is not set in environment variables.");
+        }
+
+        using var client = new HttpClient();
+        // Set the authorization header
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        // Make the GET request
+        var url = $"https://api.themoviedb.org/3/search/movie?query={query}";
+        var response = await client.GetAsync(url);
+
+        // Ensure success status code
+        response.EnsureSuccessStatusCode();
+
+        // Read response content
+        // var content = await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<MovieSearchItemDto>>(content) ??
+               throw new Exception("Could not deserialize movie details");
     }
 }

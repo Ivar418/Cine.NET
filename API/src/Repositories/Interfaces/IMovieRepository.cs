@@ -14,5 +14,7 @@ public interface IMovieRepository
     Task<TmdbMovieDetailsResponse>GetTmdbMovieDetailsAsync(int id);
     Task<IEnumerable<ReleaseInformationPerCountryDto>> GetMovieReleaseDatesAllCountriesAsync(int id);
     Task<ReleaseInformationDto> GetMovieReleaseDatesAsync(int id);
-    Task<MovieSearchResultListDto> GetMovieSearchResultsAsync(string query);
+    Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query);
+    Task<List<MovieSearchItemDto>> GetMovieSearchResultsAsync(string query);
+
 }

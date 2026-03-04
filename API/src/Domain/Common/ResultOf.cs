@@ -11,7 +11,6 @@ public class ResultOf<T>
 
     private ResultOf(
         bool isSuccess,
-        bool isNotFound,
         T? value,
         string? error,
         IReadOnlyDictionary<string, string[]>? validationErrors = null)
@@ -24,23 +23,18 @@ public class ResultOf<T>
 
     // Successful result with a value
     public static ResultOf<T> Success(T value)
-        => new ResultOf<T>(isSuccess: true, isNotFound: false, value: value, error: null);
+        => new ResultOf<T>(isSuccess: true, value: value, error: null);
 
     // Failure due to error
     public static ResultOf<T> Failure(string error)
-        => new ResultOf<T>(isSuccess: false, isNotFound: false, value: default, error: error);
+        => new ResultOf<T>(isSuccess: false, value: default, error: error);
 
     // Failure due to validation errors
     public static ResultOf<T> ValidationFailure(
         IReadOnlyDictionary<string, string[]> validationErrors)
         => new ResultOf<T>(
             isSuccess: false,
-            isNotFound: false,
             value: default,
             error: "Validation failed",
             validationErrors: validationErrors);
-
-    // NotFound result
-    public static ResultOf<T> NotFound(string? message = null)
-        => new ResultOf<T>(isSuccess: false, isNotFound: true, value: default, error: message ?? "Resource not found");
 }
