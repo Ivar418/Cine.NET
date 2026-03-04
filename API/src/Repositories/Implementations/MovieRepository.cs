@@ -1,10 +1,13 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
+using API.Domain.Common;
 using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses.TMDB;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 
 namespace API.Repositories.Implementations;
 
@@ -17,14 +20,24 @@ public class MovieRepository : IMovieRepository
         _db = db;
     }
 
-    public async Task<Movie?> GetMovieAsync(int id)
+    public async Task<ResultOf<Movie>> GetMovieAsync(int id)
     {
-        throw new NotImplementedException();
+        var movie = await _db.Movies.FindAsync(id);
+        return movie == null ? ResultOf<Movie>.Failure("Movie not found") : ResultOf<Movie>.Success(movie);
     }
 
-    public async Task<IEnumerable<Movie>> GetMoviesAsync()
+    public async Task<ResultOf<List<Movie>>> GetMoviesAsync()
     {
-        throw new NotImplementedException();
+        try
+        {
+            var movies = await _db.Movies.ToListAsync();
+            
+            return ResultOf<List<Movie>>.Success(movies);
+        }
+        catch (Exception e)
+        {
+            return ResultOf<List<Movie>>.Failure(e.Message);
+        }
     }
 
     public async Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie)
