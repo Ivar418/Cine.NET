@@ -1,6 +1,6 @@
 ﻿using API.Repositories.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using API.Mappers;
 
 namespace API.Controllers
 {
@@ -24,7 +24,7 @@ namespace API.Controllers
                 return movies switch
                 {
                     { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                    { IsSuccess: true } => Ok(movies.Value),
+                    { IsSuccess: true } => Ok(MovieMapper.ToResponses(movies.Value)),
                     _ => StatusCode(500, new { error = "Unexpected result" })
                 };
             }
@@ -45,7 +45,7 @@ namespace API.Controllers
                 {
                     { IsFailure: true, Error: "Movie not found" } => NotFound(new { error = "Movie not found" }),
                     { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                    { IsSuccess: true } => Ok(movie.Value),
+                    { IsSuccess: true } => Ok(MovieMapper.ToResponse(movie.Value)),
                     _ => StatusCode(500, new { error = "Unexpected result" })
                 };
             }

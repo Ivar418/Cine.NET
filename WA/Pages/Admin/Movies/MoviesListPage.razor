@@ -1,41 +1,61 @@
 ﻿@page "/admin/movies"
+@using SharedLibrary.DTOs.Responses
+@using WA.Services.Http.Interfaces
+@using WA.Services.Http.Interfaces
+@inject IMovieApiClient MovieApiClient
 @inject NavigationManager Navigation
 
 <PageTitle>Admin — Movies</PageTitle>
 
 <MudText Typo="Typo.h4" Class="mb-4">Movies</MudText>
 
-<MudDataGrid T="MovieModel"
-             Items="_movies"
-             SortMode="SortMode.Multiple"
-             Hideable="true"
-             Dense="true"
-             Striped="true"
-             Hover="true">
-    <Columns>
-        <PropertyColumn Property="x => x.Title"                      Title="Title" />
-        <PropertyColumn Property="x => x.Language"                   Title="Language" />
-        <PropertyColumn Property="x => x.Runtime"                    Title="Runtime (min)" />
-        <PropertyColumn Property="x => x.ReleaseDate"                Title="Release Date" />
-        <PropertyColumn Property="x => x.AgeIndication"              Title="Age Indication" />
-        <PropertyColumn Property="x => x.SpokenLanguageCodeIso6391"  Title="Language" />
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+else if (_loadError)
+{
+    <MudAlert Severity="Severity.Error">Failed to load movies. Please try again.</MudAlert>
+}
+else if (!_movies.Any())
+{
+    <MudAlert Severity="Severity.Info">No movies found.</MudAlert>
+}
+else
+{
+    <MudDataGrid T="MovieResponse"
+                 Items="_movies"
+                 Filterable="true"
+                 SortMode="SortMode.Multiple"
+                 Hideable="true"
+                 Dense="true"
+                 Striped="true"
+                 Hover="true">
+        <Columns>
+            <PropertyColumn Property="x => x.Title"                      Title="Title" />
+            <PropertyColumn Property="x => x.Language"                   Title="Language" />
+            <PropertyColumn Property="x => x.Runtime"                    Title="Runtime (min)" />
+            <PropertyColumn Property="x => x.ReleaseDate"                Title="Release Date" />
+            <PropertyColumn Property="x => x.AgeIndication"              Title="Age Indication" />
+            <PropertyColumn Property="x => x.SpokenLanguageCodeIso6391"  Title="Language Code" />
 
-        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellStyle="width: 120px; text-align: right;">
-            <CellTemplate>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                               Color="Color.Primary"
-                               Size="Size.Small"
-                               Title="Edit movie"
-                               OnClick="@(() => Navigation.NavigateTo($"/admin/movies/{context.Item.Id}/edit"))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                               Color="Color.Error"
-                               Size="Size.Small"
-                               Title="Delete movie"
-                               OnClick="@(() => OpenDeleteDialog(context.Item))" />
-            </CellTemplate>
-        </TemplateColumn>
-    </Columns>
-</MudDataGrid>
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellStyle="width: 120px; text-align: right;">
+                <CellTemplate>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Title="Edit movie"
+                                   OnClick="@(() => Navigation.NavigateTo($"/admin/movies/{context.Item.Id}/edit"))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Error"
+                                   Size="Size.Small"
+                                   Title="Delete movie"
+                                   OnClick="@(() => OpenDeleteDialog(context.Item))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+}
 
 @* ── Delete confirmation dialog ── *@
 <MudDialog @bind-Visible="_deleteDialogOpen">
@@ -52,7 +72,14 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseDeleteDialog">Cancel</MudButton>
-        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete">
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Filled"
+                   OnClick="ConfirmDeleteAsync"
+                   Disabled="_deleting">
+            @if (_deleting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
             Delete
         </MudButton>
     </DialogActions>
@@ -66,36 +93,36 @@
 }
 
 @code {
+    private List<MovieResponse> _movies = new();
+    private bool _loading = true;
+    private bool _loadError;
 
-    // ── Temporary local model (remove once MovieDto is available) ──
-    private class MovieModel
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string? Language { get; set; }
-        public int? Runtime { get; set; }
-        public string? ReleaseDate { get; set; }
-        public string? AgeIndication { get; set; }
-        public string? SpokenLanguageCodeIso6391 { get; set; }
-    }
-
-    // ── Hardcoded seed data (replace with API call later) ──
-    private List<MovieModel> _movies = new()
-    {
-        new MovieModel { Id = 1, Title = "Inception",         Language = "English", Runtime = 148, ReleaseDate = "2010-07-16", AgeIndication = "PG-13", SpokenLanguageCodeIso6391 = "en" },
-        new MovieModel { Id = 2, Title = "Parasite",          Language = "Korean",  Runtime = 132, ReleaseDate = "2019-05-30", AgeIndication = "R",     SpokenLanguageCodeIso6391 = "ko" },
-        new MovieModel { Id = 3, Title = "The Dark Knight",   Language = "English", Runtime = 152, ReleaseDate = "2008-07-18", AgeIndication = "PG-13", SpokenLanguageCodeIso6391 = "en" },
-        new MovieModel { Id = 4, Title = "Amélie",            Language = "French",  Runtime = 122, ReleaseDate = "2001-04-25", AgeIndication = "R",     SpokenLanguageCodeIso6391 = "fr" },
-        new MovieModel { Id = 5, Title = "Interstellar",      Language = "English", Runtime = 169, ReleaseDate = "2014-11-07", AgeIndication = "PG-13", SpokenLanguageCodeIso6391 = "en" },
-        new MovieModel { Id = 6, Title = "Spirited Away",     Language = "Japanese",Runtime = 125, ReleaseDate = "2001-07-20", AgeIndication = "PG",    SpokenLanguageCodeIso6391 = "ja" },
-    };
-
-    // ── Delete dialog state ──
     private bool _deleteDialogOpen;
-    private MovieModel? _movieToDelete;
+    private bool _deleting;
+    private MovieResponse? _movieToDelete;
     private string? _errorMessage;
 
-    private void OpenDeleteDialog(MovieModel movie)
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMoviesAsync();
+    }
+
+    private async Task LoadMoviesAsync()
+    {
+        _loading = true;
+        _loadError = false;
+
+        var result = await MovieApiClient.GetAllMoviesAsync();
+
+        if (result is null)
+            _loadError = true;
+        else
+            _movies = result;
+
+        _loading = false;
+    }
+
+    private void OpenDeleteDialog(MovieResponse movie)
     {
         _movieToDelete = movie;
         _deleteDialogOpen = true;
@@ -107,17 +134,23 @@
         _movieToDelete = null;
     }
 
-    private void ConfirmDelete()
+    private async Task ConfirmDeleteAsync()
     {
         if (_movieToDelete is null) return;
 
-        _movies.Remove(_movieToDelete);
-        CloseDeleteDialog();
-    }
+        _deleting = true;
+        var success = await MovieApiClient.DeleteMovieAsync(_movieToDelete.Id);
+        _deleting = false;
 
-    // ── TODO: swap hardcoded data for API call when backend is ready ──
-    // private async Task LoadMoviesAsync()
-    // {
-    //     _movies = await MovieApiClient.GetAllMoviesAsync() ?? new();
-    // }
+        if (success)
+        {
+            _movies.Remove(_movieToDelete);
+            CloseDeleteDialog();
+        }
+        else
+        {
+            _errorMessage = $"Failed to delete \"{_movieToDelete.Title}\". Please try again.";
+            CloseDeleteDialog();
+        }
+    }
 }
