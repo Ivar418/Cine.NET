@@ -8,6 +8,7 @@ using SharedLibrary.DTOs.Responses.TMDB;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
+using SharedLibrary.DTOs.Responses.TMDB.MovieReleaseDatesAndInfo;
 
 namespace API.Repositories.Implementations;
 
@@ -26,24 +27,27 @@ public class MovieRepository : IMovieRepository
         return movie == null ? ResultOf<Movie>.Failure("Movie not found") : ResultOf<Movie>.Success(movie);
     }
 
-    public async Task<ResultOf<List<Movie>>> GetMoviesAsync()
+    public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync()
     {
         try
         {
             var movies = await _db.Movies.ToListAsync();
 
-            return ResultOf<List<Movie>>.Success(movies);
+            return ResultOf<ICollection<Movie>>.Success(movies);
         }
         catch (Exception e)
         {
-            return ResultOf<List<Movie>>.Failure(e.Message);
+            return ResultOf<ICollection<Movie>>.Failure(e.Message);
         }
     }
 
     public async Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie)
     {
         Console.WriteLine($"Adding movie: {movie.OriginalTitle}");
+
         var firstLanguage = movie.SpokenLanguages?.FirstOrDefault();
+        var dutchReleaseInfo = await GetDutchMovieReleaseDatesAsync(movie.Id);
+        var dutchAgeIndication = dutchReleaseInfo?.Certification;
 
         var result = await _db.Movies.AddAsync(new Movie
         {
@@ -55,7 +59,7 @@ public class MovieRepository : IMovieRepository
             ImdbId = movie.ImdbId,
             ReleaseDate = movie.ReleaseDate,
             About = movie.Overview,
-            AgeIndication = "PG-13",
+            AgeIndication = dutchAgeIndication,
             SpokenLanguageName = firstLanguage?.EnglishName,
             SpokenLanguageCodeIso6391 = firstLanguage?.Iso_639_1,
             GenresIds = movie.Genres.Select(genreDto => genreDto.Id).ToList(),
@@ -141,14 +145,56 @@ public class MovieRepository : IMovieRepository
         }
     }
 
-    public async Task<IEnumerable<ReleaseInformationPerCountryDto>> GetMovieReleaseDatesAllCountriesAsync(int id)
+    public async Task<MovieReleaseDatesDto> GetMovieReleaseDatesAllCountriesAsync(int id)
     {
-        throw new NotImplementedException();
+        try
+        {
+            Env.Load();
+            // Get the API key from environment variables
+            var apiKey = Environment.GetEnvironmentVariable("TMDB_API_KEY_READ_ONLY");
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("TMDB API key is not set in environment variables.");
+            }
+
+            using var client = new HttpClient();
+            // Set the authorization header
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            var parameters = new List<String>();
+            // Make the GET request
+            var url = $"https://api.themoviedb.org/3/movie/{id}/release_dates";
+            var response = await client.GetAsync(url);
+
+            // Ensure success status code
+            if (!response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            // Read response content
+            // var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<MovieReleaseDatesDto>(content);
+            return result;
+        }
+        catch (JsonException e)
+        {
+            Console.WriteLine($"Error parsing movie details: {e.Message}");
+            throw new Exception("Error parsing movie details", e);
+        }
     }
 
-    public async Task<ReleaseInformationDto> GetMovieReleaseDatesAsync(int id)
+    public async Task<ReleaseInformationDto?> GetDutchMovieReleaseDatesAsync(int id)
     {
-        throw new NotImplementedException();
+        var allReleaseInformation = await GetMovieReleaseDatesAllCountriesAsync(id);
+        var dutchReleaseInformation =
+            allReleaseInformation.Results.FirstOrDefault(releaseInfo => releaseInfo.iso_3166_1 == "NL");
+        if (dutchReleaseInformation != null)
+        {
+            return dutchReleaseInformation.release_dates.FirstOrDefault();
+        }
+
+        return null;
     }
 
     public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(

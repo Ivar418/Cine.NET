@@ -54,18 +54,6 @@ namespace API.Infrastructure.Database
             }
 
             await db.SaveChangesAsync();
-            var searchMovie = await movieRepository.GetMovieAsync(9);
-            if (searchMovie.IsSuccess)
-            {
-                // Console.WriteLine(searchMovie.Value.Title);
-                Console.WriteLine("Found movie: ");
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                Console.WriteLine(JsonSerializer.Serialize(searchMovie, options));
-            }
-            else if (searchMovie.IsFailure)
-            {
-                Console.WriteLine("Error fetching movie: " + searchMovie.Error);
-            }
         }
     }
 }

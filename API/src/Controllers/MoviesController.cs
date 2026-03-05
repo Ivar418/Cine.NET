@@ -86,15 +86,15 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Searches for movies in TMDB (The Movie Database) based on the provided query string and returns the matching results.
+        /// Searches for movies in TMDB (The Movie Database) based on the provided query string and returns the matching Results.
         /// </summary>
         /// <param name="query">The search query string used to look for movies in TMDB.</param>
-        /// <param name="primary_release_year">The primary release year to filter the search results. Optional.</param>
-        /// <param name="page">The page number of the search results to retrieve. Defaults to 1.</param>
-        /// <param name="include_adult">A boolean value indicating whether to include adult content in the search results. Defaults to false.</param>
-        /// <param name="language">The language in which the search results are returned. Defaults to "nl".</param>
+        /// <param name="primary_release_year">The primary release year to filter the search Results. Optional.</param>
+        /// <param name="page">The page number of the search Results to retrieve. Defaults to 1.</param>
+        /// <param name="include_adult">A boolean value indicating whether to include adult content in the search Results. Defaults to false.</param>
+        /// <param name="language">The language in which the search Results are returned. Defaults to "nl".</param>
         /// <returns>
-        /// An <see cref="IActionResult"/> containing the search results from TMDB or an error response if an issue occurs during the search.
+        /// An <see cref="IActionResult"/> containing the search Results from TMDB or an error response if an issue occurs during the search.
         /// </returns>
         [HttpGet]
         [Route("tmdb/search")]
