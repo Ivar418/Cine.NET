@@ -65,7 +65,7 @@ public class MovieRepository : IMovieRepository
         return result.Entity;
     }
 
-    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId)
+    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language)
     {
         try
         {
@@ -77,7 +77,7 @@ public class MovieRepository : IMovieRepository
             }
 
             // Fetch details from TMDB
-            var details = await GetTmdbMovieDetailsAsync(tmdbId);
+            var details = await GetTmdbMovieDetailsAsync(tmdbId, language);
             if (details == null)
             {
                 return ResultOf<Movie>.Failure("Movie not found on TMDB");
@@ -101,7 +101,7 @@ public class MovieRepository : IMovieRepository
         throw new NotImplementedException();
     }
 
-    public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id)
+    public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language)
     {
         try
         {
@@ -116,9 +116,11 @@ public class MovieRepository : IMovieRepository
             using var client = new HttpClient();
             // Set the authorization header
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-
+            var parameters = new List<String>();
+            parameters.Add($"{id}");
+            parameters.Add($"?language={language}");
             // Make the GET request
-            var url = $"https://api.themoviedb.org/3/movie/{id}";
+            var url = $"https://api.themoviedb.org/3/movie/{parameters.Aggregate((key, value) => key + value)}";
             var response = await client.GetAsync(url);
 
             // Ensure success status code
@@ -126,7 +128,7 @@ public class MovieRepository : IMovieRepository
             {
                 return null;
             }
-            
+
             // Read response content
             // var content = await response.Content.ReadAsStringAsync();
             var content = await response.Content.ReadAsStringAsync();
@@ -137,7 +139,6 @@ public class MovieRepository : IMovieRepository
         {
             throw new Exception("Error parsing movie details", e);
         }
-        
     }
 
     public async Task<IEnumerable<ReleaseInformationPerCountryDto>> GetMovieReleaseDatesAllCountriesAsync(int id)
@@ -150,7 +151,12 @@ public class MovieRepository : IMovieRepository
         throw new NotImplementedException();
     }
 
-    public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query)
+    public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(
+        string query,
+        string? primary_release_year,
+        int? page,
+        bool include_adult,
+        string language)
     {
         Env.Load();
         // Get the API key from environment variables
@@ -165,7 +171,26 @@ public class MovieRepository : IMovieRepository
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
         // Make the GET request
-        var url = $"https://api.themoviedb.org/3/search/movie?query={query}";
+        var parameters = new List<String>();
+        parameters.Add($"query={query}");
+        parameters.Add($"&include_adult={include_adult}");
+        if (!string.IsNullOrEmpty(primary_release_year))
+        {
+            parameters.Add($"&primary_release_year={primary_release_year}");
+        }
+
+        if (page.HasValue)
+        {
+            parameters.Add($"&page={page}");
+        }
+
+        if (!string.IsNullOrEmpty(language))
+        {
+            parameters.Add($"&language={language}");
+        }
+
+
+        var url = $"https://api.themoviedb.org/3/search/movie?{parameters.Aggregate((key, value) => key + value)}";
         var response = await client.GetAsync(url);
 
         // Ensure success status code

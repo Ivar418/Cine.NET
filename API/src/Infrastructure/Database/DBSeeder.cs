@@ -36,7 +36,7 @@ namespace API.Infrastructure.Database
 
                 foreach (var id in MovieIdList)
                 {
-                    var movie = await movieRepository.GetTmdbMovieDetailsAsync(id);
+                    var movie = await movieRepository.GetTmdbMovieDetailsAsync(id, "nl");
                     if (movie != null)
                     {
                         Movies.Add(movie);

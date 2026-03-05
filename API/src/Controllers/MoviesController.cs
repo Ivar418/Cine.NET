@@ -89,16 +89,26 @@ namespace API.Controllers
         /// Searches for movies in TMDB (The Movie Database) based on the provided query string and returns the matching results.
         /// </summary>
         /// <param name="query">The search query string used to look for movies in TMDB.</param>
+        /// <param name="primary_release_year">The primary release year to filter the search results. Optional.</param>
+        /// <param name="page">The page number of the search results to retrieve. Defaults to 1.</param>
+        /// <param name="include_adult">A boolean value indicating whether to include adult content in the search results. Defaults to false.</param>
+        /// <param name="language">The language in which the search results are returned. Defaults to "nl".</param>
         /// <returns>
-        /// An <see cref="IActionResult"/> containing the search results, or an appropriate error response if an issue occurs during the search.
+        /// An <see cref="IActionResult"/> containing the search results from TMDB or an error response if an issue occurs during the search.
         /// </returns>
         [HttpGet]
         [Route("tmdb/search")]
-        public async Task<IActionResult> SearchTmdb([FromQuery] string query)
+        public async Task<IActionResult> SearchTmdb(
+            [FromQuery] string query,
+            [FromQuery] string? primary_release_year,
+            [FromQuery] int? page,
+            [FromQuery] bool include_adult = false,
+            [FromQuery] string language = "nl")
         {
             try
             {
-                var result = await _movieRepository.GetMovieTmdbSearchResultsAsync(query);
+                var result = await _movieRepository.GetMovieTmdbSearchResultsAsync(query, primary_release_year, page,
+                    include_adult, language);
                 return Ok(result);
             }
             catch (Exception)
@@ -120,7 +130,10 @@ namespace API.Controllers
         /// - 500 Internal Server Error in case of any unexpected errors.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> AddMovie([FromQuery] int tmdbId)
+        public async Task<IActionResult> AddMovie(
+            [FromQuery] int tmdbId, 
+            [FromQuery] string language = "nl")
+
         {
             if (tmdbId <= 0)
                 return BadRequest(new { error = "Invalid TMDB id" });
@@ -128,7 +141,7 @@ namespace API.Controllers
             try
             {
                 // Repository should: fetch TMDB details, map to Movie, save, return Result<Movie>
-                var result = await _movieRepository.AddMovieFromTmdbAsync(tmdbId);
+                var result = await _movieRepository.AddMovieFromTmdbAsync(tmdbId, language);
 
                 return result switch
                 {
