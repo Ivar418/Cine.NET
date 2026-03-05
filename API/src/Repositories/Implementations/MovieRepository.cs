@@ -31,7 +31,7 @@ public class MovieRepository : IMovieRepository
         try
         {
             var movies = await _db.Movies.ToListAsync();
-            
+
             return ResultOf<List<Movie>>.Success(movies);
         }
         catch (Exception e)
@@ -65,6 +65,32 @@ public class MovieRepository : IMovieRepository
         return result.Entity;
     }
 
+    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language)
+    {
+        try
+        {
+            // Check if movie already exists
+            var existingMovie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+            if (existingMovie != null)
+            {
+                return ResultOf<Movie>.Failure("Movie already exists");
+            }
+
+            // Fetch details from TMDB
+            var details = await GetTmdbMovieDetailsAsync(tmdbId, language);
+            if (details == null)
+            {
+                return ResultOf<Movie>.Failure("Movie not found on TMDB");
+            }
+
+            return ResultOf<Movie>.Success(await AddMovieAsync(details));
+        }
+        catch (HttpRequestException)
+        {
+            return ResultOf<Movie>.Failure("Movie not found on TMDB");
+        }
+    }
+
     public async Task<Movie> UpdateMovieAsync(Movie movie)
     {
         throw new NotImplementedException();
@@ -75,7 +101,7 @@ public class MovieRepository : IMovieRepository
         throw new NotImplementedException();
     }
 
-    public async Task<TmdbMovieDetailsResponse> GetTmdbMovieDetailsAsync(int id)
+    public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language)
     {
         try
         {
@@ -90,13 +116,18 @@ public class MovieRepository : IMovieRepository
             using var client = new HttpClient();
             // Set the authorization header
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-
+            var parameters = new List<String>();
+            parameters.Add($"{id}");
+            parameters.Add($"?language={language}");
             // Make the GET request
-            var url = $"https://api.themoviedb.org/3/movie/{id}";
+            var url = $"https://api.themoviedb.org/3/movie/{parameters.Aggregate((key, value) => key + value)}";
             var response = await client.GetAsync(url);
 
             // Ensure success status code
-            response.EnsureSuccessStatusCode();
+            if (!response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+            {
+                return null;
+            }
 
             // Read response content
             // var content = await response.Content.ReadAsStringAsync();
@@ -104,23 +135,9 @@ public class MovieRepository : IMovieRepository
             return JsonSerializer.Deserialize<TmdbMovieDetailsResponse>(content) ??
                    throw new Exception("Could not deserialize movie details");
         }
-        catch (HttpRequestException e)
-        {
-            throw new Exception("Error fetching movie details from TMDB", e);
-        }
         catch (JsonException e)
         {
             throw new Exception("Error parsing movie details", e);
-        }
-        catch (InvalidOperationException e)
-        {
-            // API key missing
-            throw;
-        }
-        catch (Exception e)
-        {
-            // Fallback for unexpected exceptions
-            throw new Exception("An unexpected error occurred while getting movie details", e);
         }
     }
 
@@ -134,7 +151,59 @@ public class MovieRepository : IMovieRepository
         throw new NotImplementedException();
     }
 
-    public async Task<MovieSearchResultListDto> GetMovieSearchResultsAsync(string query)
+    public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(
+        string query,
+        string? primary_release_year,
+        int? page,
+        bool include_adult,
+        string language)
+    {
+        Env.Load();
+        // Get the API key from environment variables
+        var apiKey = Environment.GetEnvironmentVariable("TMDB_API_KEY_READ_ONLY");
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new InvalidOperationException("TMDB API key is not set in environment variables.");
+        }
+
+        using var client = new HttpClient();
+        // Set the authorization header
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        // Make the GET request
+        var parameters = new List<String>();
+        parameters.Add($"query={query}");
+        parameters.Add($"&include_adult={include_adult}");
+        if (!string.IsNullOrEmpty(primary_release_year))
+        {
+            parameters.Add($"&primary_release_year={primary_release_year}");
+        }
+
+        if (page.HasValue)
+        {
+            parameters.Add($"&page={page}");
+        }
+
+        if (!string.IsNullOrEmpty(language))
+        {
+            parameters.Add($"&language={language}");
+        }
+
+
+        var url = $"https://api.themoviedb.org/3/search/movie?{parameters.Aggregate((key, value) => key + value)}";
+        var response = await client.GetAsync(url);
+
+        // Ensure success status code
+        response.EnsureSuccessStatusCode();
+
+        // Read response content
+        // var content = await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<MovieSearchResultListDto>(content) ??
+               throw new Exception("Could not deserialize movie details");
+    }
+
+    public async Task<List<MovieSearchItemDto>> GetMovieSearchResultsAsync(string query)
     {
         throw new NotImplementedException();
     }

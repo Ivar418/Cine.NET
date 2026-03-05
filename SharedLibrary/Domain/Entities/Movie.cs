@@ -5,54 +5,32 @@ namespace SharedLibrary.Domain.Entities;
 
 public class Movie
 {
-    [Column("id")]
+    [Column("id")] public int Id { get; set; }
 
-    public int Id { get; set; }
+    [Column("title")] public string Title { get; set; } = string.Empty;
 
-    [Column("title")]
+    [Column("tmdb_id")] public int TmdbId { get; set; } = 0;
 
-    public string Title { get; set; } = string.Empty;
+    [Column("language")] public string? Language { get; set; }
 
-    [Column("tmdb_id")]
+    [Column("poster_url")] public string? PosterUrl { get; set; }
 
-    public int TmdbId { get; set; } = 0;
+    [Column("runtime")] public int? Runtime { get; set; }
 
-    [Column("language")]
+    [Column("imdb_id")] public string? ImdbId { get; set; }
 
-    public string? Language { get; set; }
+    [Column("release_date")] public string? ReleaseDate { get; set; }
 
-    [Column("poster_url")]
+    [Column("about")] public string? About { get; set; }
 
-    public string? PosterUrl { get; set; }
+    [Column("age_indication")] public string? AgeIndication { get; set; }
 
-    [Column("runtime")]
-
-    public int? Runtime { get; set; }
-
-    [Column("imdb_id")]
-
-    public string? ImdbId { get; set; }
-
-    [Column("release_date")]
-
-    public string? ReleaseDate { get; set; }
-
-    [Column("about")]
-
-    public string? About { get; set; }
-
-    [Column("age_indication")]
-
-    public string? AgeIndication { get; set; }
-
-    [Column("spoken_language_name")]
-
-    public string? SpokenLanguageName { get; set; }
+    [Column("spoken_language_name")] public string? SpokenLanguageName { get; set; }
 
     [Column("spoken_language_code_iso6391")]
     public string? SpokenLanguageCodeIso6391 { get; set; }
 
-    public List<int>? GenresIds { get; set; }
+    [Column("genres_ids")] public List<int>? GenresIds { get; set; }
 
 
     // --- Row Timestamps ---
