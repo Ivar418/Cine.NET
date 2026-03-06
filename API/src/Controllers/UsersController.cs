@@ -19,20 +19,24 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var users = await _userService.GetAllUsersAsync();
-            var response = UserMapper.ToResponses(users);
+            var result = await _userService.GetAllUsersAsync();
+
+            if (result.IsFailure)
+                return BadRequest(result.Error);
+
+            var response = UserMapper.ToResponses(result.Value!);
             return Ok(response);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var result = await _userService.GetUserByIdAsync(id);
 
-            if (user == null)
-                return NotFound();
+            if (result.IsFailure)
+                return NotFound(result.Error);
 
-            var response = UserMapper.ToResponse(user);
+            var response = UserMapper.ToResponse(result.Value!);
             return Ok(response);
         }
     }
