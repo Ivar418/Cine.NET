@@ -1,13 +1,22 @@
-﻿@page "/admin/movies"
+@page "/admin/movies"
 @using SharedLibrary.DTOs.Responses
 @using WA.Services.Http.Interfaces
-@using WA.Services.Http.Interfaces
-@inject IMovieApiClient MovieApiClient
+@inject IMovieApiClient MovieApi
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>Admin — Movies</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Movies</MudText>
+@* ── Page header ── *@
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudText Typo="Typo.h4">Movies</MudText>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
+               Href="/admin/movies/add">
+        Add Movie
+    </MudButton>
+</MudStack>
 
 @if (_loading)
 {
@@ -106,7 +115,7 @@ else
         _loading = true;
         _loadError = false;
 
-        var result = await MovieApiClient.GetAllMoviesAsync();
+        var result = await MovieApi.GetAllMoviesAsync();
 
         if (result is null)
             _loadError = true;
@@ -133,7 +142,7 @@ else
         if (_movieToDelete is null) return;
 
         _deleting = true;
-        var success = await MovieApiClient.DeleteMovieAsync(_movieToDelete.Id);
+        var success = await MovieApi.DeleteMovieAsync(_movieToDelete.Id);
         _deleting = false;
 
         if (success)
