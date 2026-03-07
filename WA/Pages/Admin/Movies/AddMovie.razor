@@ -13,7 +13,7 @@
                    Variant="Variant.Text"
                    Color="Color.Default"
                    Href="/admin/movies"
-                   Title="Back to movies" />
+                   Title="Back to movies"/>
     <MudText Typo="Typo.h4">Add Movie</MudText>
 </MudStack>
 
@@ -29,7 +29,7 @@
                       Immediate="false"
                       OnKeyDown="HandleKeyDown"
                       Class="flex-grow-1"
-                      Disabled="_searching" />
+                      Disabled="_searching"/>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Search"
@@ -38,7 +38,7 @@
                    Style="height: 56px; min-width: 120px;">
             @if (_searching)
             {
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/>
                 <span>Searching…</span>
             }
             else
@@ -69,7 +69,8 @@
 @if (_results is { Count: > 0 })
 {
     <MudText Typo="Typo.subtitle1" Class="mb-3 mud-text-secondary">
-        Showing @_results.Count result@(_results.Count == 1 ? "" : "s") for "<strong>@_lastQuery</strong>"
+        Showing @_results.Count of @_totalResults result@(_totalResults == 1 ? "" : "s") for
+        "<strong>@_lastQuery</strong>"
     </MudText>
 
     <MudList T="MovieSearchItemDto" DisablePadding="true">
@@ -79,17 +80,18 @@
                 <MudStack Row="true" AlignItems="AlignItems.Stretch" Spacing="0">
 
                     @* ── Poster ── *@
-                    <div style="width: 80px; min-height: 120px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                    <div
+                        style="width: 80px; min-height: 120px; flex-shrink: 0; background: #F5F5F5; display: flex; align-items: center; justify-content: center;">
                         @if (!string.IsNullOrEmpty(movie.PosterPath))
                         {
                             <img src="https://image.tmdb.org/t/p/w200@(movie.PosterPath)"
                                  alt="@movie.Title poster"
-                                 style="width: 80px; height: 120px; object-fit: cover; display: block;" />
+                                 style="width: 80px; height: 120px; object-fit: cover; display: block;"/>
                         }
                         else
                         {
                             <MudIcon Icon="@Icons.Material.Filled.Movie"
-                                     Style="font-size: 2.5rem;" />
+                                     Style="font-size: 2.5rem; color: var(--mud-palette-text-disabled);"/>
                         }
                     </div>
 
@@ -103,7 +105,7 @@
                                 @movie.ReleaseDate[..4]
                                 &nbsp;·&nbsp;
                                 <MudIcon Icon="@Icons.Material.Filled.Star"
-                                         Style="font-size: 0.85rem; vertical-align: middle;" />
+                                         Style="font-size: 0.85rem; vertical-align: middle; color: var(--mud-palette-warning);"/>
                                 @movie.VoteAverage.ToString("F1")
                             </MudText>
                         }
@@ -117,7 +119,8 @@
                         }
                         else
                         {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary"><em>No description available.</em></MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary"><em>No description available.</em>
+                            </MudText>
                         }
                     </div>
 
@@ -125,7 +128,7 @@
                     <div style="display: flex; align-items: center; padding: 12px;">
                         @if (_addingId == movie.Id)
                         {
-                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary"/>
                         }
                         else
                         {
@@ -135,7 +138,7 @@
                                                Size="Size.Large"
                                                Disabled="_addingId.HasValue"
                                                OnClick="@(() => AddMovieAsync(movie))"
-                                               Title="Add movie" />
+                                               Title="Add movie"/>
                             </MudTooltip>
                         }
                     </div>
@@ -144,6 +147,35 @@
             </MudPaper>
         }
     </MudList>
+
+    @* ── Load more ── *@
+    @if (_currentPage < _totalPages)
+    {
+        <div class="d-flex justify-center mt-2 mb-6">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.ExpandMore"
+                       OnClick="LoadMoreAsync"
+                       Disabled="_loadingMore"
+                       Style="min-width: 200px;">
+                @if (_loadingMore)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/>
+                    <span>Loading…</span>
+                }
+                else
+                {
+                    <span>Load more results</span>
+                }
+            </MudButton>
+        </div>
+    }
+    else if (_hasSearched && _totalPages > 1)
+    {
+        <div class="d-flex justify-center mt-2 mb-6">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">All @_totalResults results loaded.</MudText>
+        </div>
+    }
 }
 
 @code {
@@ -151,11 +183,17 @@
     private string _lastQuery = string.Empty;
 
     private bool _searching;
+    private bool _loadingMore;
     private bool _hasSearched;
     private bool _searchError;
 
     private List<MovieSearchItemDto>? _results;
     private int? _addingId;
+
+// Pagination state
+    private int _currentPage;
+    private int _totalPages;
+    private int _totalResults;
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
@@ -171,9 +209,12 @@
         _searchError = false;
         _hasSearched = false;
         _results = null;
+        _currentPage = 0;
+        _totalPages = 0;
+        _totalResults = 0;
         _lastQuery = _query.Trim();
 
-        var result = await MovieApiClient.SearchTmdbAsync(_lastQuery);
+        var result = await MovieApiClient.SearchTmdbAsync(_lastQuery, page: 1);
 
         _hasSearched = true;
         _searching = false;
@@ -185,6 +226,33 @@
         else
         {
             _results = result.Results;
+            _currentPage = result.Page;
+            _totalPages = result.TotalPages;
+            _totalResults = result.TotalResults;
+        }
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        if (_loadingMore || _currentPage >= _totalPages) return;
+
+        _loadingMore = true;
+
+        var result = await MovieApiClient.SearchTmdbAsync(_lastQuery, page: _currentPage + 1);
+
+        _loadingMore = false;
+
+        if (result is not null)
+        {
+            _results ??= new List<MovieSearchItemDto>();
+            _results.AddRange(result.Results);
+            _currentPage = result.Page;
+            _totalPages = result.TotalPages;
+            _totalResults = result.TotalResults;
+        }
+        else
+        {
+            Snackbar.Add("Failed to load more results. Please try again.", Severity.Warning);
         }
     }
 
@@ -198,6 +266,7 @@
 
         if (success)
         {
+            Snackbar.Add($"{movie.Title} was successfully added!", Severity.Success);
             Navigation.NavigateTo("/admin/movies");
         }
         else
@@ -205,4 +274,5 @@
             Snackbar.Add(errorMessage ?? "Failed to add movie.", Severity.Error);
         }
     }
+
 }
