@@ -11,7 +11,7 @@ public interface IMovieRepository
     Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie);
     Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language = "nl");
     Task<Movie> UpdateMovieAsync(Movie movie);
-    Task DeleteMovieAsync(int id);
+    Task<ResultOf<Movie>> DeleteMovieAsync(int id);
     Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language);
     Task<IEnumerable<ReleaseInformationPerCountryDto>> GetMovieReleaseDatesAllCountriesAsync(int id);
     Task<ReleaseInformationDto> GetMovieReleaseDatesAsync(int id);

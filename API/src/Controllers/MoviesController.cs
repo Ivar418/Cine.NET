@@ -162,5 +162,33 @@ namespace API.Controllers
                 return StatusCode(500, new { error = "An error occurred" });
             }
         }
+
+        [HttpDelete]
+        [Route("{id:int}")]
+        public async Task<IActionResult> DeleteMovie(int id)
+        {
+            if (id <= 0)
+                return BadRequest(new { error = "Invalid id" });
+
+            try
+            {
+                var result = await _movieRepository.DeleteMovieAsync(id);
+
+                return result switch
+                {
+                    { IsFailure: true, Error: "Movie not found" } =>
+                        NotFound(new { error = "Movie not found" }),
+                    { IsFailure: true } =>
+                        StatusCode(500, new { error = "An error occurred" }),
+                    { IsSuccess: true } =>
+                        NoContent(),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
+        }
     }
 }
