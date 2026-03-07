@@ -1,7 +1,7 @@
 @page "/admin/movies"
 @using SharedLibrary.DTOs.Responses
 @using WA.Services.Http.Interfaces
-@inject IMovieApiClient MovieApi
+@inject IMovieApiClient MovieApiClient
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -26,10 +26,6 @@ else if (_loadError)
 {
     <MudAlert Severity="Severity.Error">Failed to load movies. Please try again.</MudAlert>
 }
-else if (!_movies.Any())
-{
-    <MudAlert Severity="Severity.Info">No movies found.</MudAlert>
-}
 else
 {
     <MudDataGrid T="MovieResponse"
@@ -38,14 +34,30 @@ else
                  Hideable="true"
                  Dense="true"
                  Striped="true"
-                 Hover="true">
+                 Hover="true"
+                 Pageable="true"
+                 PageSize="10"
+                 QuickFilter="_quickFilter">
+        <ToolBarContent>
+            
+            <MudTextField @bind-Value="_searchString"
+                          Placeholder="Search movies..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Clearable="true"
+                          Class="mt-0" />
+            <MudSpacer />
+        </ToolBarContent>
         <Columns>
-            <PropertyColumn Property="x => x.Title"                      Title="Title" />
-            <PropertyColumn Property="x => x.Language"                   Title="Language" />
-            <PropertyColumn Property="x => x.Runtime"                    Title="Runtime (min)" />
-            <PropertyColumn Property="x => x.ReleaseDate"                Title="Release Date" />
-            <PropertyColumn Property="x => x.AgeIndication"              Title="Age Indication" />
-            <PropertyColumn Property="x => x.SpokenLanguageCodeIso6391"  Title="Language Code" />
+            <PropertyColumn Property="x => x.Title"                     Title="Title" />
+            <PropertyColumn Property="x => x.Language"                  Title="Language" />
+            <PropertyColumn Property="x => x.Runtime"                   Title="Runtime (min)" />
+            <PropertyColumn Property="x => x.ReleaseDate"               Title="Release Date" />
+            <PropertyColumn Property="x => x.AgeIndication"             Title="Age Indication" />
+            <PropertyColumn Property="x => x.SpokenLanguageCodeIso6391" Title="Language Code" />
 
             <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellStyle="width: 120px; text-align: right;">
                 <CellTemplate>
@@ -57,6 +69,9 @@ else
                 </CellTemplate>
             </TemplateColumn>
         </Columns>
+        <PagerContent>
+            <MudDataGridPager T="MovieResponse" PageSizeOptions="new int[] { 10, 25, 50 }" />
+        </PagerContent>
     </MudDataGrid>
 }
 
@@ -105,6 +120,22 @@ else
     private MovieResponse? _movieToDelete;
     private string? _errorMessage;
 
+    private string _searchString = string.Empty;
+
+    // Filters across title, language, release date and IMDB id
+    private Func<MovieResponse, bool> _quickFilter => movie =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var s = _searchString.Trim();
+
+        return movie.Title.Contains(s, StringComparison.OrdinalIgnoreCase)
+            || (movie.Language?.Contains(s, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (movie.ReleaseDate?.Contains(s, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (movie.ImdbId?.Contains(s, StringComparison.OrdinalIgnoreCase) ?? false);
+    };
+
     protected override async Task OnInitializedAsync()
     {
         await LoadMoviesAsync();
@@ -115,7 +146,7 @@ else
         _loading = true;
         _loadError = false;
 
-        var result = await MovieApi.GetAllMoviesAsync();
+        var result = await MovieApiClient.GetAllMoviesAsync();
 
         if (result is null)
             _loadError = true;
@@ -142,7 +173,7 @@ else
         if (_movieToDelete is null) return;
 
         _deleting = true;
-        var success = await MovieApi.DeleteMovieAsync(_movieToDelete.Id);
+        var success = await MovieApiClient.DeleteMovieAsync(_movieToDelete.Id);
         _deleting = false;
 
         if (success)
