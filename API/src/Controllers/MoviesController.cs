@@ -61,6 +61,21 @@ namespace API.Controllers
             }
         }
 
+        [HttpDelete]
+        [Route("{tmdbId:int}")]
+
+        public async Task<IActionResult> DeleteByTmdbId(int tmdbId)
+        {
+            var result = await _movieRepository.DeleteMovieAsync(tmdbId);
+            return result switch
+            {
+                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                { IsSuccess: true } => Ok($"Movie with tmdbId {tmdbId} and title {result.Value.Title} deleted"),
+                _ => StatusCode(500, new { error = "Unexpected result" })
+            };
+        }
+
+
         /// Retrieves a movie by its unique identifier.
         /// <param name="id">The unique identifier of the movie to retrieve.</param>
         /// <returns>An IActionResult containing the movie details if found, a 404 Not Found response if the movie is not found, or a 500 Internal Server Error response if an unexpected error occurs.</returns>
@@ -131,7 +146,7 @@ namespace API.Controllers
         /// </returns>
         [HttpPost]
         public async Task<IActionResult> AddMovie(
-            [FromQuery] int tmdbId, 
+            [FromQuery] int tmdbId,
             [FromQuery] string language = "nl")
 
         {

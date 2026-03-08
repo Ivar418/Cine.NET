@@ -100,9 +100,19 @@ public class MovieRepository : IMovieRepository
         throw new NotImplementedException();
     }
 
-    public async Task DeleteMovieAsync(int id)
+    public async Task<ResultOf<Movie>> DeleteMovieAsync(int tmdbId)
     {
-        throw new NotImplementedException();
+        var movie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+        if (movie != null)
+        {
+            _db.Movies.Remove(movie);
+            await _db.SaveChangesAsync();
+            return ResultOf<Movie>.Success(movie);
+        }
+        else
+        {
+            return ResultOf<Movie>.Failure("Movie not found");
+        }
     }
 
     public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language)
