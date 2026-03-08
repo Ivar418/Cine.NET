@@ -30,16 +30,16 @@ public class MovieApiClient : IMovieApiClient
         }
     }
 
-    public async Task<bool> DeleteMovieAsync(int id)
+    public async Task<bool> DeleteMovieAsync(int tmdbId)
     {
         try
         {
-            var response = await _http.DeleteAsync($"{BasePath}/{id}");
+            var response = await _http.DeleteAsync($"{BasePath}/{tmdbId}");
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[MovieApiClient] DeleteMovie({id}) failed: {ex.Message}");
+            Console.Error.WriteLine($"[MovieApiClient] DeleteMovie({tmdbId}) failed: {ex.Message}");
             return false;
         }
     }

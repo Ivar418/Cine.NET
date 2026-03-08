@@ -7,7 +7,7 @@ public class MovieSearchResultListDto
     [JsonPropertyName("page")]
     public int Page { get; set; }
 
-    [JsonPropertyName("results")]
+    [JsonPropertyName("Results")]
     public List<MovieSearchItemDto> Results { get; set; }
 
     [JsonPropertyName("total_pages")]

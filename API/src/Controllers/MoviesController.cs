@@ -7,12 +7,12 @@ using SharedLibrary.Domain.Entities;
 namespace API.Controllers
 {
     /// <summary>
-    /// Controller for managing movie-related operations and handling movie requests.
+    /// Controller for handling movie-related operations and exposing endpoints to manage movie data.
     /// </summary>
     /// <remarks>
-    /// The MoviesController provides endpoints to retrieve all movies, fetch a specific movie by its ID,
-    /// search for movies using an external API, and add a movie to the system based on external data.
-    /// All actions rely on the injected IMovieRepository for data operations.
+    /// The MoviesController enables functionalities such as retrieving all movies, fetching a specific movie by its ID,
+    /// searching for movies using an external API, and adding new movies to the system.
+    /// The IMovieRepository is injected to handle data operations, ensuring a decoupled architecture.
     /// </remarks>
     [ApiController]
     [Route("api/movies")]
@@ -61,6 +61,37 @@ namespace API.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a movie from the system based on its TmdbId.
+        /// </summary>
+        /// <param name="tmdbId">The unique TmdbId of the movie to be deleted.</param>
+        /// <returns>
+        /// An <see cref="IActionResult"/> indicating the result of the operation. Returns:
+        /// - <c>200 OK</c> if the movie was successfully deleted.
+        /// - <c>404 Not Found</c> if the movie with the specified TmdbId was not found.
+        /// - <c>500 Internal Server Error</c> if an unexpected error occurs.
+        /// </returns>
+        [HttpDelete]
+        [Route("{tmdbId:int}")]
+        public async Task<IActionResult> DeleteByTmdbId(int tmdbId)
+        {
+            try
+            {
+                var result = await _movieRepository.DeleteMovieByTmdbIdAsync(tmdbId);
+                return result switch
+                {
+                    { IsFailure: true, Error: "Movie not found" } => NotFound($"Movie with TmdbId {tmdbId} not found"),
+                    { IsSuccess: true } => Ok($"Movie with tmdbId {tmdbId} and title {result.Value.Title} deleted"),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
+        }
+
+
         /// Retrieves a movie by its unique identifier.
         /// <param name="id">The unique identifier of the movie to retrieve.</param>
         /// <returns>An IActionResult containing the movie details if found, a 404 Not Found response if the movie is not found, or a 500 Internal Server Error response if an unexpected error occurs.</returns>
@@ -86,15 +117,15 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Searches for movies in TMDB (The Movie Database) based on the provided query string and returns the matching results.
+        /// Searches for movies in TMDB (The Movie Database) based on the provided query string and returns the matching Results.
         /// </summary>
         /// <param name="query">The search query string used to look for movies in TMDB.</param>
-        /// <param name="primary_release_year">The primary release year to filter the search results. Optional.</param>
-        /// <param name="page">The page number of the search results to retrieve. Defaults to 1.</param>
-        /// <param name="include_adult">A boolean value indicating whether to include adult content in the search results. Defaults to false.</param>
-        /// <param name="language">The language in which the search results are returned. Defaults to "nl".</param>
+        /// <param name="primary_release_year">The primary release year to filter the search Results. Optional.</param>
+        /// <param name="page">The page number of the search Results to retrieve. Defaults to 1.</param>
+        /// <param name="include_adult">A boolean value indicating whether to include adult content in the search Results. Defaults to false.</param>
+        /// <param name="language">The language in which the search Results are returned. Defaults to "nl".</param>
         /// <returns>
-        /// An <see cref="IActionResult"/> containing the search results from TMDB or an error response if an issue occurs during the search.
+        /// An <see cref="IActionResult"/> containing the search Results from TMDB or an error response if an issue occurs during the search.
         /// </returns>
         [HttpGet]
         [Route("tmdb/search")]
@@ -130,8 +161,8 @@ namespace API.Controllers
         /// - 500 Internal Server Error in case of any unexpected errors.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> AddMovie(
-            [FromQuery] int tmdbId, 
+        public async Task<IActionResult> AddMovieByTmdbId(
+            [FromQuery] int tmdbId,
             [FromQuery] string language = "nl")
 
         {
@@ -158,34 +189,6 @@ namespace API.Controllers
                 };
             }
             catch (Exception e)
-            {
-                return StatusCode(500, new { error = "An error occurred" });
-            }
-        }
-
-        [HttpDelete]
-        [Route("{id:int}")]
-        public async Task<IActionResult> DeleteMovie(int id)
-        {
-            if (id <= 0)
-                return BadRequest(new { error = "Invalid id" });
-
-            try
-            {
-                var result = await _movieRepository.DeleteMovieAsync(id);
-
-                return result switch
-                {
-                    { IsFailure: true, Error: "Movie not found" } =>
-                        NotFound(new { error = "Movie not found" }),
-                    { IsFailure: true } =>
-                        StatusCode(500, new { error = "An error occurred" }),
-                    { IsSuccess: true } =>
-                        NoContent(),
-                    _ => StatusCode(500, new { error = "Unexpected result" })
-                };
-            }
-            catch (Exception)
             {
                 return StatusCode(500, new { error = "An error occurred" });
             }

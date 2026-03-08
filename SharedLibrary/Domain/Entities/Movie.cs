@@ -33,7 +33,6 @@ public class Movie
     [Column("genres_ids")] public List<int>? GenresIds { get; set; }
 
 
-    // --- Row Timestamps ---
     private string _rowCreatedTimestampUtc = string.Empty;
     private string? _rowUpdatedTimestampUtc;
     private string? _rowDeletedTimestampUtc;

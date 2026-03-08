@@ -6,7 +6,7 @@ namespace WA.Services.Http.Interfaces;
 public interface IMovieApiClient
 {
     Task<List<MovieResponse>?> GetAllMoviesAsync();
-    Task<bool> DeleteMovieAsync(int id);
+    Task<bool> DeleteMovieAsync(int tmdbId);
 
     /// <summary>
     /// Searches TMDB for movies matching the query string.

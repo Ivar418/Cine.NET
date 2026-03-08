@@ -173,7 +173,7 @@ else
         if (_movieToDelete is null) return;
 
         _deleting = true;
-        var success = await MovieApiClient.DeleteMovieAsync(_movieToDelete.Id);
+        var success = await MovieApiClient.DeleteMovieAsync(_movieToDelete.TmdbId);
         _deleting = false;
 
         if (success)
