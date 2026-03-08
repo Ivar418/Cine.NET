@@ -258,9 +258,4 @@ public class MovieRepository : IMovieRepository
         return JsonSerializer.Deserialize<MovieSearchResultListDto>(content) ??
                throw new Exception("Could not deserialize movie details");
     }
-
-    public async Task<List<MovieSearchItemDto>> GetMovieSearchResultsAsync(string query)
-    {
-        throw new NotImplementedException();
-    }
 }

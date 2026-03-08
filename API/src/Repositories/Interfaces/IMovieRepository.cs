@@ -17,6 +17,4 @@ public interface IMovieRepository
     Task<MovieReleaseDatesDto> GetMovieReleaseDatesAllCountriesAsync(int id);
     Task<ReleaseInformationDto?> GetDutchMovieReleaseDatesAsync(int id);
     Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query, string? primary_release_year, int? page, bool include_adult, string language);
-    Task<List<MovieSearchItemDto>> GetMovieSearchResultsAsync(string query);
-
 }

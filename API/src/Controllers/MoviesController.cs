@@ -161,7 +161,7 @@ namespace API.Controllers
         /// - 500 Internal Server Error in case of any unexpected errors.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> AddMovie(
+        public async Task<IActionResult> AddMovieByTmdbId(
             [FromQuery] int tmdbId,
             [FromQuery] string language = "nl")
 
