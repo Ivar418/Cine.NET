@@ -7,12 +7,12 @@ using SharedLibrary.Domain.Entities;
 namespace API.Controllers
 {
     /// <summary>
-    /// Controller for managing movie-related operations and handling movie requests.
+    /// Controller for handling movie-related operations and exposing endpoints to manage movie data.
     /// </summary>
     /// <remarks>
-    /// The MoviesController provides endpoints to retrieve all movies, fetch a specific movie by its ID,
-    /// search for movies using an external API, and add a movie to the system based on external data.
-    /// All actions rely on the injected IMovieRepository for data operations.
+    /// The MoviesController enables functionalities such as retrieving all movies, fetching a specific movie by its ID,
+    /// searching for movies using an external API, and adding new movies to the system.
+    /// The IMovieRepository is injected to handle data operations, ensuring a decoupled architecture.
     /// </remarks>
     [ApiController]
     [Route("api/movies")]
@@ -61,6 +61,16 @@ namespace API.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a movie from the system based on its TmdbId.
+        /// </summary>
+        /// <param name="tmdbId">The unique TmdbId of the movie to be deleted.</param>
+        /// <returns>
+        /// An <see cref="IActionResult"/> indicating the result of the operation. Returns:
+        /// - <c>200 OK</c> if the movie was successfully deleted.
+        /// - <c>404 Not Found</c> if the movie with the specified TmdbId was not found.
+        /// - <c>500 Internal Server Error</c> if an unexpected error occurs.
+        /// </returns>
         [HttpDelete]
         [Route("{tmdbId:int}")]
         public async Task<IActionResult> DeleteByTmdbId(int tmdbId)
