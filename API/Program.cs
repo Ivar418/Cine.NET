@@ -31,6 +31,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 
 // Monitoring: health check endpoint
@@ -123,7 +125,10 @@ if (app.Environment.IsDevelopment())
 }
 
 // Security: redirect HTTP to HTTPS
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseStaticFiles(); // serves wwwroot/*
 
@@ -151,7 +156,7 @@ using (var scope = app.Services.CreateScope())
 
     // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
     // Since this is a school project which always destroys the database on recreation it does not matter
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 
     // Seed data
     try

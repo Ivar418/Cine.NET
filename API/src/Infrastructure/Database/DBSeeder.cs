@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+﻿﻿using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using SharedLibrary.DTOs.Responses;
@@ -78,6 +78,32 @@ namespace API.Infrastructure.Database
 
             await db.Movies.AddRangeAsync(movieEntities);
             await db.SaveChangesAsync();
+
+            // Seed tickets if none exist
+            if (!await db.Tickets.AnyAsync())
+            {
+                var movies = await db.Movies.ToListAsync();
+                if (movies.Any())
+                {
+                    var ticketEntities = new List<Ticket>();
+                    var random = new Random();
+                    foreach (var movie in movies)
+                    {
+                        // Add a few tickets per movie
+                        for (int i = 1; i <= 3; i++)
+                        {
+                            ticketEntities.Add(new Ticket(
+                                movie.Id,
+                                DateTime.UtcNow.AddDays(random.Next(1, 30)), // Random future show time
+                                $"Seat {i}",
+                                random.Next(5, 20) // Random price between 5 and 20
+                            ));
+                        }
+                    }
+                    await db.Tickets.AddRangeAsync(ticketEntities);
+                    await db.SaveChangesAsync();
+                }
+            }
         }
     }
 }

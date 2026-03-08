@@ -15,6 +15,7 @@ public class ApiDbContext : DbContext
         public DbSet<User> Users => Set<User>();
         public DbSet<Movie> Movies => Set<Movie>();
         public DbSet<Photo> Photos => Set<Photo>();
+        public DbSet<Ticket> Tickets => Set<Ticket>();
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,5 +24,6 @@ public class ApiDbContext : DbContext
             modelBuilder.Entity<User>().ToTable("users");
             modelBuilder.Entity<Movie>().ToTable("movies");
             modelBuilder.Entity<Photo>().ToTable("photos");
+            modelBuilder.Entity<Ticket>().ToTable("tickets");
         }
     }
