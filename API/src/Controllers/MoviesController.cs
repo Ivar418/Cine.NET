@@ -63,16 +63,22 @@ namespace API.Controllers
 
         [HttpDelete]
         [Route("{tmdbId:int}")]
-
         public async Task<IActionResult> DeleteByTmdbId(int tmdbId)
         {
-            var result = await _movieRepository.DeleteMovieAsync(tmdbId);
-            return result switch
+            try
             {
-                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                { IsSuccess: true } => Ok($"Movie with tmdbId {tmdbId} and title {result.Value.Title} deleted"),
-                _ => StatusCode(500, new { error = "Unexpected result" })
-            };
+                var result = await _movieRepository.DeleteMovieByTmdbIdAsync(tmdbId);
+                return result switch
+                {
+                    { IsFailure: true, Error: "Movie not found" } => NotFound($"Movie with TmdbId {tmdbId} not found"),
+                    { IsSuccess: true } => Ok($"Movie with tmdbId {tmdbId} and title {result.Value.Title} deleted"),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
         }
 
 
