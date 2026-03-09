@@ -1,0 +1,155 @@
+﻿@page "/admin/movies"
+@using SharedLibrary.DTOs.Responses
+@using WA.Services.Http.Interfaces
+@using WA.Services.Http.Interfaces
+@inject IMovieApiClient MovieApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Admin — Movies</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Movies</MudText>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+else if (_loadError)
+{
+    <MudAlert Severity="Severity.Error">Failed to load movies. Please try again.</MudAlert>
+}
+else if (!_movies.Any())
+{
+    <MudAlert Severity="Severity.Info">No movies found.</MudAlert>
+}
+else
+{
+    <MudDataGrid T="MovieResponse"
+                 Items="_movies"
+                 SortMode="SortMode.Multiple"
+                 Hideable="true"
+                 Dense="true"
+                 Striped="true"
+                 Hover="true">
+        <Columns>
+            <PropertyColumn Property="x => x.Title"                      Title="Title" />
+            <PropertyColumn Property="x => x.Language"                   Title="Language" />
+            <PropertyColumn Property="x => x.Runtime"                    Title="Runtime (min)" />
+            <PropertyColumn Property="x => x.ReleaseDate"                Title="Release Date" />
+            <PropertyColumn Property="x => x.AgeIndication"              Title="Age Indication" />
+            <PropertyColumn Property="x => x.SpokenLanguageCodeIso6391"  Title="Language Code" />
+
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellStyle="width: 120px; text-align: right;">
+                <CellTemplate>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Title="Edit movie"
+                                   OnClick="@(() => Navigation.NavigateTo($"/admin/movies/{context.Item.Id}/edit"))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Error"
+                                   Size="Size.Small"
+                                   Title="Delete movie"
+                                   OnClick="@(() => OpenDeleteDialog(context.Item))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+}
+
+@* ── Delete confirmation dialog ── *@
+<MudDialog @bind-Visible="_deleteDialogOpen">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Class="mr-2" />
+            Delete Movie
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>
+            Are you sure you want to delete <strong>@_movieToDelete?.Title</strong>? This action cannot be undone.
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteDialog">Cancel</MudButton>
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Filled"
+                   OnClick="ConfirmDeleteAsync"
+                   Disabled="_deleting">
+            @if (_deleting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Delete
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@if (_errorMessage is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mt-4" ShowCloseIcon="true" CloseIconClicked="@(() => _errorMessage = null)">
+        @_errorMessage
+    </MudAlert>
+}
+
+@code {
+    private List<MovieResponse> _movies = new();
+    private bool _loading = true;
+    private bool _loadError;
+
+    private bool _deleteDialogOpen;
+    private bool _deleting;
+    private MovieResponse? _movieToDelete;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMoviesAsync();
+    }
+
+    private async Task LoadMoviesAsync()
+    {
+        _loading = true;
+        _loadError = false;
+
+        var result = await MovieApiClient.GetAllMoviesAsync();
+
+        if (result is null)
+            _loadError = true;
+        else
+            _movies = result;
+
+        _loading = false;
+    }
+
+    private void OpenDeleteDialog(MovieResponse movie)
+    {
+        _movieToDelete = movie;
+        _deleteDialogOpen = true;
+    }
+
+    private void CloseDeleteDialog()
+    {
+        _deleteDialogOpen = false;
+        _movieToDelete = null;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (_movieToDelete is null) return;
+
+        _deleting = true;
+        var success = await MovieApiClient.DeleteMovieAsync(_movieToDelete.Id);
+        _deleting = false;
+
+        if (success)
+        {
+            _movies.Remove(_movieToDelete);
+            CloseDeleteDialog();
+        }
+        else
+        {
+            _errorMessage = $"Failed to delete \"{_movieToDelete.Title}\". Please try again.";
+            CloseDeleteDialog();
+        }
+    }
+}

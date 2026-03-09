@@ -1,6 +1,6 @@
 ﻿using SharedLibrary.DTOs.Responses;
 
-namespace WA.ApiClients;
+namespace WA.Services.Http.Interfaces;
 
 public interface IUserApi
 {
