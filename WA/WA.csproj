@@ -24,6 +24,7 @@
 
     <ItemGroup>
       <None Include="wwwroot\css\app.css" />
+      <None Include="wwwroot\css\ideal-page.css" />
       <None Include="wwwroot\favicon.png" />
       <None Include="wwwroot\icon-192.png" />
       <None Include="wwwroot\index.html" />
