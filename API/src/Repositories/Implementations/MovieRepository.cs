@@ -198,7 +198,7 @@ public class MovieRepository : IMovieRepository
     {
         var allReleaseInformation = await GetMovieReleaseDatesAllCountriesAsync(id);
         var dutchReleaseInformation =
-            allReleaseInformation.Results.FirstOrDefault(releaseInfo => releaseInfo.iso_3166_1 == "NL");
+            allReleaseInformation.Results.FirstOrDefault(releaseInfo => releaseInfo.CountryOfRelease == "NL");
         if (dutchReleaseInformation != null)
         {
             return dutchReleaseInformation.release_dates.FirstOrDefault();
@@ -226,34 +226,32 @@ public class MovieRepository : IMovieRepository
         // Set the authorization header
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
-        // Make the GET request
-        var parameters = new List<String>();
-        parameters.Add($"query={query}");
-        parameters.Add($"&include_adult={include_adult}");
+        var parameters = new List<string>();
+
+        parameters.Add($"query={Uri.EscapeDataString(query)}");
+        parameters.Add($"include_adult={include_adult}");
+
         if (!string.IsNullOrEmpty(primary_release_year))
         {
-            parameters.Add($"&primary_release_year={primary_release_year}");
+            parameters.Add($"primary_release_year={primary_release_year}");
         }
 
         if (page.HasValue)
         {
-            parameters.Add($"&page={page}");
+            parameters.Add($"page={page}");
         }
 
         if (!string.IsNullOrEmpty(language))
         {
-            parameters.Add($"&language={language}");
+            parameters.Add($"language={language}");
         }
 
 
-        var url = $"https://api.themoviedb.org/3/search/movie?{parameters.Aggregate((key, value) => key + value)}";
+        var url = $"https://api.themoviedb.org/3/search/movie?{string.Join("&", parameters)}";
         var response = await client.GetAsync(url);
 
-        // Ensure success status code
         response.EnsureSuccessStatusCode();
-
-        // Read response content
-        // var content = await response.Content.ReadAsStringAsync();
+        
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<MovieSearchResultListDto>(content) ??
                throw new Exception("Could not deserialize movie details");
