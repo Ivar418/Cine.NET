@@ -2,18 +2,16 @@
 
 namespace API.Storage;
 
-public record PhotoSaveResult(string Id, string Url, string StorageKey, long Size, string ContentType, string creatorId);
+public record PhotoSaveResult(string Id, string Url, string StorageKey, long Size, string ContentType, int creatorId);
 
 
 public interface IPhotoStorage
 {
-    Task<PhotoSaveResult> SaveAsync(
-        Stream stream,
+    Task<PhotoSaveResult> SaveAsync(Stream stream,
         string contentType,
         string originalFileName,
         string folder,
         CancellationToken ct,
-        string creatorId
-    );
-    Task <Photo> GetByCreatorAndType(string creatorId, string type);
+        int creatorId);
+    Task<Photo> GetByCreatorAndType(int EntityId, string type);
 }

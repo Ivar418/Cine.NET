@@ -1,7 +1,8 @@
-name: Deploy PROD API
+name: Deploy API PROD
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [develop, main]
 
 jobs:
   deploy:
@@ -26,4 +27,4 @@ jobs:
         run: |
           ansible-playbook ansible/site-api.yml \
             -i ansible/inventory/prod.ini \
-            --extra-vars "image_tag=prod"
+            --extra-vars "image_tag=prod tmdb_api_key_read_only=${{ secrets.TMDB_API_KEY_READ_ONLY }}"

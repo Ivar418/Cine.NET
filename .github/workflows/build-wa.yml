@@ -1,4 +1,4 @@
-﻿name: Build WA image
+name: Build WA image on push to develop/main, check which branch is the source →
 
 on:
   push:
@@ -26,5 +26,5 @@ jobs:
             TAG=prod
           fi
 
-          docker build -t ghcr.io/gielvangaal/cine.net/wa:$TAG ./WA
+          docker build -f WA/Dockerfile -t ghcr.io/gielvangaal/cine.net/wa:$TAG .
           docker push ghcr.io/gielvangaal/cine.net/wa:$TAG

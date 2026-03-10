@@ -1,0 +1,41 @@
+@implements IDisposable
+@inject WA.Services.LayoutStateService LayoutState
+
+<div class="app-shell">
+
+    @if (LayoutState.ShowTopBar)
+    {
+        <TopBar />
+    }
+
+    <div class="main-content">
+        @ChildContent
+    </div>
+
+    @if (LayoutState.ShowFooter)
+    {
+        <Footer />
+    }
+
+    @if (LayoutState.ShowFab)
+    {
+        <MudFab StartIcon="@Icons.Material.Filled.Add"
+                Color="Color.Primary"
+                Class="fab" />
+    }
+
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        LayoutState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        LayoutState.OnChange -= StateHasChanged;
+    }
+}
