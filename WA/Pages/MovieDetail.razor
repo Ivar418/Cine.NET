@@ -1,0 +1,59 @@
+﻿@page "/moviedetails/{MovieId:int}/{ShowingId:int}"
+@inject IMovieApiClient MovieApi
+@using SharedLibrary.DTOs.Responses
+@using WA.Services.Http.Interfaces
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+
+    @if (_loading)
+    {
+        <MudText>Loading...</MudText>
+    }
+    else if (_movie == null)
+    {
+        <MudAlert Severity="Severity.Error">Movie not found.</MudAlert>
+    }
+    else
+    {
+        <MudText Typo="Typo.h4">@_movie.Title</MudText>
+        <MudText Typo="Typo.subtitle1">@_movie.About</MudText>
+
+        <MudDivider Class="my-4"/>
+
+        <MudText><strong>Release date:</strong> @_movie.ReleaseDate</MudText>
+        <MudText><strong>Runtime:</strong> @_movie.Runtime min</MudText>
+        <MudText><strong>Language:</strong> @_movie.SpokenLanguageName</MudText>
+        <MudText><strong>Age indication:</strong> @_movie.AgeIndication</MudText>
+        <MudText><strong>IMDB ID:</strong> @_movie.ImdbId</MudText>
+
+        <MudDivider Class="my-4"/>
+
+        @* ---- MOCKED SHOWING DATA ---- *@
+        @* TODO: Replace with real IShowingApiClient.GetShowingAsync(ShowingId) when the showing system is ready *@
+        <MudText Typo="Typo.h6">Showing info (mocked)</MudText>
+        <MudText><strong>Showing ID:</strong> @ShowingId</MudText>
+        <MudText><strong>Start time:</strong> 20:00</MudText>
+        <MudText><strong>End time:</strong> 22:15</MudText>
+
+        @* TODO: Replace with real IShowingApiClient → Auditorium lookup via showing.AuditoriumId *@
+        <MudText><strong>Auditorium:</strong> Zaal 3</MudText>
+        <MudText><strong>Wheelchair accessible:</strong> Yes</MudText>
+        <MudText><strong>3D compatible:</strong> No</MudText>
+        @* ---- END MOCKED SHOWING DATA ---- *@
+    }
+
+</MudContainer>
+
+@code {
+    [Parameter] public int MovieId { get; set; }
+    [Parameter] public int ShowingId { get; set; }
+
+    private MovieResponse? _movie;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _movie = await MovieApi.GetMovieByIdAsync(MovieId);
+        _loading = false;
+    }
+}
