@@ -15,8 +15,11 @@ public class ApiDbContext : DbContext
         public DbSet<User> Users => Set<User>();
         public DbSet<Movie> Movies => Set<Movie>();
         public DbSet<Photo> Photos => Set<Photo>();
-        
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public DbSet<Hall> Halls => Set<Hall>();
+        public DbSet<Showtime> Showtimes => Set<Showtime>();
+        public DbSet<Reservation> Reservations => Set<Reservation>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 

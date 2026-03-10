@@ -1,0 +1,76 @@
+﻿@using SharedLibrary.DTOs.Models
+<div class="seat-grid-wrap">
+    <div class="screen-bar">▬▬▬▬▬▬▬▬ SCHERM ▬▬▬▬▬▬▬▬</div>
+
+    @{
+        int maxCols = Hall.Rows.Count > 0 ? Hall.Rows.Max(r => r.Seats) : 1;
+    }
+
+    @for (int r = 0; r < Hall.Rows.Count; r++)
+    {
+        var rowIdx = r;
+        var cfg = Hall.Rows[rowIdx];
+        int padding = maxCols - cfg.Seats;
+        int leftPad = padding / 2;
+
+        <div class="seat-row">
+            <span class="row-lbl">@(rowIdx + 1)</span>
+
+            @for (int i = 0; i < leftPad; i++)
+            {
+                <div class="seat-pad"></div>
+            }
+
+            @foreach (var seat in AllSeats.Where(s => s.Row == rowIdx).OrderBy(s => s.Col))
+            {
+                var key = $"{seat.Row}-{seat.Col}";
+                var occupied = OccupiedKeys.Contains(key);
+                var suggested = SuggestedKeys.Contains(key);
+                var isWC = seat.Type == SeatType.Wheelchair;
+                var cssClass = SeatCss(seat, occupied, suggested);
+                var icon = SeatIcon(seat, occupied, suggested);
+                var tooltip = $"Rij {seat.Row + 1}, stoel {seat.Col + 1}{(isWC ? " ♿" : "")} — cat. {seat.Category}";
+
+                <MudTooltip Text="@tooltip" Placement="Placement.Top" Arrow="true" Delay="300">
+                    <button class="seat @cssClass"
+                            disabled="@occupied"
+                            @onclick="() => OnSeatClick.InvokeAsync(seat)">
+                        @icon
+                    </button>
+                </MudTooltip>
+            }
+
+            @for (int i = 0; i < padding - leftPad; i++)
+            {
+                <div class="seat-pad"></div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public HallDto Hall { get; set; } = default!;
+    [Parameter, EditorRequired] public List<SeatInfo> AllSeats { get; set; } = [];
+    [Parameter] public HashSet<string> OccupiedKeys { get; set; } = [];
+    [Parameter] public HashSet<string> SuggestedKeys { get; set; } = [];
+    [Parameter] public bool ShowZones { get; set; } = true;
+    [Parameter] public EventCallback<SeatInfo> OnSeatClick { get; set; }
+
+    private string SeatCss(SeatInfo s, bool occupied, bool suggested)
+    {
+        if (occupied) return "seat-occupied";
+        if (suggested) return $"seat-suggested{(s.Type == SeatType.Wheelchair ? " seat-wc" : "")}";
+        return s.Type switch
+        {
+            SeatType.Wheelchair => $"seat-wc seat-cat{s.Category}",
+            _ => ShowZones ? $"seat-cat{s.Category}" : "seat-normal"
+        };
+    }
+
+    private static string SeatIcon(SeatInfo s, bool occupied, bool suggested)
+    {
+        if (occupied) return "✓";
+        if (suggested) return s.Type == SeatType.Wheelchair ? "♿" : "★";
+        return s.Type == SeatType.Wheelchair ? "♿" : "";
+    }
+}
