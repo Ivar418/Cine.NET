@@ -4,53 +4,6 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-/* Shell */
-
-.app-shell {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: var(--mud-palette-background);
-    color: var(--mud-palette-text-primary);
-}
-
-/* Topbar */
-
-.topbar {
-    height: 100px;
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    
-}
-
-/* Main */
-
-.main-content {
-    flex: 1;
-    overflow: auto;
-    padding: 24px;
-
-    background: var(--mud-palette-background);
-    color: var(--mud-palette-text-primary);
-}
-
-/* Footer */
-
-.footer {
-    height: 60px;
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: var(--mud-palette-surface);
-    color: var(--mud-palette-text-secondary);
-}
-
 /* FAB */
 
 .fab {
@@ -98,27 +51,6 @@ html, body {
 /* Removes focus outline from h1 elements (used with Blazor's FocusOnNavigate) */
 h1:focus {
     outline: none;
-}
-
-/* Default link styling (comes from the original Bootstrap-based template) */
-a, .btn-link {
-    color: #0071c1;
-}
-
-/* Primary button styling (Bootstrap template style, NOT MudBlazor) */
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-/* Focus styling for buttons and form elements (Bootstrap-style focus ring) */
-.btn:focus,
-.btn:active:focus,
-.btn-link.nav-link:focus,
-.form-control:focus,
-.form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 /* Adds spacing at the top of elements using the "content" class */
@@ -220,17 +152,4 @@ a, .btn-link {
 /* Inline code styling */
 code {
     color: #c02d76;
-}
-
-/* Placeholder styling for Bootstrap form-floating inputs */
-.form-floating > .form-control-plaintext::placeholder,
-.form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
-    text-align: end;
-}
-
-/* Adjust placeholder alignment when focused */
-.form-floating > .form-control-plaintext:focus::placeholder,
-.form-floating > .form-control:focus::placeholder {
-    text-align: start;
 }
