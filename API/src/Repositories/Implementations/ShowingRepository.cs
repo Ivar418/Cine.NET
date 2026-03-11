@@ -31,6 +31,7 @@ namespace API.src.Repositories.Implementations
             {
                 throw new Exception($"Auditorium with id {Showing.AuditoriumId} not found.");
             }
+            //auditorium.Showings.Add(newShowing);
             newShowing.SetLayoutSnapshot(auditorium.GetRows());
 
             var result = await _db.Showings.AddAsync(newShowing);
