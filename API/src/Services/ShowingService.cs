@@ -17,7 +17,7 @@ public class ShowingService
         _pricingService = pricingService;
     }
 
-    public async Task<List<ShowingResponse>> GetShowingsAsync()
+    public async Task<List<ShowingsWithPricesResponse>> GetShowingsAsync()
     {
         var showings = await _db.Showings
             .Include(s => s.Movie)
@@ -30,7 +30,7 @@ public class ShowingService
         var student = ticketTypes.First(t => t.Name == "Student");
         var senior = ticketTypes.First(t => t.Name == "Senior");
 
-        return showings.Select(s => new ShowingResponse
+        return showings.Select(s => new ShowingsWithPricesResponse
         {
             ShowingId = s.Id,
             MovieTitle = s.Movie.Title,
