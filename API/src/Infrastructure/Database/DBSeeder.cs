@@ -52,6 +52,37 @@ namespace API.Infrastructure.Database
                     await movieRepository.AddMovieAsync(movie);
                 }
             }
+            
+            if (!await db.TicketTypes.AnyAsync())
+            {
+                db.TicketTypes.AddRange(
+                    new TicketType { Name = "Adult", Discount = 0.00m },
+                    new TicketType { Name = "Child", Discount = 1.50m, },
+                    new TicketType { Name = "Student", Discount = 1.50m },
+                    new TicketType { Name = "Senior", Discount = 1.50m }
+                );
+            }
+
+            if (!await db.PricingConfigs.AnyAsync())
+            {
+                db.PricingConfigs.AddRange(
+                    new PricingConfig { Key = "BasePrice", Value = 8.50m },
+                    new PricingConfig { Key = "LongMoviePrice", Value = 9.00m },
+                    new PricingConfig { Key = "ThreeDSurcharge", Value = 2.50m }
+                );
+            }
+
+            // For future use when we want to add more pricing options, but for now we can just calculate them on the fly in the API
+            
+            // if (!await db.PricingOptions.AnyAsync())
+            // {
+            //     db.PricingOptions.AddRange(
+            //         new PricingOption { Name = "None", PriceModifier = 0.00m },
+            //         new PricingOption { Name = "Popcorn", PriceModifier = 4.50m },
+            //         new PricingOption { Name = "Nachos", PriceModifier = 5.00m },
+            //         new PricingOption { Name = "VIPSeat", PriceModifier = 3.00m }
+            //     );
+            // }
 
             await db.SaveChangesAsync();
         }
