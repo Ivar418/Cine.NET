@@ -2,7 +2,7 @@ ARG DOTNET_SDK_VERSION=10.0
 
 # ===== Build stage =====
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_SDK_VERSION} AS build
-WORKDIR /src
+WORKDIR .
 
 # copy csproj first (sneller cachen)
 COPY WA/WA.csproj WA/

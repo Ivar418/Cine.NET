@@ -1,0 +1,38 @@
+@page "/showings"
+
+@using SharedLibrary.DTOs.Responses
+@using WA.Services.Http.Interfaces
+@using MudBlazor
+
+@inject IShowingApi ShowingApi
+
+<MudText Typo="Typo.h4" GutterBottom="true">Showings</MudText>
+
+<MudTable Items="_showings" Dense="true">
+    <HeaderContent>
+        <MudTh>Showing</MudTh>
+        <MudTh>Film</MudTh>
+        <MudTh>Adult</MudTh>
+        <MudTh>Child</MudTh>
+        <MudTh>Student</MudTh>
+        <MudTh>Senior</MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd>@context.ShowingId</MudTd>
+        <MudTd>@context.MovieTitle</MudTd>
+        <MudTd>@context.Prices.Adult</MudTd>
+        <MudTd>@context.Prices.Child</MudTd>
+        <MudTd>@context.Prices.Student</MudTd>
+        <MudTd>@context.Prices.Senior</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private IReadOnlyList<ShowingsWithPricesResponse> _showings = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _showings = await ShowingApi.GetShowingsWithPricesAsync();
+    }
+}

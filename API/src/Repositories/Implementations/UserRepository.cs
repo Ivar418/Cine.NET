@@ -7,9 +7,9 @@ namespace API.Repositories.Implementations;
 
 public class UserRepository : IUserRepository
 {
-    private readonly AppDbContext _db;
+    private readonly ApiDbContext _db;
 
-    public UserRepository(AppDbContext db)
+    public UserRepository(ApiDbContext db)
     {
         _db = db;
     }

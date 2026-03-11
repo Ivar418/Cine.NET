@@ -17,6 +17,7 @@ services:
         Database=${DB_NAME};
         User=${DB_USER};
         Password=${DB_PASSWORD};
+      TMDB_API_KEY_READ_ONLY: ${TMDB_API_KEY_READ_ONLY}
     depends_on:
       - db
     labels:

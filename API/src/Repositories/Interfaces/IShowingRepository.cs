@@ -1,0 +1,16 @@
+﻿using API.Domain.Common;
+using SharedLibrary.Domain.Entities;
+using SharedLibrary.DTOs.Models;
+
+namespace API.src.Repositories.Interfaces
+{
+    public interface IShowingRepository
+    {
+        Task<ResultOf<Showing>> GetShowingAsync(int id);
+        Task<ResultOf<ICollection<Showing>>> GetShowingsAsync();
+        Task<Showing> AddShowingAsync(CreateShowingRequest Showing);
+        Task<Showing> UpdateShowingAsync(Showing Showing);
+        Task<ResultOf<Showing>> DeleteShowingByIdAsync(int ShowingId);
+        Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id);
+    }
+}
