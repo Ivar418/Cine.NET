@@ -2,8 +2,11 @@ using API.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
+using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
+using API.src.Repositories.Implementations;
+using API.src.Repositories.Interfaces;
 using API.Storage;
 using API.Storage.Implementations;
 using DotNetEnv;
@@ -32,6 +35,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
+builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
+builder.Services.AddScoped<ShowingService>();
+builder.Services.AddScoped<PricingService>();
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();

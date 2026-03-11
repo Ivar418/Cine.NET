@@ -1,4 +1,5 @@
 ﻿
+using API.Services;
 using API.src.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Domain.Entities;
@@ -17,14 +18,16 @@ namespace API.src.Controllers
         /// search, creation, updating, and deletion of Showing records.
         /// </summary>
         private readonly IShowingRepository _ShowingRepository;
+        private readonly ShowingService _showingService;
 
         /// <summary>
         /// A controller for managing Showing-related operations, providing endpoints to retrieve,
         /// and manage Showing data.
         /// </summary>
-        public ShowingController(IShowingRepository ShowingRepository)
+        public ShowingController(IShowingRepository ShowingRepository, ShowingService ShowingService)
         {
             _ShowingRepository = ShowingRepository;
+            _showingService = ShowingService;
         }
 
 
@@ -52,27 +55,34 @@ namespace API.src.Controllers
                 return StatusCode(500, new { error = "An error occurred" });
             }
         }
-
-        [HttpGet]
-        [Route("{ShowingId:int}/state")]
-        public async Task<IActionResult> GetShowingStateById(int ShowingId)
+        
+        [HttpGet("with-prices")]
+        public async Task<IActionResult> GetShowingsWithPrices()
         {
-            try
-            {
-                var result = await _ShowingRepository.GetShowingStateByIdAsync(ShowingId);
-                return result switch
-                {
-                    { IsFailure: true, Error: "Showing not found" } => NotFound(new { error = "Showing not found" }),
-                    { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                    { IsSuccess: true } => Ok(result.Value),
-                    _ => StatusCode(500, new { error = "Unexpected result" })
-                };
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { error = "An error occurred" });
-            }
+            var showings = await _showingService.GetShowingsAsync();
+            return Ok(showings);
         }
+
+        // [HttpGet]
+        // [Route("{ShowingId:int}/state")]
+        // public async Task<IActionResult> GetShowingStateById(int ShowingId)
+        // {
+        //     try
+        //     {
+        //         var result = await _ShowingRepository.GetShowingStateByIdAsync(ShowingId);
+        //         return result switch
+        //         {
+        //             { IsFailure: true, Error: "Showing not found" } => NotFound(new { error = "Showing not found" }),
+        //             { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+        //             { IsSuccess: true } => Ok(result.Value),
+        //             _ => StatusCode(500, new { error = "Unexpected result" })
+        //         };
+        //     }
+        //     catch (Exception)
+        //     {
+        //         return StatusCode(500, new { error = "An error occurred" });
+        //     }
+        // }
 
         /// <summary>
         /// Deletes a Showing from the system based on its TmdbId.
