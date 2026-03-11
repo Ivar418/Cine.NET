@@ -52,8 +52,76 @@ namespace API.Infrastructure.Database
                     await movieRepository.AddMovieAsync(movie);
                 }
             }
+            
+            if (!await db.TicketTypes.AnyAsync())
+            {
+                db.TicketTypes.AddRange(
+                    new TicketType { Name = "Adult", Discount = 0.00m },
+                    new TicketType { Name = "Child", Discount = 1.50m, },
+                    new TicketType { Name = "Student", Discount = 1.50m },
+                    new TicketType { Name = "Senior", Discount = 1.50m }
+                );
+            }
 
+            if (!await db.PricingConfigs.AnyAsync())
+            {
+                db.PricingConfigs.AddRange(
+                    new PricingConfig { Key = "BasePrice", Value = 8.50m },
+                    new PricingConfig { Key = "LongMoviePrice", Value = 9.00m },
+                    new PricingConfig { Key = "ThreeDSurcharge", Value = 2.50m }
+                );
+            }
+
+            // For future use when we want to add more pricing options, but for now we can just calculate them on the fly in the API
+            
+            // if (!await db.PricingOptions.AnyAsync())
+            // {
+            //     db.PricingOptions.AddRange(
+            //         new PricingOption { Name = "None", PriceModifier = 0.00m },
+            //         new PricingOption { Name = "Popcorn", PriceModifier = 4.50m },
+            //         new PricingOption { Name = "Nachos", PriceModifier = 5.00m },
+            //         new PricingOption { Name = "VIPSeat", PriceModifier = 3.00m }
+            //     );
+            // }
+            
+            // AUDITORIUMS
+            if (!await db.Auditoriums.AnyAsync())
+            {
+                db.Auditoriums.AddRange(
+                    new Auditorium { Name = "Zaal 1" },
+                    new Auditorium { Name = "Zaal 2" },
+                    new Auditorium { Name = "Zaal 3" },
+                    new Auditorium { Name = "Zaal 4" },
+                    new Auditorium { Name = "Zaal 5" },
+                    new Auditorium { Name = "Zaal 6" }
+                );
+            }
+            
             await db.SaveChangesAsync();
+            
+            if (!await db.Showings.AnyAsync())
+            {
+                var movies = await db.Movies.ToListAsync();
+                var auditoriums = await db.Auditoriums.ToListAsync();
+
+                var showings = new List<Showing>();
+                var start = DateTimeOffset.UtcNow.Date.AddHours(18); // 18:00 start
+
+                for (int i = 0; i < movies.Count; i++)
+                {
+                    showings.Add(new Showing
+                    {
+                        MovieId = movies[i].Id,
+                        AuditoriumId = auditoriums[i % auditoriums.Count].Id,
+                        StartsAt = start.AddHours(i * 2), // elke 2 uur
+                        IsThreeD = (i % 2 == 0),          // om en om 3D
+                        AuditoriumLayoutSnapshot = "[]"   // snapshot leeg laten
+                    });
+                }
+
+                db.Showings.AddRange(showings);
+                await db.SaveChangesAsync();
+            }
         }
     }
 }
