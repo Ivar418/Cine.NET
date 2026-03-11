@@ -7,35 +7,39 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<div class="app-shell">
+<MudLayout>
 
     @if (LayoutState.ShowTopBar)
     {
         <TopBar />
     }
 
-    <div class="main-content">
-        @Body
-    </div>
+    <MudMainContent>
+
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+            @Body
+        </MudContainer>
+
+    </MudMainContent>
 
     @if (LayoutState.ShowFooter)
     {
-        <Footer />
+        <Footer></Footer>
     }
 
     @if (LayoutState.ShowFab)
     {
         <MudFab StartIcon="@Icons.Material.Filled.Add"
                 Color="Color.Primary"
-                Class="fab" />
+                Style="position: fixed; bottom: 24px; right: 24px;" />
     }
 
-</div>
+</MudLayout>
 
 @code {
     protected override void OnInitialized()
     {
-        LayoutState.OnChange += StateHasChanged;
+        LayoutState.OnChange += () => InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
