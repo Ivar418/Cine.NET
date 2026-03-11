@@ -103,16 +103,11 @@ public class MovieRepository : IMovieRepository
     public async Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId)
     {
         var movie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
-        if (movie != null)
-        {
-            _db.Movies.Remove(movie);
-            await _db.SaveChangesAsync();
-            return ResultOf<Movie>.Success(movie);
-        }
-        else
-        {
-            return ResultOf<Movie>.Failure("Movie not found");
-        }
+        if (movie == null) return ResultOf<Movie>.Failure("Movie not found");
+        _db.Movies.Remove(movie);
+        await _db.SaveChangesAsync();
+        return ResultOf<Movie>.Success(movie);
+
     }
 
     public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language)
@@ -251,7 +246,7 @@ public class MovieRepository : IMovieRepository
         var response = await client.GetAsync(url);
 
         response.EnsureSuccessStatusCode();
-        
+
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<MovieSearchResultListDto>(content) ??
                throw new Exception("Could not deserialize movie details");
