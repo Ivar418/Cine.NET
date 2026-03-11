@@ -5,19 +5,19 @@ using System.Text;
 
 namespace SharedLibrary.DTOs.Models
 {
-    public record ShowtimeStateDto(
-    ShowtimeDto Showtime,
-    List<SeatInfo> AllSeats,       // derived from the stored hall-layout snapshot
+    public record ShowingStateDto(
+    ShowingDto Showing,
+    List<SeatInfo> AllSeats,       // derived from the stored Auditorium-layout snapshot
     HashSet<string> OccupiedKeys    // "row-col" of confirmed seats
     );
 
-    public record ShowtimeDto(
+    public record ShowingDto(
     int Id,
     Movie Movie,
-    HallDto Hall,
+    AuditoriumDto Auditorium,
     DateTimeOffset StartsAt,
     DateTimeOffset EndsAt        // = StartsAt + Film.DurationMinutes
     );
 
-    public record CreateShowtimeRequest(int MovieId, int HallId, DateTimeOffset StartsAt);
+    public record CreateShowingRequest(int MovieId, int AuditoriumId, DateTimeOffset StartsAt);
 }

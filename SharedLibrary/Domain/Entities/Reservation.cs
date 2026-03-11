@@ -9,7 +9,7 @@ namespace SharedLibrary.Domain.Entities
     public class Reservation
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public int ShowtimeId { get; set; }
+        public int ShowingId { get; set; }
         public string SeatsJson { get; set; } = "[]";   // List<SeatInfo> as JSON
         public string Status { get; set; } = "Pending"; // Pending | Confirmed | Cancelled
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
@@ -21,6 +21,6 @@ namespace SharedLibrary.Domain.Entities
             SeatsJson = JsonSerializer.Serialize(seats.ToList());
 
         // Navigation
-        public Showtime Showtime { get; set; } = default!;
+        public Showing Showing { get; set; } = default!;
     }
 }

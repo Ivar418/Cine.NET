@@ -3,13 +3,13 @@
     <div class="screen-bar">▬▬▬▬▬▬▬▬ SCHERM ▬▬▬▬▬▬▬▬</div>
 
     @{
-        int maxCols = Hall.Rows.Count > 0 ? Hall.Rows.Max(r => r.Seats) : 1;
+        int maxCols = Auditorium.Rows.Count > 0 ? Auditorium.Rows.Max(r => r.Seats) : 1;
     }
 
-    @for (int r = 0; r < Hall.Rows.Count; r++)
+    @for (int r = 0; r < Auditorium.Rows.Count; r++)
     {
         var rowIdx = r;
-        var cfg = Hall.Rows[rowIdx];
+        var cfg = Auditorium.Rows[rowIdx];
         int padding = maxCols - cfg.Seats;
         int leftPad = padding / 2;
 
@@ -49,7 +49,7 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired] public HallDto Hall { get; set; } = default!;
+    [Parameter, EditorRequired] public AuditoriumDto Auditorium { get; set; } = default!;
     [Parameter, EditorRequired] public List<SeatInfo> AllSeats { get; set; } = [];
     [Parameter] public HashSet<string> OccupiedKeys { get; set; } = [];
     [Parameter] public HashSet<string> SuggestedKeys { get; set; } = [];

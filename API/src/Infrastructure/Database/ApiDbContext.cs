@@ -15,8 +15,8 @@ public class ApiDbContext : DbContext
         public DbSet<User> Users => Set<User>();
         public DbSet<Movie> Movies => Set<Movie>();
         public DbSet<Photo> Photos => Set<Photo>();
-        public DbSet<Hall> Halls => Set<Hall>();
-        public DbSet<Showtime> Showtimes => Set<Showtime>();
+        public DbSet<Auditorium> Auditoriums => Set<Auditorium>();
+        public DbSet<Showing> Showings => Set<Showing>();
         public DbSet<Reservation> Reservations => Set<Reservation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

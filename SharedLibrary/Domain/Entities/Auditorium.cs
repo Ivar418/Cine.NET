@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace SharedLibrary.Domain.Entities
 {
-    public class Hall
+    public class Auditorium
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
@@ -24,6 +24,6 @@ namespace SharedLibrary.Domain.Entities
             RowConfigJson = JsonSerializer.Serialize(rows.ToList());
 
         // Navigation
-        public ICollection<Showtime> Showtimes { get; set; } = [];
+        public ICollection<Showing> Showings { get; set; } = [];
     }
 }

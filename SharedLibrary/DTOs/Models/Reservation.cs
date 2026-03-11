@@ -8,13 +8,13 @@ namespace SharedLibrary.DTOs.Models
 
     public record ReservationDto(
         Guid Id,
-        int ShowtimeId,
+        int ShowingId,
         List<SeatInfo> Seats,
         ReservationStatus Status,
         DateTimeOffset CreatedAt
     );
 
-    public record SuggestRequest(int ShowtimeId, int NormalCount, int WheelchairCount);
+    public record SuggestRequest(int ShowingId, int NormalCount, int WheelchairCount);
 
     public record SuggestResponse(Guid SuggestionId, List<SeatInfo> Seats, bool Found);
 

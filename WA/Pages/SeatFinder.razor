@@ -4,32 +4,32 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @implements IDisposable
-@inject CinemaApiService Api
+@inject SeatFinderApiService Api
 
 <PageTitle>Cinema Reservering</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
     <MudStack Spacing="4">
 
-        @* ── Showtime selector ────────────────────────────────────────── *@
+        @* ── Showing selector ────────────────────────────────────────── *@
         <MudPaper Elevation="2" Class="pa-4">
             <MudStack Row="true" Wrap="Wrap.Wrap" AlignItems="AlignItems.End" Spacing="3">
 
                 <MudStack Spacing="1" Style="min-width:260px">
                     <MudText Typo="Typo.caption" Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">VOORSTELLING</MudText>
-                    @if (_showtimes is null)
+                    @if (_Showings is null)
                     {
                         <MudSkeleton Width="260px" Height="40px" />
                     }
                     else
                     {
-                        <MudSelect T="int?" Value="_showtimeId" ValueChanged="OnShowtimeChangedAsync"
+                        <MudSelect T="int?" Value="_ShowingId" ValueChanged="OnShowingChangedAsync"
                                    Variant="Variant.Outlined" Margin="Margin.Dense"
                                    Placeholder="Kies een voorstelling…">
-                            @foreach (var s in _showtimes)
+                            @foreach (var s in _Showings)
                             {
                                 <MudSelectItem Value="(int?)s.Id">
-                                    @s.Movie.Title — @s.StartsAt.LocalDateTime.ToString("dd MMM HH:mm") (@s.Hall.Name)
+                                    @s.Movie.Title — @s.StartsAt.LocalDateTime.ToString("dd MMM HH:mm") (@s.Auditorium.Name)
                                 </MudSelectItem>
                             }
                         </MudSelect>
@@ -97,19 +97,19 @@
         else if (_state is not null)
         {
             <MudPaper Elevation="2" Class="pa-3" Style="overflow-x:auto">
-                @* Film/hall info strip *@
+                @* Film/Auditorium info strip *@
                 <MudStack Row="true" Spacing="2" Class="mb-3" AlignItems="AlignItems.Center">
                     <MudChip T="string" Color="Color.Dark" Size="Size.Small"
                              Icon="@Icons.Material.Filled.Movie">
-                        @_state.Showtime.Movie.Title
+                        @_state.Showing.Movie.Title
                     </MudChip>
                     <MudChip T="string" Color="Color.Dark" Size="Size.Small"
                              Icon="@Icons.Material.Filled.Schedule">
-                        @_state.Showtime.StartsAt.LocalDateTime.ToString("dd MMM yyyy HH:mm")
+                        @_state.Showing.StartsAt.LocalDateTime.ToString("dd MMM yyyy HH:mm")
                     </MudChip>
                     <MudChip T="string" Color="Color.Dark" Size="Size.Small"
                              Icon="@Icons.Material.Filled.EventSeat">
-                        @_state.Showtime.Hall.Name
+                        @_state.Showing.Auditorium.Name
                     </MudChip>
                     <MudSpacer />
                     <MudText Typo="Typo.caption" Style="color:var(--mud-palette-text-secondary)">
@@ -117,14 +117,14 @@
                     </MudText>
                 </MudStack>
 
-                <SeatGrid Hall="@(new HallDto(_state.Showtime.Hall.Id, _state.Showtime.Hall.Name, _state.Showtime.Hall.Rows))"
+                <SeatGrid Auditorium="@(new AuditoriumDto(_state.Showing.Auditorium.Id, _state.Showing.Auditorium.Name, _state.Showing.Auditorium.Rows))"
                           AllSeats="@_state.AllSeats"
                           OccupiedKeys="@_state.OccupiedKeys"
                           SuggestedKeys="@_suggestedKeys"
                           ShowZones="@_showZones" />
             </MudPaper>
         }
-        else if (_showtimeId.HasValue)
+        else if (_ShowingId.HasValue)
         {
             <MudAlert Severity="Severity.Warning">Kan voorstelling niet laden.</MudAlert>
         }
@@ -157,9 +157,9 @@
 </MudContainer>
 
 @code {
-    private List<Showtime>?  _showtimes;
-    private ShowtimeStateDto?   _state;
-    private int?                _showtimeId;
+    private List<Showing>?  _Showings;
+    private ShowingStateDto?   _state;
+    private int?                _ShowingId;
     private bool                _busy      = false;
     private bool                _showZones = true;
     private int                 _normalCount = 2;
@@ -169,16 +169,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _showtimes = await Api.GetShowtimesAsync();
+        _Showings = await Api.GetShowingsAsync();
     }
 
     public void Dispose() { }
 
-    // ── Showtime selection ────────────────────────────────────────────────
-    private async Task OnShowtimeChangedAsync(int? id)
+    // ── Showing selection ────────────────────────────────────────────────
+    private async Task OnShowingChangedAsync(int? id)
     {
         await CancelPendingAsync();
-        _showtimeId    = id;
+        _ShowingId    = id;
         _state         = null;
         _suggestedKeys = [];
         _pendingId     = null;
@@ -186,7 +186,7 @@
         if (id.HasValue)
         {
             _busy  = true;
-            _state = await Api.GetShowtimeStateAsync(id.Value);
+            _state = await Api.GetShowingStateAsync(id.Value);
             _busy  = false;
         }
     }
@@ -194,11 +194,11 @@
     // ── Suggest ───────────────────────────────────────────────────────────
     private async Task SuggestAsync()
     {
-        if (!_showtimeId.HasValue || _normalCount + _wcCount == 0) return;
+        if (!_ShowingId.HasValue || _normalCount + _wcCount == 0) return;
         await CancelPendingAsync();
         _busy = true;
 
-        var resp = await Api.SuggestAsync(new SuggestRequest(_showtimeId.Value, _normalCount, _wcCount));
+        var resp = await Api.SuggestAsync(new SuggestRequest(_ShowingId.Value, _normalCount, _wcCount));
         _busy = false;
 
         if (resp is null || !resp.Found)
@@ -229,8 +229,8 @@
         _pendingId     = null;
         _suggestedKeys = [];
         // Refresh state from server to get accurate picture
-        if (_showtimeId.HasValue)
-            _state = await Api.GetShowtimeStateAsync(_showtimeId.Value);
+        if (_ShowingId.HasValue)
+            _state = await Api.GetShowingStateAsync(_ShowingId.Value);
 
         Snackbar.Add("Reservering bevestigd!", Severity.Success);
     }
@@ -253,8 +253,8 @@
     private async Task ResetAsync()
     {
         await CancelPendingAsync();
-        if (_showtimeId.HasValue)
-            _state = await Api.GetShowtimeStateAsync(_showtimeId.Value);
+        if (_ShowingId.HasValue)
+            _state = await Api.GetShowingStateAsync(_ShowingId.Value);
     }
 
     // ── Legend ────────────────────────────────────────────────────────────
