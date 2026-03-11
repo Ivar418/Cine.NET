@@ -15,6 +15,11 @@ public class ApiDbContext : DbContext
         public DbSet<User> Users => Set<User>();
         public DbSet<Movie> Movies => Set<Movie>();
         public DbSet<Photo> Photos => Set<Photo>();
+        public DbSet<Auditorium> Auditoriums => Set<Auditorium>();
+        public DbSet<Showing> Showings => Set<Showing>();
+        public DbSet<Reservation> Reservations => Set<Reservation>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
         // Pricing related entities
         public DbSet<TicketType> TicketTypes => Set<TicketType>();
         public DbSet<PricingConfig> PricingConfigs => Set<PricingConfig>();
