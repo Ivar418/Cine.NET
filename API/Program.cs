@@ -1,6 +1,7 @@
 using API.Infrastructure.Database;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
+using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.src.Repositories.Implementations;
@@ -37,6 +38,8 @@ builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<ShowingService>();
+builder.Services.AddScoped<PricingService>();
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();

@@ -12,6 +12,7 @@ namespace SharedLibrary.Domain.Entities
         public int Id { get; set; }
         public int MovieId { get; set; }
         public int AuditoriumId { get; set; }
+        public bool IsThreeD { get; set; }
         public DateTimeOffset StartsAt { get; set; }
 
         /// <summary>
