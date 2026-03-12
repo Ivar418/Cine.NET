@@ -5,9 +5,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using MudBlazor.Services;
 using WA;
-using WA.ApiClients;
 using WA.Auth;
 using WA.Services;
+using WA.Services.Http;
+using WA.Services.Http.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -34,5 +35,7 @@ builder.Services.AddScoped(sp =>
 // WA API/SERVICES
 builder.Services.AddScoped<IUserApi, UserApi>();
 builder.Services.AddScoped<LayoutStateService>();
+builder.Services.AddScoped<IMovieApiClient, MovieApiClient>();
+builder.Services.AddScoped<IShowingApi, ShowingApi>();
 
 await builder.Build().RunAsync();

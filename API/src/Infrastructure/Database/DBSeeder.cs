@@ -1,4 +1,4 @@
-﻿﻿using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using SharedLibrary.DTOs.Responses;
@@ -6,7 +6,6 @@ using System.Text.Json;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using SharedLibrary.DTOs.Responses.TMDB;
-using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -41,7 +40,7 @@ namespace API.Infrastructure.Database
 
                 foreach (var id in MovieIdList)
                 {
-                    var movie = await movieRepository.GetTmdbMovieDetailsAsync(id);
+                    var movie = await movieRepository.GetTmdbMovieDetailsAsync(id, "nl");
                     if (movie != null)
                     {
                         Movies.Add(movie);
@@ -54,10 +53,67 @@ namespace API.Infrastructure.Database
 
                 foreach (var movie in Movies)
                 {
-                    Console.WriteLine($"Adding movie: {movie.OriginalTitle}");
-                    var firstLanguage = movie.SpokenLanguages?.FirstOrDefault();
+                    await movieRepository.AddMovieAsync(movie);
+                }
+            }
             
-                    movieEntities.Add(new Movie
+            if (!await db.TicketTypes.AnyAsync())
+            {
+                db.TicketTypes.AddRange(
+                    new TicketType { Name = "Adult", Discount = 0.00m },
+                    new TicketType { Name = "Child", Discount = 1.50m, },
+                    new TicketType { Name = "Student", Discount = 1.50m },
+                    new TicketType { Name = "Senior", Discount = 1.50m }
+                );
+            }
+
+            if (!await db.PricingConfigs.AnyAsync())
+            {
+                db.PricingConfigs.AddRange(
+                    new PricingConfig { Key = "BasePrice", Value = 8.50m },
+                    new PricingConfig { Key = "LongMoviePrice", Value = 9.00m },
+                    new PricingConfig { Key = "ThreeDSurcharge", Value = 2.50m }
+                );
+            }
+
+            // For future use when we want to add more pricing options, but for now we can just calculate them on the fly in the API
+            
+            // if (!await db.PricingOptions.AnyAsync())
+            // {
+            //     db.PricingOptions.AddRange(
+            //         new PricingOption { Name = "None", PriceModifier = 0.00m },
+            //         new PricingOption { Name = "Popcorn", PriceModifier = 4.50m },
+            //         new PricingOption { Name = "Nachos", PriceModifier = 5.00m },
+            //         new PricingOption { Name = "VIPSeat", PriceModifier = 3.00m }
+            //     );
+            // }
+            
+            // AUDITORIUMS
+            if (!await db.Auditoriums.AnyAsync())
+            {
+                db.Auditoriums.AddRange(
+                    new Auditorium { Name = "Zaal 1" },
+                    new Auditorium { Name = "Zaal 2" },
+                    new Auditorium { Name = "Zaal 3" },
+                    new Auditorium { Name = "Zaal 4" },
+                    new Auditorium { Name = "Zaal 5" },
+                    new Auditorium { Name = "Zaal 6" }
+                );
+            }
+            
+            await db.SaveChangesAsync();
+            
+            if (!await db.Showings.AnyAsync())
+            {
+                var movies = await db.Movies.ToListAsync();
+                var auditoriums = await db.Auditoriums.ToListAsync();
+
+                var showings = new List<Showing>();
+                var start = DateTimeOffset.UtcNow.Date.AddHours(18); // 18:00 start
+
+                for (int i = 0; i < movies.Count; i++)
+                {
+                    showings.Add(new Showing
                     {
                         Title = movie.OriginalTitle,
                         TmdbId = movie.Id,
@@ -76,33 +132,8 @@ namespace API.Infrastructure.Database
                 }
             }
 
-            await db.Movies.AddRangeAsync(movieEntities);
-            await db.SaveChangesAsync();
-
-            // Seed tickets if none exist
-            if (!await db.Tickets.AnyAsync())
-            {
-                var movies = await db.Movies.ToListAsync();
-                if (movies.Any())
-                {
-                    var ticketEntities = new List<Ticket>();
-                    var random = new Random();
-                    foreach (var movie in movies)
-                    {
-                        // Add a few tickets per movie
-                        for (int i = 1; i <= 3; i++)
-                        {
-                            ticketEntities.Add(new Ticket(
-                                movie.Id,
-                                DateTime.UtcNow.AddDays(random.Next(1, 30)), // Random future show time
-                                $"Seat {i}",
-                                random.Next(5, 20) // Random price between 5 and 20
-                            ));
-                        }
-                    }
-                    await db.Tickets.AddRangeAsync(ticketEntities);
-                    await db.SaveChangesAsync();
-                }
+                db.Showings.AddRange(showings);
+                await db.SaveChangesAsync();
             }
         }
     }

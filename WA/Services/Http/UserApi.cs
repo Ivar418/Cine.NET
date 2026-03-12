@@ -1,7 +1,8 @@
 ﻿using System.Net.Http.Json;
 using SharedLibrary.DTOs.Responses;
+using WA.Services.Http.Interfaces;
 
-namespace WA.ApiClients;
+namespace WA.Services.Http;
 
 public sealed class UserApi : IUserApi
 {

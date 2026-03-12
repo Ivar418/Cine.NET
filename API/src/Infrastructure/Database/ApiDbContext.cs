@@ -16,7 +16,14 @@ public class ApiDbContext : DbContext
         public DbSet<Movie> Movies => Set<Movie>();
         public DbSet<Photo> Photos => Set<Photo>();
         public DbSet<Ticket> Tickets => Set<Ticket>();
+        public DbSet<Auditorium> Auditoriums => Set<Auditorium>();
+        public DbSet<Showing> Showings => Set<Showing>();
+        public DbSet<Reservation> Reservations => Set<Reservation>();
         
+        // Pricing related entities
+        public DbSet<TicketType> TicketTypes => Set<TicketType>();
+        public DbSet<PricingConfig> PricingConfigs => Set<PricingConfig>();
+        public DbSet<PricingOption> PricingOptions => Set<PricingOption>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -25,5 +32,21 @@ public class ApiDbContext : DbContext
             modelBuilder.Entity<Movie>().ToTable("movies");
             modelBuilder.Entity<Photo>().ToTable("photos");
             modelBuilder.Entity<Ticket>().ToTable("tickets");
+            modelBuilder.Entity<Auditorium>().ToTable("auditoriums");
+            modelBuilder.Entity<Showing>().ToTable("showings");
+            modelBuilder.Entity<Reservation>().ToTable("reservations");
+                // Pricing related entities
+                modelBuilder.Entity<TicketType>().ToTable("ticket_types");
+                modelBuilder.Entity<TicketType>()
+                    .Property(p => p.Discount)
+                    .HasPrecision(10, 2);
+                modelBuilder.Entity<PricingConfig>().ToTable("pricing_configs");
+                modelBuilder.Entity<PricingConfig>()
+                    .Property(p => p.Value)
+                    .HasPrecision(10, 2);
+                modelBuilder.Entity<PricingOption>().ToTable("pricing_options");
+                modelBuilder.Entity<PricingOption>()
+                    .Property(p => p.PriceModifier)
+                    .HasPrecision(10, 2);
         }
     }

@@ -6,15 +6,15 @@
     group: root
     mode: "0755"
 
-- name: Create db init directory
-  file:
-    path: /opt/p3api/{{ env_name }}/db/init
-    state: directory
+#- name: Create db init directory
+#  file:
+#    path: /opt/p3api/{{ env_name }}/db/init
+#    state: directory
 
-- name: Copy db init scripts
-  copy:
-    src: db-init/
-    dest: /opt/p3api/db/init/
+#- name: Copy db init scripts
+#  copy:
+#    src: db-init/
+#    dest: /opt/p3api/db/init/
 
 - name: Render docker-compose
   template:
