@@ -124,3 +124,30 @@ code {
 .nav-button {
     margin-left: 8px;
 }
+
+.white-datagrid,
+.white-datagrid th,
+.white-datagrid td,
+.white-text,
+.white-text input,
+.white-text label,
+.white-text .mud-input-adornment {
+    color: white !important;
+}
+
+.white-datagrid tbody tr:nth-child(even) {
+    background-color: #1f1f1f;
+}
+.white-datagrid tbody tr:nth-child(odd) {
+    background-color: #111;
+}
+
+.white-text input,
+.white-text label,
+.white-text .mud-input-adornment {
+    color: white !important;
+}
+
+.white-text .mud-input-root {
+    border-color: #555 !important;
+}
