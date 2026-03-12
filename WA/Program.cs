@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using MudBlazor.Services;
@@ -26,16 +25,32 @@ builder.Services.AddMudServices(config =>
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 
+// "https://p3api-acc.gielvangaal.dev/"
+string url;
+var hostEnvironment = builder.HostEnvironment;
+
+if (hostEnvironment.IsDevelopment())
+{
+    url = "http://localhost:8080/";
+}
+else if (hostEnvironment.IsStaging())
+{
+    url = "https://p3api-acc.gielvangaal.dev/";
+}
+else if (hostEnvironment.IsProduction())
+{
+    url = "https://p3api-prod.gielvangaal.dev/";
+}
+else
+{
+    url = "https://p3api-prod.gielvangaal.dev/";
+}
+
 // HTTP
-builder.Services.AddScoped(sp =>
-    new HttpClient { BaseAddress = new Uri("https://p3api-prod.gielvangaal.dev/") });
-    // new HttpClient { BaseAddress = new Uri("https://p3api-acc.gielvangaal.dev/") });
-    // new HttpClient { BaseAddress = new Uri("http://localhost:8080/") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri($"{url}") });
 
 // WA API/SERVICES
 builder.Services.AddScoped<IUserApi, UserApi>();
 builder.Services.AddScoped<LayoutStateService>();
-builder.Services.AddScoped<IMovieApiClient, MovieApiClient>();
-builder.Services.AddScoped<IShowingApi, ShowingApi>();
 
 await builder.Build().RunAsync();
