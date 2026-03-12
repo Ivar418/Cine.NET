@@ -24,22 +24,13 @@
         <MudText><strong>Runtime:</strong> @_movie.Runtime min</MudText>
         <MudText><strong>Language:</strong> @_movie.SpokenLanguageName</MudText>
         <MudText><strong>Age indication:</strong> @_movie.AgeIndication</MudText>
-        <MudText><strong>IMDB ID:</strong> @_movie.ImdbId</MudText>
 
         <MudDivider Class="my-4"/>
-
-        @* ---- MOCKED SHOWING DATA ---- *@
-        @* TODO: Replace with real IShowingApiClient.GetShowingAsync(ShowingId) when the showing system is ready *@
-        <MudText Typo="Typo.h6">Showing info (mocked)</MudText>
-        <MudText><strong>Showing ID:</strong> @ShowingId</MudText>
-        <MudText><strong>Start time:</strong> 20:00</MudText>
-        <MudText><strong>End time:</strong> 22:15</MudText>
-
-        @* TODO: Replace with real IShowingApiClient → Auditorium lookup via showing.AuditoriumId *@
-        <MudText><strong>Auditorium:</strong> Zaal 3</MudText>
-        <MudText><strong>Wheelchair accessible:</strong> Yes</MudText>
-        <MudText><strong>3D compatible:</strong> No</MudText>
-        @* ---- END MOCKED SHOWING DATA ---- *@
+        
+        <MudText><strong>Auditorium:</strong> @_showing?.AuditoriumName</MudText>
+        <MudText><strong>Start time:</strong> @_showing?.StartTime</MudText>
+        <MudText><strong>3D compatible:</strong> @_showing?.Is3DCompatible</MudText>
+        <MudText><strong>3D compatible:</strong> @_showing?.WheelchairAccessible</MudText>
     }
 
 </MudContainer>
@@ -50,10 +41,34 @@
 
     private MovieResponse? _movie;
     private bool _loading = true;
+    
+    // TODO: Replace with real Showing model from SharedLibrary when the showing system is ready
+    private MockShowing? _showing;
 
     protected override async Task OnInitializedAsync()
     {
         _movie = await MovieApi.GetMovieByIdAsync(MovieId);
+        
+        // TODO: Replace with real IShowingApiClient.GetShowingAsync(ShowingId)
+        _showing = new MockShowing
+        {
+            StartTime = "20:00",
+            EndTime = "22:15",
+            AuditoriumName = "Zaal 3",
+            WheelchairAccessible = true,
+            Is3DCompatible = true
+        };
+        
         _loading = false;
+    }
+
+    // TODO: Remove this entire class once the real Showing/Auditorium system is ready
+    private class MockShowing
+    {
+        public string StartTime { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
+        public string AuditoriumName { get; set; } = string.Empty;
+        public bool WheelchairAccessible { get; set; }
+        public bool Is3DCompatible { get; set; }
     }
 }
