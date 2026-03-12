@@ -7,3 +7,4 @@ api_domain: p3api-acc.gielvangaal.dev
 wa_domain: cine.net-acc.gielvangaal.dev
 
 certbot_email: gielvangaal@gmail.com
+blazor_environment: Staging
