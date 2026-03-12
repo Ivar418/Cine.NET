@@ -1,13 +1,14 @@
 ﻿@page "/moviedetails/{MovieId:int}/{ShowingId:int}"
 @inject IMovieApiClient MovieApi
+@inject NavigationManager Nav
 @using SharedLibrary.DTOs.Responses
 @using WA.Services.Http.Interfaces
+@using MudBlazor
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
-
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     @if (_loading)
     {
-        <MudText>Loading...</MudText>
+        <MudProgressCircular Indeterminate="true" />
     }
     else if (_movie == null)
     {
@@ -15,24 +16,80 @@
     }
     else
     {
-        <MudText Typo="Typo.h4">@_movie.Title</MudText>
-        <MudText Typo="Typo.subtitle1">@_movie.About</MudText>
+        <MudPaper Elevation="3" Class="pa-6">
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudImage
+                        Src="@PosterUrl"
+                        Alt="@_movie.Title"
+                        ObjectFit="ObjectFit.Cover"
+                        Style="width: 100%; border-radius: 8px;" />
+                </MudItem>
+                <MudItem xs="12" md="8">
 
-        <MudDivider Class="my-4"/>
+                    <MudText
+                        Typo="Typo.h4"
+                        Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                        Class="mb-4">
+                        @_movie.Title
+                    </MudText>
+                    <div class="white-text">
+                        <MudText><strong>Runtime:</strong> @_movie.Runtime min</MudText>
+                        <MudText><strong>Release date:</strong> @_movie.ReleaseDate</MudText>
+                        <MudText><strong>Age indication:</strong> @(_movie.AgeIndication ?? "Unknown")</MudText>
+                        <MudText><strong>Language:</strong> @(_movie.SpokenLanguageName ?? "Unknown")</MudText>
+                    </div>
 
-        <MudText><strong>Release date:</strong> @_movie.ReleaseDate</MudText>
-        <MudText><strong>Runtime:</strong> @_movie.Runtime min</MudText>
-        <MudText><strong>Language:</strong> @_movie.SpokenLanguageName</MudText>
-        <MudText><strong>Age indication:</strong> @_movie.AgeIndication</MudText>
+                    <MudDivider Class="my-4" />
+                    <div class="white-text">
+                        <MudText><strong>Start time:</strong> @_showing?.StartTime</MudText>
+                        <MudText><strong>End time:</strong> @_showing?.EndTime</MudText>
+                        <MudText><strong>Auditorium:</strong> @_showing?.AuditoriumName</MudText>
 
-        <MudDivider Class="my-4"/>
-        
-        <MudText><strong>Auditorium:</strong> @_showing?.AuditoriumName</MudText>
-        <MudText><strong>Start time:</strong> @_showing?.StartTime</MudText>
-        <MudText><strong>3D compatible:</strong> @_showing?.Is3DCompatible</MudText>
-        <MudText><strong>3D compatible:</strong> @_showing?.WheelchairAccessible</MudText>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1">
+                            <MudText><strong>Wheelchair accessible:</strong></MudText>
+                            @if (_showing?.WheelchairAccessible == true)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" />
+                            }
+                        </MudStack>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1">
+                            <MudText><strong>3D:</strong></MudText>
+                            @if (_showing?.Is3DCompatible == true)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" />
+                            }
+                        </MudStack>
+                    </div>
+                    <MudButton
+                        Variant="Variant.Filled"
+                        Color="Color.Primary"
+                        Size="Size.Large"
+                        Class="mt-6"
+                        OnClick="NavigateToOrder">
+                        Order Tickets
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-6" />
+            <MudText
+                Typo="Typo.h4"
+                Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                Class="mb-3">
+                Description
+            </MudText>
+            <MudText class="white-text">@(_movie.About ?? "No description available.")</MudText>
+        </MudPaper>
     }
-
 </MudContainer>
 
 @code {
@@ -40,29 +97,32 @@
     [Parameter] public int ShowingId { get; set; }
 
     private MovieResponse? _movie;
-    private bool _loading = true;
-    
-    // TODO: Replace with real Showing model from SharedLibrary when the showing system is ready
     private MockShowing? _showing;
+    private bool _loading = true;
+
+    private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterUrl}";
 
     protected override async Task OnInitializedAsync()
     {
         _movie = await MovieApi.GetMovieByIdAsync(MovieId);
-        
-        // TODO: Replace with real IShowingApiClient.GetShowingAsync(ShowingId)
+
         _showing = new MockShowing
         {
             StartTime = "20:00",
             EndTime = "22:15",
             AuditoriumName = "Zaal 3",
             WheelchairAccessible = true,
-            Is3DCompatible = true
+            Is3DCompatible = false
         };
-        
+
         _loading = false;
     }
 
-    // TODO: Remove this entire class once the real Showing/Auditorium system is ready
+    private void NavigateToOrder()
+    {
+        Nav.NavigateTo($"/ideal-mock?reference=76328&amount=36.00&merchant=Cine.NET&description=Filmtickets");
+    }
+
     private class MockShowing
     {
         public string StartTime { get; set; } = string.Empty;
