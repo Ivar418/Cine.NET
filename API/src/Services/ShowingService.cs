@@ -21,6 +21,7 @@ public class ShowingService
     {
         var showings = await _db.Showings
             .Include(s => s.Movie)
+            .Include(s => s.Auditorium)
             .ToListAsync();
 
         var ticketTypes = await _db.TicketTypes.ToListAsync();
@@ -34,6 +35,9 @@ public class ShowingService
         {
             ShowingId = s.Id,
             MovieTitle = s.Movie.Title,
+            Runtime = s.Movie.Runtime,
+            AuditoriumId = s.AuditoriumId,
+            AuditoriumName = s.Auditorium.Name,
             StartsAt = s.StartsAt,
 
             Prices = new ShowingPricesResponse
