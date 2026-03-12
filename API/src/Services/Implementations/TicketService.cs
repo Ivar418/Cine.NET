@@ -21,8 +21,8 @@ public class TicketService: ITicketService
             => await _repository.GetByIdAsync(id);
 
 
-        public async Task<IReadOnlyList<Ticket>> GetMovieTicketsAsync(int movieId)
-            => await _repository.GetTicketsByMovieIdAsync(movieId);
+        public async Task<IReadOnlyList<Ticket>> GetShowingTicketsAsync(int showingId)
+            => await _repository.GetTicketsByShowingIdAsync(showingId);
 
         public async Task<Ticket> CreateTicketAsync(Ticket ticket)
         {

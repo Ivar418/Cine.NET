@@ -36,10 +36,10 @@ namespace API.Controllers
             return Ok(response);
         }
 
-        [HttpGet("movie/{movieId}")]
-        public async Task<IActionResult> GetByMovieId(int movieId)
+        [HttpGet("showing/{showingId}")]
+        public async Task<IActionResult> GetByShowingId(int showingId)
         {
-            var tickets = await _ticketService.GetMovieTicketsAsync(movieId);
+            var tickets = await _ticketService.GetShowingTicketsAsync(showingId);
             var response = TicketMapper.ToResponse(tickets);
             return Ok(response);
         }

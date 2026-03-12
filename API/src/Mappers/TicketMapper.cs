@@ -11,8 +11,8 @@ public class TicketMapper
         return new TicketResponse
         {
             Id = ticket.Id,
-            MovieId = ticket.MovieId,
-            MovieTitle = ticket.Movie.Title,
+            ShowingId = ticket.ShowingId,
+            MovieTitle = ticket.Showing.Movie.Title,
             ShowDateTime = ticket.ShowDateTime,
             SeatNumber = ticket.SeatNumber,
             Status = ticket.Status,
@@ -28,6 +28,6 @@ public class TicketMapper
 
     public static Ticket ToEntity(TicketRequest request)
     {
-        return new Ticket(request.MovieId, request.ShowDateTime, request.SeatNumber, request.Price);
+        return new Ticket(request.ShowingId, request.ShowDateTime, request.SeatNumber, request.Price);
     }
 }

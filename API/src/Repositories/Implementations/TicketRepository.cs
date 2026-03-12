@@ -17,18 +17,18 @@ public class TicketRepository: ITicketRepository
 
     public async Task<IReadOnlyList<Ticket>> GetAllAsync()
         => await _db.Tickets.AsNoTracking()
-            .Include(t => t.Movie)
+            .Include(t => t.Showing)
             .ToListAsync();
 
     public async Task<Ticket?> GetByIdAsync(int id)
         => await _db.Tickets.AsNoTracking()
-            .Include(t => t.Movie)
+            .Include(t => t.Showing)
             .FirstOrDefaultAsync(t => t.Id == id);
 
-    public async Task<IReadOnlyList<Ticket>> GetTicketsByMovieIdAsync(int movieId)
+    public async Task<IReadOnlyList<Ticket>> GetTicketsByShowingIdAsync(int showingId)
         => await _db.Tickets.AsNoTracking()
-            .Where(t => t.MovieId == movieId)
-            .Include(t => t.Movie)
+            .Where(t => t.ShowingId == showingId)
+            .Include(t => t.Showing.Movie)
             .ToListAsync();
 
     public async Task AddAsync(Ticket ticket)

@@ -162,7 +162,7 @@ using (var scope = app.Services.CreateScope())
 
     // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
     // Since this is a school project which always destroys the database on recreation it does not matter
-    db.Database.Migrate();
+    db.Database.EnsureCreated();
 
     // Seed data
     try

@@ -5,7 +5,7 @@ namespace SharedLibrary.Domain.Entities;
 public class Ticket
 {
     public int Id { get; set; }
-    public int MovieId { get; set; }
+    public int ShowingId { get; set; }
     public DateTime ShowDateTime { get; set; }
     public string SeatNumber { get; set; } = string.Empty;
     public decimal Price { get; set; }
@@ -14,7 +14,7 @@ public class Ticket
     
 
     // Navigation
-    public Movie? Movie { get; set; }
+    public Showing? Showing { get; set; }
 
 
     // --- Row Timestamps ---
@@ -59,9 +59,9 @@ public class Ticket
     }
 
     // --- Public constructor ---
-    public Ticket(int movieId, DateTime showDateTime, string seatNumber, decimal price)
+    public Ticket(int showingId, DateTime showDateTime, string seatNumber, decimal price)
     {
-        MovieId = movieId;
+        ShowingId = showingId;
         ShowDateTime = showDateTime;
         SeatNumber = seatNumber;
         Price = price;

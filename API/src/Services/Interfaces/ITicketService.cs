@@ -6,7 +6,7 @@ public interface ITicketService
 {
     Task<IReadOnlyList<Ticket>> GetAllTicketsAsync();
     Task<Ticket?> GetTicketByIdAsync(int id);
-    Task<IReadOnlyList<Ticket>> GetMovieTicketsAsync(int movieId);
+    Task<IReadOnlyList<Ticket>> GetShowingTicketsAsync(int showingId);
     Task<Ticket> CreateTicketAsync(Ticket ticket);
     Task UpdateTicketAsync(Ticket ticket);
     Task DeleteTicketAsync(int id);

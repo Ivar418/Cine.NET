@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using SharedLibrary.DTOs.Responses;
@@ -56,7 +56,7 @@ namespace API.Infrastructure.Database
                     await movieRepository.AddMovieAsync(movie);
                 }
             }
-            
+
             if (!await db.TicketTypes.AnyAsync())
             {
                 db.TicketTypes.AddRange(
@@ -77,7 +77,7 @@ namespace API.Infrastructure.Database
             }
 
             // For future use when we want to add more pricing options, but for now we can just calculate them on the fly in the API
-            
+
             // if (!await db.PricingOptions.AnyAsync())
             // {
             //     db.PricingOptions.AddRange(
@@ -87,7 +87,7 @@ namespace API.Infrastructure.Database
             //         new PricingOption { Name = "VIPSeat", PriceModifier = 3.00m }
             //     );
             // }
-            
+
             // AUDITORIUMS
             if (!await db.Auditoriums.AnyAsync())
             {
@@ -100,9 +100,9 @@ namespace API.Infrastructure.Database
                     new Auditorium { Name = "Zaal 6" }
                 );
             }
-            
+
             await db.SaveChangesAsync();
-            
+
             if (!await db.Showings.AnyAsync())
             {
                 var movies = await db.Movies.ToListAsync();
@@ -115,22 +115,13 @@ namespace API.Infrastructure.Database
                 {
                     showings.Add(new Showing
                     {
-                        Title = movie.OriginalTitle,
-                        TmdbId = movie.Id,
-                        Language = movie.OriginalLanguage,
-                        PosterUrl = movie.PosterPath,
-                        Runtime = movie.Runtime,
-                        ImdbId = movie.ImdbId,
-                        ReleaseDate = movie.ReleaseDate,
-                        About = movie.Overview,
-                        AgeIndication = "PG-13",
-                        SpokenLanguageName = firstLanguage?.EnglishName,
-                        SpokenLanguageCodeIso6391 = firstLanguage?.Iso_639_1,
-                        GenresIds = movie.Genres.Select(genreDto => genreDto.Id).ToList(),
-                        RowCreatedTimestampUtc = Movie.CurrentUtcTimestamp()
+                        MovieId = movies[i].Id,
+                        AuditoriumId = auditoriums[i % auditoriums.Count].Id,
+                        StartsAt = start.AddHours(i * 2), // elke 2 uur
+                        IsThreeD = (i % 2 == 0), // om en om 3D
+                        AuditoriumLayoutSnapshot = "[]" // snapshot leeg laten
                     });
                 }
-            }
 
                 db.Showings.AddRange(showings);
                 await db.SaveChangesAsync();
