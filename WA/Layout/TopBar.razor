@@ -1,37 +1,49 @@
-<MudAppBar Color="Color.Primary" Elevation="1">
+<MudAppBar Color="Color.Default"
+           Elevation="1"
+           Style="background-color: var(--mud-palette-appbar-background); color: white; height:110px; justify-content:center;">
 
-    <MudText Typo="Typo.h6">App</MudText>
+    <div style="display:flex; align-items:center; padding-left:16px;">
+        <a href="/" style="display:flex; align-items:center;">
+            <img src="images/logo.png" alt="App Logo" style="height:90px; width:auto; padding-top:10px; padding-bottom:10px;" />
+        </a>
+    </div>
 
     <MudSpacer />
 
-    <NavLink href="/" Match="NavLinkMatch.All">
-        <MudButton Variant="Variant.Filled">
-            Home
-        </MudButton>
-    </NavLink>
+    <MudButton Class="nav-button"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               Href="/"
+               Match="NavLinkMatch.All">
+        Home
+    </MudButton>
 
-    <NavLink href="/users">
-        <MudButton Variant="Variant.Filled">
-            Users
-        </MudButton>
-    </NavLink>
-    
-    <NavLink href="/showings">
-        <MudButton Variant="Variant.Filled">
-            Showings with prices
-        </MudButton>
-    </NavLink>
+    <MudButton Class="nav-button"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               Href="/users">
+        Users
+    </MudButton>
 
-    <NavLink href="/componentexamples">
-        <MudButton Variant="Variant.Filled">
-            Component Examples
-        </MudButton>
-    </NavLink>
+    <MudButton Class="nav-button"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               Href="/showings">
+        Showings with prices
+    </MudButton>
 
-    <NavLink href="/styleguide">
-        <MudButton Variant="Variant.Filled">
-            Styleguide
-        </MudButton>
-    </NavLink>
+    <MudButton Class="nav-button"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               Href="/componentexamples">
+        Component Examples
+    </MudButton>
+
+    <MudButton Class="nav-button"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               Href="/styleguide">
+        Styleguide
+    </MudButton>
 
 </MudAppBar>
