@@ -1,16 +1,49 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
+@using WA.Theme
+@inject WA.Services.LayoutStateService LayoutState
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+<MudThemeProvider Theme="@AppTheme.Dark" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-        <article class="content px-4">
+<MudLayout>
+
+    @if (LayoutState.ShowTopBar)
+    {
+        <TopBar />
+    }
+
+    <MudMainContent>
+
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+
+    </MudMainContent>
+
+    @if (LayoutState.ShowFooter)
+    {
+        <Footer></Footer>
+    }
+
+    @if (LayoutState.ShowFab)
+    {
+        <MudFab StartIcon="@Icons.Material.Filled.Add"
+                Color="Color.Primary"
+                Style="position: fixed; bottom: 24px; right: 24px;" />
+    }
+
+</MudLayout>
+
+@code {
+    protected override void OnInitialized()
+    {
+        LayoutState.OnChange += () => InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        LayoutState.OnChange -= StateHasChanged;
+    }
+}
