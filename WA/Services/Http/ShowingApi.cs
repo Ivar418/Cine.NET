@@ -40,7 +40,13 @@ public class ShowingApi : IShowingApi
     {
         try
         {
-            return await _http.GetFromJsonAsync<ShowingDisplayResponse>($"{BasePath}/{id}/details");
+            var response = await _http.GetAsync($"{BasePath}/{id}/details");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<ShowingDisplayResponse>();
         }
         catch (Exception ex)
         {

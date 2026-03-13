@@ -11,9 +11,15 @@
     {
         <MudProgressCircular Indeterminate="true" />
     }
-    else if (_movie == null)
+    else if (_movie == null || _showing == null)
     {
-        <MudAlert Severity="Severity.Error">Movie not found.</MudAlert>
+        <MudAlert Severity="Severity.Error">Movie or showing not found.</MudAlert>
+    }
+    else if (_mismatch)
+    {
+        <MudAlert Severity="Severity.Warning">
+            This showing does not belong to this movie.
+        </MudAlert>
     }
     else
     {
@@ -89,18 +95,22 @@
     private ShowingDisplayResponse? _showing;
     
     private bool _loading = true;
+    private bool _mismatch = false;
 
     private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterUrl}";
+
 
     protected override async Task OnInitializedAsync()
     {
         _movie = await MovieApi.GetMovieByIdAsync(MovieId);
         _showing = await ShowingApi.GetShowingDisplayByIdAsync(ShowingId);
-        
+
+        if (_movie != null && _showing != null && _showing.MovieId != MovieId)
+        {
+            _mismatch = true;
+        }
+
         _loading = false;
-        
-        Console.WriteLine($"Showing: {System.Text.Json.JsonSerializer.Serialize(_showing)}");
-        Console.WriteLine($"Showing: {System.Text.Json.JsonSerializer.Serialize(_movie)}");
     }
 
     private void NavigateToOrder()
