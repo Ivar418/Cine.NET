@@ -1,0 +1,241 @@
+@page "/thisweek"
+@using SharedLibrary.DTOs.Responses
+@using SharedLibrary.Domain.Entities
+@using WA.Services.Http.Interfaces
+@inject IMovieApiClient MovieApiClient
+@inject IShowingApi ShowingApi
+@inject IAuditoriumApi AuditoriumApi
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@using WA.Layout
+@layout AdminLayout
+
+<PageTitle>Movies Weekly</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
+    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">This Week</MudText>
+    <MudText Typo="Typo.h6" Style="color: #03DAC6;">Overview</MudText>
+</MudStack>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+else if (_loadError)
+{
+    <MudAlert Severity="Severity.Error">Failed to load data. Please try again.</MudAlert>
+}
+else
+{
+    <div class="weekly-schedule-container">
+        @* Header rij met dagen *@
+        <div class="weekly-header">
+            @foreach (var day in _daysInWeek)
+            {
+                <div class="day-column-header">
+                    <MudText Typo="Typo.h6" Align="Align.Center" Style="color: #BB86FC; font-weight: bold;">
+                        @day.ToString("dddd")
+                    </MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Style="color: #888;">
+                        @day.ToString("dd MMM")
+                    </MudText>
+                    <div class="header-line"></div>
+                </div>
+            }
+        </div>
+
+        @* Week inhoud *@
+        <div class="weekly-grid">
+            @foreach (var day in _daysInWeek)
+            {
+                <div class="day-column">
+                    @foreach (var showing in _showings.Where(s => s.StartsAt.Date == day.Date).OrderBy(s => s.StartsAt))
+                    {
+                        <MudCard Elevation="4" Class="movie-card-weekly mb-3">
+                            <MudCardContent Class="pa-2">
+                                <div class="d-flex justify-space-between align-center">
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: bold; font-size: 0.85rem; color: #121212;">
+                                        @showing.MovieTitle
+                                    </MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Style="font-size: 0.7rem; height: 20px;">
+                                        @showing.StartsAt.ToString("HH:mm")
+                                    </MudChip>
+                                </div>
+                                
+                                <div class="d-flex align-center mt-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" Size="Size.Small" Style="font-size: 0.9rem; color: #555;" />
+                                    <MudText Typo="Typo.caption" Class="ml-1" Style="color: #444; font-weight: 500;">
+                                        @showing.AuditoriumName
+                                    </MudText>
+                                    <MudDivider Vertical="true" FlexItem="true" Class="mx-2" Style="height: 12px; align-self: center; background-color: #999;" />
+                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Style="font-size: 0.9rem; color: #555;" />
+                                    <MudText Typo="Typo.caption" Class="ml-1" Style="color: #444; font-weight: 500;">
+                                        @(showing.Runtime)m
+                                    </MudText>
+                                </div>
+
+                                <div class="d-flex align-center mt-2">
+                                    <div class="status-dot-weekly @GetStatusClass(showing)"></div>
+                                    <MudText Typo="Typo.caption" Style="font-size: 0.7rem; margin-left: 4px; color: #333;">
+                                        @GetStatusText(showing)
+                                    </MudText>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                    @if (!_showings.Any(s => s.StartsAt.Date == day.Date))
+                    {
+                        <div class="no-showings pa-4 d-flex align-center justify-center">
+                            <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">Geen vertoningen</MudText>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .weekly-schedule-container {
+        display: flex;
+        flex-direction: column;
+        background-color: #121212;
+        padding: 20px;
+        border-radius: 8px;
+        overflow-x: auto;
+        min-width: 100%;
+    }
+
+    .weekly-header {
+        display: flex;
+        min-width: 100%;
+        margin-bottom: 20px;
+        gap: 12px;
+    }
+
+    .day-column-header {
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: rgba(187, 134, 252, 0.05);
+        padding: 10px 0;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .header-line {
+        width: 60%;
+        height: 2px;
+        background: #BB86FC;
+        margin-top: 8px;
+        border-radius: 2px;
+    }
+
+    .weekly-grid {
+        display: flex;
+        min-width: 100%;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .day-column {
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        flex-direction: column;
+        min-height: 200px;
+        background-color: rgba(255, 255, 255, 0.02);
+        padding: 8px;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .movie-card-weekly {
+        background-color: #D1D5DB !important;
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+
+    .movie-card-weekly:hover {
+        transform: translateY(-2px);
+        background-color: #E5E7EB !important;
+    }
+
+    .status-dot-weekly {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .status-available { background-color: #4CAF50; }
+    .status-few { background-color: #FFEB3B; }
+    .status-soldout { background-color: #F44336; }
+
+    .no-showings {
+        border: 1px dashed #333;
+        border-radius: 8px;
+    }
+</style>
+
+@code {
+    private List<ShowingsWithPricesResponse> _showings = new();
+    private List<DateTime> _daysInWeek = new();
+    private bool _loading = true;
+    private bool _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitializeWeekDays();
+        await LoadDataAsync();
+    }
+
+    private void InitializeWeekDays()
+    {
+        var today = DateTime.Today;
+        // Start vanaf maandag van de huidige week
+        int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+        var startOfWeek = today.AddDays(-1 * diff);
+
+        for (int i = 0; i < 7; i++)
+        {
+            _daysInWeek.Add(startOfWeek.AddDays(i));
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        _loadError = false;
+
+        try
+        {
+            var allShowings = await ShowingApi.GetShowingsWithPricesAsync() ?? new List<ShowingsWithPricesResponse>();
+
+            var startDay = _daysInWeek.First().Date;
+            var endDay = _daysInWeek.Last().Date.AddDays(1);
+
+            _showings = allShowings
+                .Where(s => s.StartsAt.Date >= startDay && s.StartsAt.Date < endDay)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _loadError = true;
+            Snackbar.Add("Failed to load data.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string GetStatusClass(ShowingsWithPricesResponse showing)
+    {
+        return "status-available";
+    }
+
+    private string GetStatusText(ShowingsWithPricesResponse showing)
+    {
+        return "Seats available";
+    }
+}

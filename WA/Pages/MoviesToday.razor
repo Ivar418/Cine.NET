@@ -1,4 +1,4 @@
-@page "/MoviesToday"
+@page "/today"
 @using SharedLibrary.DTOs.Responses
 @using SharedLibrary.Domain.Entities
 @using WA.Services.Http.Interfaces
@@ -86,23 +86,7 @@ else
                                 <MudCardContent Class="pa-2">
                                     <MudText Typo="Typo.subtitle2" Style="font-weight: bold; font-size: 0.8rem;">@showing.MovieTitle</MudText>
                                     
-                                    @if (showing.AuditoriumId == 1 && showing.MovieTitle == "Movie title")
-                                    {
-                                        <div class="movie-content-with-poster">
-                                            <div class="poster-placeholder">
-                                                <img src="https://image.tmdb.org/t/p/w200/ovM0BgeFz4vEKCDghSRp7COZ9vY.jpg" alt="Poster" />
-                                            </div>
-                                            <div class="movie-tags">
-                                                <span class="tag tag-horror">Horror • Thriller</span>
-                                                <span class="tag tag-age">16+ | 150m</span>
-                                            </div>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <MudText Typo="Typo.caption" Class="d-block mt-1" Style="color: #444; font-weight: 500;">Horror, Thriller</MudText>
-                                        <MudText Typo="Typo.caption" Class="d-block" Style="color: #444; font-weight: 500;">Age: 16+ | @(showing.Runtime)m</MudText>
-                                    }
+                                    <MudText Typo="Typo.caption" Class="d-block mt-1" Style="color: #444; font-weight: 500;">Runtime: @(showing.Runtime)m</MudText>
                                     
                                     @* Voorbeeld van status indicator zoals in afbeelding *@
                                     <div class="d-flex align-center mt-auto pt-2">
@@ -236,54 +220,6 @@ else
         flex-direction: column;
     }
 
-    .movie-content-with-poster {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        margin-top: 4px;
-        height: 120px;
-    }
-
-    .poster-placeholder {
-        width: 80px;
-        height: 110px;
-        background-color: #333;
-        border-radius: 6px;
-        overflow: hidden;
-    }
-
-    .poster-placeholder img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .movie-tags {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        gap: 4px;
-        flex: 1;
-    }
-
-    .tag {
-        font-size: 0.6rem;
-        padding: 2px 6px;
-        border-radius: 4px;
-        white-space: nowrap;
-        width: fit-content;
-    }
-
-    .tag-horror {
-        background-color: #7B1FA2;
-        color: white;
-    }
-
-    .tag-age {
-        background-color: #4A148C;
-        color: white;
-    }
-
     .status-dot {
         width: 10px;
         height: 10px;
@@ -313,97 +249,28 @@ else
 
         try
         {
-            var audTask = AuditoriumApi.GetAllAuditoriumsAsync();
+            var auditoriumTask = AuditoriumApi.GetAllAuditoriumsAsync();
             var showingTask = ShowingApi.GetShowingsWithPricesAsync();
 
-            await Task.WhenAll(audTask, showingTask);
+            await Task.WhenAll(auditoriumTask, showingTask);
 
-            _auditoriums = audTask.Result ?? new();
-            _showings = showingTask.Result?.ToList() ?? new();
+            _auditoriums = auditoriumTask.Result ?? new List<Auditorium>();
+            var allShowings = showingTask.Result ?? new List<ShowingsWithPricesResponse>();
 
-            // Als er geen data is, vul aan met placeholders om het ontwerp te tonen zoals gevraagd
-            if (_auditoriums.Count == 0)
-            {
-                for (int i = 1; i <= 6; i++)
-                {
-                    _auditoriums.Add(new Auditorium { Id = i, Name = $"Zaal {i}" });
-                }
-
-                // Voeg placeholder showings toe gebaseerd op de afbeelding
-                var today = DateTimeOffset.Now.Date;
-                
-                // Zaal 1: Film met poster
-                _showings.Add(new ShowingsWithPricesResponse 
-                { 
-                    ShowingId = 1, 
-                    MovieTitle = "Movie title", 
-                    AuditoriumId = 1, 
-                    Runtime = 150, 
-                    StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 15, 0, 0, TimeSpan.Zero)
-                });
-
-                // Zaal 2: Few seats
-                _showings.Add(new ShowingsWithPricesResponse 
-                { 
-                    ShowingId = 2, 
-                    MovieTitle = "Movie title", 
-                    AuditoriumId = 2, 
-                    Runtime = 150, 
-                    StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 15, 0, 0, TimeSpan.Zero)
-                });
-
-                // Zaal 3: Sold out
-                _showings.Add(new ShowingsWithPricesResponse 
-                { 
-                    ShowingId = 3, 
-                    MovieTitle = "Movie title", 
-                    AuditoriumId = 3, 
-                    Runtime = 150, 
-                    StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 17, 0, 0, TimeSpan.Zero)
-                });
-
-                // Zaal 4: Sold out (vroeger)
-                _showings.Add(new ShowingsWithPricesResponse 
-                { 
-                    ShowingId = 6, 
-                    MovieTitle = "Movie title", 
-                    AuditoriumId = 4, 
-                    Runtime = 150, 
-                    StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 12, 30, 0, TimeSpan.Zero)
-                });
-
-                // Zaal 5: Sold out
-                _showings.Add(new ShowingsWithPricesResponse 
-                { 
-                    ShowingId = 9, 
-                    MovieTitle = "Movie title", 
-                    AuditoriumId = 5, 
-                    Runtime = 150, 
-                    StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 14, 30, 0, TimeSpan.Zero)
-                });
-            }
+            var today = DateTimeOffset.Now.Date;
+            _showings = allShowings
+                .Where(s => s.StartsAt.Date == today)
+                .ToList();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Zelfs bij error tonen we placeholders voor de demo
-            _auditoriums = new List<Auditorium>();
-            for (int i = 1; i <= 6; i++)
-            {
-                _auditoriums.Add(new Auditorium { Id = i, Name = $"Zaal {i}" });
-            }
-            
-             var today = DateTimeOffset.Now.Date;
-             _showings = new List<ShowingsWithPricesResponse>
-             {
-                 new() { ShowingId = 1, MovieTitle = "Movie title", AuditoriumId = 1, Runtime = 150, StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 15, 0, 0, TimeSpan.Zero) },
-                 new() { ShowingId = 2, MovieTitle = "Movie title", AuditoriumId = 2, Runtime = 150, StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 15, 0, 0, TimeSpan.Zero) },
-                 new() { ShowingId = 3, MovieTitle = "Movie title", AuditoriumId = 3, Runtime = 150, StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 17, 0, 0, TimeSpan.Zero) },
-                 new() { ShowingId = 6, MovieTitle = "Movie title", AuditoriumId = 4, Runtime = 150, StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 12, 30, 0, TimeSpan.Zero) },
-                 new() { ShowingId = 9, MovieTitle = "Movie title", AuditoriumId = 5, Runtime = 150, StartsAt = new DateTimeOffset(today.Year, today.Month, today.Day, 14, 30, 0, TimeSpan.Zero) }
-             };
+            _loadError = true;
+            Snackbar.Add("Failed to load data.", Severity.Error);
         }
-
-        _loading = false;
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private double CalculateTopOffset(DateTimeOffset dateTime)
@@ -426,18 +293,11 @@ else
 
     private string GetStatusClass(ShowingsWithPricesResponse showing)
     {
-        // Mock data logic gebaseerd op ID voor demo
-        if (showing.ShowingId == 3 || showing.ShowingId == 6 || showing.ShowingId == 9) return "status-soldout";
-        if (showing.ShowingId == 2) return "status-few";
-        
         return "status-available";
     }
 
     private string GetStatusText(ShowingsWithPricesResponse showing)
     {
-        if (showing.ShowingId == 3 || showing.ShowingId == 6 || showing.ShowingId == 9) return "Sold out";
-        if (showing.ShowingId == 2) return "Few seats left";
-        
         return "Seats available";
     }
 }
