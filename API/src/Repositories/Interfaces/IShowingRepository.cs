@@ -1,6 +1,7 @@
 ﻿using API.Domain.Common;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
+using SharedLibrary.DTOs.Responses;
 
 namespace API.src.Repositories.Interfaces
 {
@@ -12,5 +13,6 @@ namespace API.src.Repositories.Interfaces
         Task<Showing> UpdateShowingAsync(Showing Showing);
         Task<ResultOf<Showing>> DeleteShowingByIdAsync(int ShowingId);
         Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id);
+        Task<ResultOf<ShowingDisplayResponse>> GetShowingDisplayByIdAsync(int id);
     }
 }

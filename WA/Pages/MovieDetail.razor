@@ -1,5 +1,6 @@
 ﻿@page "/moviedetails/{MovieId:int}/{ShowingId:int}"
 @inject IMovieApiClient MovieApi
+@inject IShowingApi ShowingApi
 @inject NavigationManager Nav
 @using SharedLibrary.DTOs.Responses
 @using WA.Services.Http.Interfaces
@@ -42,24 +43,12 @@
 
                     <MudDivider Class="my-4" />
                     <div class="white-text">
-                        <MudText><strong>Start time:</strong> @_showing?.StartTime</MudText>
-                        <MudText><strong>End time:</strong> @_showing?.EndTime</MudText>
+                        <MudText><strong>Start time:</strong> @_showing?.StartsAt</MudText>
                         <MudText><strong>Auditorium:</strong> @_showing?.AuditoriumName</MudText>
-
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1">
-                            <MudText><strong>Wheelchair accessible:</strong></MudText>
-                            @if (_showing?.WheelchairAccessible == true)
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
-                            }
-                            else
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" />
-                            }
-                        </MudStack>
+                        
                         <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1">
                             <MudText><strong>3D:</strong></MudText>
-                            @if (_showing?.Is3DCompatible == true)
+                            @if (_showing?.Is3D == true)
                             {
                                 <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
                             }
@@ -97,7 +86,8 @@
     [Parameter] public int ShowingId { get; set; }
 
     private MovieResponse? _movie;
-    private MockShowing? _showing;
+    private ShowingDisplayResponse? _showing;
+    
     private bool _loading = true;
 
     private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterUrl}";
@@ -105,30 +95,16 @@
     protected override async Task OnInitializedAsync()
     {
         _movie = await MovieApi.GetMovieByIdAsync(MovieId);
-
-        _showing = new MockShowing
-        {
-            StartTime = "20:00",
-            EndTime = "22:15",
-            AuditoriumName = "Zaal 3",
-            WheelchairAccessible = true,
-            Is3DCompatible = false
-        };
-
+        _showing = await ShowingApi.GetShowingDisplayByIdAsync(ShowingId);
+        
         _loading = false;
+        
+        Console.WriteLine($"Showing: {System.Text.Json.JsonSerializer.Serialize(_showing)}");
+        Console.WriteLine($"Showing: {System.Text.Json.JsonSerializer.Serialize(_movie)}");
     }
 
     private void NavigateToOrder()
     {
         Nav.NavigateTo($"/ideal-mock?reference=76328&amount=36.00&merchant=Cine.NET&description=Filmtickets");
-    }
-
-    private class MockShowing
-    {
-        public string StartTime { get; set; } = string.Empty;
-        public string EndTime { get; set; } = string.Empty;
-        public string AuditoriumName { get; set; } = string.Empty;
-        public bool WheelchairAccessible { get; set; }
-        public bool Is3DCompatible { get; set; }
     }
 }

@@ -7,6 +7,7 @@ namespace WA.Services.Http;
 public class ShowingApi : IShowingApi
 {
     private readonly HttpClient _http;
+    private const string BasePath = "api/showings";
 
     public ShowingApi(HttpClient http)
     {
@@ -16,9 +17,36 @@ public class ShowingApi : IShowingApi
     public async Task<IReadOnlyList<ShowingsWithPricesResponse>> GetShowingsWithPricesAsync()
     {
         var result = await _http.GetFromJsonAsync<List<ShowingsWithPricesResponse>>(
-            "api/showings/with-prices"
+            $"{BasePath}/with-prices"
         );
 
         return result ?? [];
     }
+
+    public async Task<ShowingResponse?> GetShowingByIdAsync(int id)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<ShowingResponse>($"{BasePath}/{id}");
+        }
+        catch(Exception ex)
+        {
+            Console.Error.WriteLine($"[ShowingApiClient] GetShowingById({id}) failed: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<ShowingDisplayResponse?> GetShowingDisplayByIdAsync(int id)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<ShowingDisplayResponse>($"{BasePath}/{id}/details");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[ShowingApiClient] GetShowingDisplayById({id}) failed: {ex.Message}");
+            return null;
+        }
+    }
+    
 }
