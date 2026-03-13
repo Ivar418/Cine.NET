@@ -36,7 +36,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
-builder.Services.AddScoped<ShowingService>();
+builder.Services.AddScoped<IShowingService, ShowingService>();
 builder.Services.AddScoped<PricingService>();
 
 // Monitoring: health check endpoint
