@@ -1,6 +1,6 @@
 ﻿namespace SharedLibrary.DTOs.Responses;
 
-// Showing response that included MovieTitle and AuditoriumName
+// Showing response that includes MovieTitle and AuditoriumName
 public class ShowingDisplayResponse
 {
     public int Id { get; set; }
