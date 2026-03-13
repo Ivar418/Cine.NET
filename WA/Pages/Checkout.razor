@@ -1,9 +1,5 @@
 @page "/checkout/{ShowingId:int}"
-@using Microsoft.AspNetCore.Components
-@using System.Net.Http.Json
-@using SharedLibrary.DTOs.Responses
-@using WA.Models
-@inject HttpClient Http
+@namespace WA.Pages
 
 <MudContainer MaxWidth="MaxWidth.Small">
 
@@ -85,35 +81,3 @@
     </MudStepper>
 
 </MudContainer>
-
-@code {
-
-    // Houdt bij in welke stap van de checkout we zitten (MudStepper)
-    int step = 0;
-
-    // Tijdelijke testdata voor geselecteerde stoelen
-    // Later komt dit van de SeatSelector component / API
-    List<TicketSelection> seats = new()
-    {
-        new TicketSelection{ Row = 3, SeatNumber = 6 },
-        new TicketSelection{ Row = 3, SeatNumber = 7 }
-    };
-
-    // ShowingId komt uit de URL:
-    // /checkout/2  → ShowingId = 2
-    [Parameter]
-    public int ShowingId { get; set; }
-
-    // Hier slaan we de API response op
-    // (filmnaam, starttijd, prijzen)
-    private ShowingsWithPricesResponse? showing;
-
-    // Wordt automatisch uitgevoerd wanneer de pagina laadt
-    // Hier halen we de showing + prijzen op uit de API
-    protected override async Task OnInitializedAsync()
-    {
-        showing = await Http.GetFromJsonAsync<ShowingsWithPricesResponse>(
-            $"api/showings/{ShowingId}/prices"
-        );
-    }
-}
