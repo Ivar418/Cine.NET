@@ -3,14 +3,15 @@ using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
+using SharedLibrary.DTOs.Responses.TMDB;
 
 namespace API.Services.Implementations;
 
 public class MovieService : IMovieService
 {
-    private readonly MovieRepository _movieRepository;
+    private readonly IMovieRepository _movieRepository;
 
-    public MovieService(MovieRepository movieRepository)
+    public MovieService(IMovieRepository movieRepository)
     {
         _movieRepository = movieRepository;
     }
@@ -30,6 +31,20 @@ public class MovieService : IMovieService
         }
 
         return ResultOf<IEnumerable<Movie>>.Success(listOfAddedMovies);
+    }
+
+    public async Task<ResultOf<Movie>> AddMovieAsync(TmdbMovieDetailsResponse movieDetails)
+    {
+        try
+        {
+            var movie = await _movieRepository.AddMovieAsync(movieDetails);
+
+            return ResultOf<Movie>.Success(movie);
+        }
+        catch (Exception ex)
+        {
+            return ResultOf<Movie>.Failure(ex.Message);
+        }
     }
 
     public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage)

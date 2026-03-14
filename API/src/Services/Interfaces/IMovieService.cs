@@ -7,6 +7,8 @@ namespace API.Services.Interfaces;
 
 public interface IMovieService
 {
-    Task<ResultOf<IEnumerable<Movie>>> AddMovieAsyncForEachSpecifiedLanguage(int TmdbId, IEnumerable<string>? informationLanguages);
-    Task<ResultOf<Movie>> AddMovieAsync(int TmdbId, string InfomrationLanguage = TODO);
+    Task<ResultOf<IEnumerable<Movie>>> AddMovieAsyncForEachSpecifiedLanguage(int tmdbId, IEnumerable<string>? informationLanguages = null);
+    Task<ResultOf<Movie>> AddMovieAsync(TmdbMovieDetailsResponse movieDetails);
+    Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage);
+
 }

@@ -9,8 +9,8 @@ public interface IMovieRepository
 {
     Task<ResultOf<Movie>> GetMovieAsync(int id);
     Task<ResultOf<ICollection<Movie>>> GetMoviesAsync();
-    Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie);
-    Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage = "nl");
+    Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie, string? informationLanguage = null);
+    Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language = "und");
     Task<Movie> UpdateMovieAsync(Movie movie);
     Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId);
     Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language);

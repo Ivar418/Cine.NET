@@ -41,9 +41,8 @@ public class MovieRepository : IMovieRepository
         }
     }
 
-    public async Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie)
+    public async Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie, string? informationLanguage = null)
     {
-        Console.WriteLine($"Adding movie: {movie.OriginalTitle}");
 
         var firstLanguage = movie.SpokenLanguages?.FirstOrDefault();
         var dutchReleaseInfo = await GetDutchMovieReleaseDatesAsync(movie.Id);
@@ -53,6 +52,7 @@ public class MovieRepository : IMovieRepository
         {
             Title = movie.OriginalTitle,
             TmdbId = movie.Id,
+            InformationLanguage = informationLanguage ?? "und",
             Language = movie.OriginalLanguage,
             PosterPath = movie.PosterPath,
             BackdropPath = movie.BackdropPath,
@@ -70,25 +70,25 @@ public class MovieRepository : IMovieRepository
         return result.Entity;
     }
 
-    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage)
+    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language = "und")
     {
         try
         {
             // Check if movie already exists
-            var existingMovie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.InformationLanguage == informationLanguage);
+            var existingMovie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.InformationLanguage == language);
             if (existingMovie != null)
             {
                 return ResultOf<Movie>.Failure("Movie already exists");
             }
 
             // Fetch details from TMDB
-            var details = await GetTmdbMovieDetailsAsync(tmdbId, informationLanguage);
+            var details = await GetTmdbMovieDetailsAsync(tmdbId, language);
             if (details == null)
             {
                 return ResultOf<Movie>.Failure("Movie not found on TMDB");
             }
 
-            return ResultOf<Movie>.Success(await AddMovieAsync(details));
+            return ResultOf<Movie>.Success(await AddMovieAsync(details, language));
         }
         catch (HttpRequestException)
         {
@@ -185,7 +185,6 @@ public class MovieRepository : IMovieRepository
         }
         catch (JsonException e)
         {
-            Console.WriteLine($"Error parsing movie details: {e.Message}");
             throw new Exception("Error parsing movie details", e);
         }
     }

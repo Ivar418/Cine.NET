@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
+using API.Services.Interfaces;
 using SharedLibrary.DTOs.Responses.TMDB;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,7 @@ namespace API.Infrastructure.Database
 
     public static class DbSeeder
     {
-        public static async Task SeedAsync(ApiDbContext db, IMovieRepository movieRepository)
+        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService)
         {
             var movieEntities = new List<Movie>();
             if (!await db.Users.AnyAsync())
@@ -32,27 +33,13 @@ namespace API.Infrastructure.Database
                 // 1272837 = 28 Years Later: The Bone Temple
                 // 1242898 = Predator: Badlands
                 var MovieIdList = new List<int> { 285, 83533, 1272837, 1242898 };
-                var Movies = new List<TmdbMovieDetailsResponse>();
 
                 foreach (var id in MovieIdList)
                 {
-                    var movie = await movieRepository.GetTmdbMovieDetailsAsync(id, "nl");
-                    if (movie != null)
-                    {
-                        Movies.Add(movie);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Failed to fetch movie with id {id}");
-                    }
-                }
-
-                foreach (var movie in Movies)
-                {
-                    await movieRepository.AddMovieAsync(movie);
+                    var movie = await movieService.AddMovieAsyncForEachSpecifiedLanguage(tmdbId: id);
                 }
             }
-            
+
             if (!await db.TicketTypes.AnyAsync())
             {
                 db.TicketTypes.AddRange(
@@ -73,7 +60,7 @@ namespace API.Infrastructure.Database
             }
 
             // For future use when we want to add more pricing options, but for now we can just calculate them on the fly in the API
-            
+
             // if (!await db.PricingOptions.AnyAsync())
             // {
             //     db.PricingOptions.AddRange(
@@ -83,7 +70,7 @@ namespace API.Infrastructure.Database
             //         new PricingOption { Name = "VIPSeat", PriceModifier = 3.00m }
             //     );
             // }
-            
+
             // AUDITORIUMS
             if (!await db.Auditoriums.AnyAsync())
             {
@@ -96,9 +83,9 @@ namespace API.Infrastructure.Database
                     new Auditorium { Name = "Zaal 6" }
                 );
             }
-            
+
             await db.SaveChangesAsync();
-            
+
             if (!await db.Showings.AnyAsync())
             {
                 var movies = await db.Movies.ToListAsync();
@@ -114,8 +101,8 @@ namespace API.Infrastructure.Database
                         MovieId = movies[i].Id,
                         AuditoriumId = auditoriums[i % auditoriums.Count].Id,
                         StartsAt = start.AddHours(i * 2), // elke 2 uur
-                        IsThreeD = (i % 2 == 0),          // om en om 3D
-                        AuditoriumLayoutSnapshot = "[]"   // snapshot leeg laten
+                        IsThreeD = (i % 2 == 0), // om en om 3D
+                        AuditoriumLayoutSnapshot = "[]" // snapshot leeg laten
                     });
                 }
 
