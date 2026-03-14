@@ -38,6 +38,7 @@ builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
 builder.Services.AddScoped<ShowingService>();
 builder.Services.AddScoped<PricingService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();

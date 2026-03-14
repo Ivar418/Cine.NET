@@ -70,19 +70,19 @@ public class MovieRepository : IMovieRepository
         return result.Entity;
     }
 
-    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language)
+    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage)
     {
         try
         {
             // Check if movie already exists
-            var existingMovie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+            var existingMovie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.InformationLanguage == informationLanguage);
             if (existingMovie != null)
             {
                 return ResultOf<Movie>.Failure("Movie already exists");
             }
 
             // Fetch details from TMDB
-            var details = await GetTmdbMovieDetailsAsync(tmdbId, language);
+            var details = await GetTmdbMovieDetailsAsync(tmdbId, informationLanguage);
             if (details == null)
             {
                 return ResultOf<Movie>.Failure("Movie not found on TMDB");
