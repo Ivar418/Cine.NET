@@ -27,11 +27,22 @@ public class MovieRepository : IMovieRepository
         return movie == null ? ResultOf<Movie>.Failure("Movie not found") : ResultOf<Movie>.Success(movie);
     }
 
-    public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync()
+    public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync(string? language = null)
     {
         try
         {
-            var movies = await _db.Movies.ToListAsync();
+            var query = _db.Movies.AsQueryable();
+            
+            if (!string.IsNullOrEmpty(language))
+            {
+                // Note: Current Movie entity doesn't seem to have a language field that matches 
+                // the requested language in a way that allows filtering if multiple languages are stored.
+                // But if it's there, we use it. 
+                // Based on SharedLibrary.Domain.Entities.Movie, there is a Language property.
+                query = query.Where(m => m.Language == language);
+            }
+
+            var movies = await query.ToListAsync();
 
             return ResultOf<ICollection<Movie>>.Success(movies);
         }

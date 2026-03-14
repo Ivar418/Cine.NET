@@ -1,5 +1,6 @@
 ﻿
 using API.Services;
+using API.Services.Interfaces;
 using API.src.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Domain.Entities;
@@ -18,13 +19,13 @@ namespace API.src.Controllers
         /// search, creation, updating, and deletion of Showing records.
         /// </summary>
         private readonly IShowingRepository _ShowingRepository;
-        private readonly ShowingService _showingService;
+        private readonly IShowingService _showingService;
 
         /// <summary>
         /// A controller for managing Showing-related operations, providing endpoints to retrieve,
         /// and manage Showing data.
         /// </summary>
-        public ShowingController(IShowingRepository ShowingRepository, ShowingService ShowingService)
+        public ShowingController(IShowingRepository ShowingRepository, IShowingService ShowingService)
         {
             _ShowingRepository = ShowingRepository;
             _showingService = ShowingService;
