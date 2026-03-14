@@ -8,10 +8,9 @@ namespace API.Repositories.Interfaces;
 public interface IMovieRepository
 {
     Task<ResultOf<Movie>> GetMovieAsync(int id);
-    Task<ResultOf<ICollection<Movie>>> GetMoviesAsync();
+    Task<ResultOf<ICollection<Movie>>> GetMoviesAsync(string informationLanguage);
     Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie, string? informationLanguage = null);
     Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language = "und");
-    Task<Movie> UpdateMovieAsync(Movie movie);
     Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId);
     Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language);
     Task<MovieReleaseDatesDto> GetMovieReleaseDatesAllCountriesAsync(int id);

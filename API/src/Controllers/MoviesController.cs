@@ -1,5 +1,6 @@
 ﻿using API.Domain.Common;
 using API.Repositories.Interfaces;
+using API.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Domain.Entities;
@@ -24,15 +25,15 @@ namespace API.Controllers
         /// such as databases or external APIs, to perform operations including retrieval,
         /// search, creation, updating, and deletion of movie records.
         /// </summary>
-        private readonly IMovieRepository _movieRepository;
+        private readonly IMovieService _movieService;
 
         /// <summary>
         /// A controller for managing movie-related operations, providing endpoints to retrieve,
         /// search, and manage movie data.
         /// </summary>
-        public MoviesController(IMovieRepository movieRepository)
+        public MoviesController(IMovieService movieService)
         {
-            _movieRepository = movieRepository;
+            _movieService = movieService;
         }
 
 
@@ -43,11 +44,12 @@ namespace API.Controllers
         /// it returns the list of movies.
         /// <return>Returns an IActionResult containing a list of movies on success, or an error message on failure.</return>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+            [FromQuery] string language="nl")
         {
             try
             {
-                var movies = await _movieRepository.GetMoviesAsync();
+                var movies = await _movieService.GetMoviesAsync(language);
                 return movies switch
                 {
                     { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
@@ -77,7 +79,7 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _movieRepository.DeleteMovieByTmdbIdAsync(tmdbId);
+                var result = await _movieService.DeleteMovieByTmdbIdAsync(tmdbId);
                 return result switch
                 {
                     { IsFailure: true, Error: "Movie not found" } => NotFound($"Movie with TmdbId {tmdbId} not found"),
@@ -101,7 +103,7 @@ namespace API.Controllers
         {
             try
             {
-                var movie = await _movieRepository.GetMovieAsync(id);
+                var movie = await _movieService.GetMovieAsync(id);
                 return movie switch
                 {
                     { IsFailure: true, Error: "Movie not found" } => NotFound(new { error = "Movie not found" }),
@@ -138,7 +140,7 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _movieRepository.GetMovieTmdbSearchResultsAsync(query, primary_release_year, page,
+                var result = await _movieService.GetMovieTmdbSearchResultsAsync(query, primary_release_year, page,
                     include_adult, language);
                 return Ok(result);
             }
@@ -172,7 +174,7 @@ namespace API.Controllers
             try
             {
                 // Repository should: fetch TMDB details, map to Movie, save, return Result<Movie>
-                var result = await _movieRepository.AddMovieFromTmdbAsync(tmdbId, language);
+                var result = await _movieService.AddMovieFromTmdbAsync(tmdbId, language);
 
                 return result switch
                 {

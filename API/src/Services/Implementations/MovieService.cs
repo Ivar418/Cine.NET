@@ -51,4 +51,27 @@ public class MovieService : IMovieService
     {
         return await _movieRepository.AddMovieFromTmdbAsync(tmdbId, informationLanguage);
     }
+
+    public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync(string informationLanguage)
+    {
+        return await _movieRepository.GetMoviesAsync(informationLanguage);
+    }
+
+    public async Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId)
+    {
+        return await _movieRepository.DeleteMovieByTmdbIdAsync(tmdbId);
+    }
+
+    public async Task<ResultOf<Movie>> GetMovieAsync(int id)
+    {
+        return await _movieRepository.GetMovieAsync(id);
+    }
+
+    public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query,
+        string? primary_release_year, int? page, bool include_adult,
+        string language)
+    {
+        return await _movieRepository.GetMovieTmdbSearchResultsAsync(query, primary_release_year, page, include_adult,
+            language);
+    }
 }
