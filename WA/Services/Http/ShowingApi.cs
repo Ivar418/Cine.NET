@@ -53,6 +53,12 @@ public class ShowingApi : IShowingApi
             Console.Error.WriteLine($"[ShowingApiClient] GetShowingDisplayById({id}) failed: {ex.Message}");
             return null;
         }
+    
+    public async Task<ShowingsWithPricesResponse?> GetShowingPricesAsync(int showingId)
+    {
+        return await _http.GetFromJsonAsync<ShowingsWithPricesResponse>(
+            $"api/showings/{showingId}/prices"
+        );
     }
     
 }

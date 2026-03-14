@@ -1,5 +1,6 @@
 ﻿
 using API.Services;
+using API.Services.Interfaces;
 using API.src.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Domain.Entities;
@@ -18,16 +19,16 @@ namespace API.src.Controllers
         /// search, creation, updating, and deletion of Showing records.
         /// </summary>
         private readonly IShowingRepository _ShowingRepository;
-        private readonly ShowingService _showingService;
-
+        private readonly IShowingService _showingService;
+        
         /// <summary>
         /// A controller for managing Showing-related operations, providing endpoints to retrieve,
         /// and manage Showing data.
         /// </summary>
-        public ShowingController(IShowingRepository ShowingRepository, ShowingService ShowingService)
+        public ShowingController(IShowingRepository showingRepository, IShowingService showingService)
         {
-            _ShowingRepository = ShowingRepository;
-            _showingService = ShowingService;
+            _ShowingRepository = showingRepository;
+            _showingService = showingService;
         }
 
 
@@ -61,6 +62,17 @@ namespace API.src.Controllers
         {
             var showings = await _showingService.GetShowingsAsync();
             return Ok(showings);
+        }
+        
+        [HttpGet("{id:int}/prices")]
+        public async Task<IActionResult> GetShowingWithPrices(int id)
+        {
+            var showing = await _showingService.GetShowingAsync(id);
+
+            if (showing == null)
+                return NotFound();
+
+            return Ok(showing);
         }
 
         // [HttpGet]
