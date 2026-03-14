@@ -13,7 +13,8 @@ public class Movie
 
     [Column("language")] public string? Language { get; set; }
 
-    [Column("poster_url")] public string? PosterUrl { get; set; }
+    [Column("poster_url")] public string? PosterPath { get; set; }
+    [Column("backdrop_url")] public string? BackdropPath { get; set; }
 
     [Column("runtime")] public int? Runtime { get; set; }
 
