@@ -167,29 +167,34 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddMovieByTmdbId(
             [FromQuery] int tmdbId,
-            [FromQuery] string language = null)
+            [FromQuery] string? language = null)
 
         {
-            string[] languages = language?.Split(",");
+            string[]? languages = string.IsNullOrWhiteSpace(language)
+                ? null
+                : language
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(l => l.Trim())
+                    .ToArray();
+
             if (tmdbId <= 0)
                 return BadRequest(new { error = "Invalid TMDB id" });
 
             try
             {
+                Console.WriteLine($"Adding movie with tmdbId {tmdbId} and languages {languages}");
                 // Repository should: fetch TMDB details, map to Movie, save, return Result<Movie>
                 var result = await _movieService.AddMovieAsyncForEachSpecifiedLanguage(tmdbId, languages);
-
                 return result switch
                 {
-                    { IsFailure: true, Error: "Movie already exists" } => Conflict(new
-                        { error = "Movie already exists" }),
-                    { IsFailure: true, Error: "Movie not found" } =>
-                        NotFound(new { error = "Movie not found" }),
-                    { IsFailure: true, Error: "Movie not found on TMDB" } => NotFound(new
-                        { error = "Movie not found on TMDB" }),
                     { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                    { IsSuccess: true } => CreatedAtAction(nameof(GetMovieById), new { id = result.Value?.FirstOrDefault()?.Id },
-                        result.Value),
+                    { IsSuccess: true, Value: var movies } when movies != null && movies.Any() => CreatedAtAction(
+                        nameof(GetMovieById),
+                        new { id = movies.First().Id },
+                        movies
+                    ),
+                    { IsSuccess: true, Value: var movies } when movies != null && !movies.Any() =>
+                        Conflict(new { message = "No new movies were added" }),
                     _ => StatusCode(500, new { error = "Unexpected result" })
                 };
             }

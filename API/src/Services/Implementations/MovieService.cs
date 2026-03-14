@@ -23,13 +23,18 @@ public class MovieService : IMovieService
         informationLanguages ??= ["en", "nl"];
         foreach (var informationLanguage in informationLanguages)
         {
-            var movie = await AddMovieFromTmdbAsync(tmdbId, informationLanguage);
-            if (movie.IsSuccess)
+            try
             {
-                listOfAddedMovies.Add(movie.Value);
+                var movie = await AddMovieFromTmdbAsync(tmdbId, informationLanguage);
+                if (movie.IsSuccess)
+                {
+                    listOfAddedMovies.Add(movie.Value);
+                }
+            } catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[MovieService] Failed to add movie with TMDB ID {tmdbId} for language '{informationLanguage}': {ex.Message}");
             }
         }
-
         return ResultOf<IEnumerable<Movie>>.Success(listOfAddedMovies);
     }
 
