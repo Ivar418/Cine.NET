@@ -34,7 +34,13 @@ public class MovieApiClient : IMovieApiClient
     {
         try
         {
-            return await _http.GetFromJsonAsync<MovieResponse>($"{BasePath}/{id}");
+            var response = await _http.GetAsync($"{BasePath}/{id}");
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadFromJsonAsync<MovieResponse>();
         }
         catch (Exception ex)
         {
