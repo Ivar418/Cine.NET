@@ -1,42 +1,27 @@
-<MudAppBar Color="Color.Primary" Elevation="1">
+<MudAppBar Color="Color.Default"
+           Elevation="1"
+           Style="background-color: var(--mud-palette-appbar-background); color: white; height:110px; justify-content:center;">
 
-    <MudText Typo="Typo.h6">App</MudText>
+    <div style="display:flex; align-items:center; padding-left:16px;">
+        <a href="/" style="display:flex; align-items:center;">
+            <MudImage src="images/logo.png" alt="App Logo" style="height:90px; width:auto; padding-top:10px; padding-bottom:10px;"/>
+        </a>
+    </div>
 
     <MudSpacer />
 
-    <NavLink href="/" Match="NavLinkMatch.All">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary">
-            Home
-        </MudButton>
-    </NavLink>
-
-    <NavLink href="/users">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary">
-            Users
-        </MudButton>
-    </NavLink>
-    
-    <NavLink href="/today">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary">
-            Today
-        </MudButton>
-    </NavLink>
-    
-    <NavLink href="/thisweek">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary">
-            This Week
-        </MudButton>
-    </NavLink>
-    
-    <NavLink href="/showings">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary">
-            Showings with prices
-        </MudButton>
-    </NavLink>
     <MudButton Class="nav-button"
                Variant="Variant.Filled"
                Color="Color.Primary"
-               Href="/moviedetails/1/1/">
+               Href="/"
+               Match="NavLinkMatch.All">
+        Home
+    </MudButton>
+
+    <MudButton Class="nav-button"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               Href="/showingdetail/1/1/">
         Movie detail
     </MudButton>
 
@@ -47,15 +32,52 @@
         Showings with prices
     </MudButton>
 
+    <MudButton Class="nav-button"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               Href="/componentexamples">
+        Component Examples
+    </MudButton>
+
+    <MudButton Class="nav-button"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               Href="/styleguide">
+        Styleguide
+    </MudButton>
+    <NavLink href="/" Match="NavLinkMatch.All">
+        <MudButton Variant="Variant.Filled">
+            Home
+        </MudButton>
+    </NavLink>
+
+    <NavLink href="/users">
+        <MudButton Variant="Variant.Filled">
+            Users
+        </MudButton>
+    </NavLink>
+    
+    <NavLink href="/showings">
+        <MudButton Variant="Variant.Filled">
+            Showings with prices
+        </MudButton>
+    </NavLink>
+
     <NavLink href="/componentexamples">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary">
+        <MudButton Variant="Variant.Filled">
             Component Examples
         </MudButton>
     </NavLink>
 
     <NavLink href="/styleguide">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary">
+        <MudButton Variant="Variant.Filled">
             Styleguide
+        </MudButton>
+    </NavLink>
+    
+    <NavLink href="/checkout/1">
+        <MudButton Variant="Variant.Filled">
+            Checkout
         </MudButton>
     </NavLink>
 
