@@ -27,6 +27,14 @@ public class MovieRepository : IMovieRepository
         return movie == null ? ResultOf<Movie>.Failure("Movie not found") : ResultOf<Movie>.Success(movie);
     }
 
+    public async Task<ResultOf<IEnumerable<Movie>>> GetMoviesByTmdbIdAsync(int tmdbId)
+    {
+        var movies = await _db.Movies.Where(m => m.TmdbId == tmdbId).ToListAsync();
+        return movies.Count == 0
+            ? ResultOf<IEnumerable<Movie>>.Failure("Movie not found")
+            : ResultOf<IEnumerable<Movie>>.Success(movies);
+    }
+
     public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync(string informationLanguage)
     {
         try
@@ -103,11 +111,15 @@ public class MovieRepository : IMovieRepository
 
     public async Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId)
     {
-        var movie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
-        if (movie == null) return ResultOf<Movie>.Failure("Movie not found");
-        _db.Movies.Remove(movie);
-        await _db.SaveChangesAsync();
-        return ResultOf<Movie>.Success(movie);
+        var movies = await GetMoviesByTmdbIdAsync(tmdbId);
+        if (movies.IsFailure) return ResultOf<Movie>.Failure("Movie not found");
+        foreach (var movie in movies.Value)
+        {
+            _db.Movies.Remove(movie);
+            await _db.SaveChangesAsync();
+        }
+
+        return ResultOf<Movie>.Success(movies.Value.First());
     }
 
     public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language)

@@ -45,7 +45,7 @@ namespace API.Controllers
         /// <return>Returns an IActionResult containing a list of movies on success, or an error message on failure.</return>
         [HttpGet]
         public async Task<IActionResult> GetAll(
-            [FromQuery] string language="nl")
+            [FromQuery] string language = "nl")
         {
             try
             {
@@ -154,6 +154,8 @@ namespace API.Controllers
         /// Adds a movie to the database based on its TMDB ID.
         /// </summary>
         /// <param name="tmdbId">The TMDB ID of the movie to be added. Must be a positive integer.</param>
+        /// <param name="language">The language in which the movie information should be retrieved and stored. Optional.
+        /// Can be  comma seperated value like "nl,en"</param>
         /// <returns>
         /// Returns a status indicating the result of the operation:
         /// - 201 Created if the movie was successfully added.
@@ -165,16 +167,17 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddMovieByTmdbId(
             [FromQuery] int tmdbId,
-            [FromQuery] string language = "nl")
+            [FromQuery] string language = null)
 
         {
+            string[] languages = language?.Split(",");
             if (tmdbId <= 0)
                 return BadRequest(new { error = "Invalid TMDB id" });
 
             try
             {
                 // Repository should: fetch TMDB details, map to Movie, save, return Result<Movie>
-                var result = await _movieService.AddMovieFromTmdbAsync(tmdbId, language);
+                var result = await _movieService.AddMovieAsyncForEachSpecifiedLanguage(tmdbId, languages);
 
                 return result switch
                 {
@@ -185,7 +188,7 @@ namespace API.Controllers
                     { IsFailure: true, Error: "Movie not found on TMDB" } => NotFound(new
                         { error = "Movie not found on TMDB" }),
                     { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                    { IsSuccess: true } => CreatedAtAction(nameof(GetMovieById), new { id = result.Value.Id },
+                    { IsSuccess: true } => CreatedAtAction(nameof(GetMovieById), new { id = result.Value?.FirstOrDefault()?.Id },
                         result.Value),
                     _ => StatusCode(500, new { error = "Unexpected result" })
                 };
