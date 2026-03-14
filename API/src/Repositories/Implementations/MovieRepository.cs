@@ -27,11 +27,27 @@ public class MovieRepository : IMovieRepository
         return movie == null ? ResultOf<Movie>.Failure("Movie not found") : ResultOf<Movie>.Success(movie);
     }
 
-    public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync()
+    public async Task<ResultOf<IEnumerable<Movie>>> GetMoviesByTmdbIdAsync(int tmdbId)
+    {
+        var movies = await _db.Movies.Where(m => m.TmdbId == tmdbId).ToListAsync();
+        return movies.Count == 0
+            ? ResultOf<IEnumerable<Movie>>.Failure("Movie not found")
+            : ResultOf<IEnumerable<Movie>>.Success(movies);
+    }
+
+    public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync(string informationLanguage)
     {
         try
         {
-            var movies = await _db.Movies.ToListAsync();
+            List<Movie> movies;
+            if (informationLanguage == "all")
+            {
+                movies = await _db.Movies.ToListAsync();
+            }
+            else
+            {
+                movies = await _db.Movies.Where(m => m.InformationLanguage == informationLanguage).ToListAsync();
+            }
 
             return ResultOf<ICollection<Movie>>.Success(movies);
         }
@@ -41,10 +57,8 @@ public class MovieRepository : IMovieRepository
         }
     }
 
-    public async Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie)
+    public async Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie, string? informationLanguage = null)
     {
-        Console.WriteLine($"Adding movie: {movie.OriginalTitle}");
-
         var firstLanguage = movie.SpokenLanguages?.FirstOrDefault();
         var dutchReleaseInfo = await GetDutchMovieReleaseDatesAsync(movie.Id);
         var dutchAgeIndication = dutchReleaseInfo?.Certification;
@@ -53,8 +67,10 @@ public class MovieRepository : IMovieRepository
         {
             Title = movie.OriginalTitle,
             TmdbId = movie.Id,
+            InformationLanguage = informationLanguage ?? "und",
             Language = movie.OriginalLanguage,
-            PosterUrl = movie.PosterPath,
+            PosterPath = movie.PosterPath,
+            BackdropPath = movie.BackdropPath,
             Runtime = movie.Runtime,
             ImdbId = movie.ImdbId,
             ReleaseDate = movie.ReleaseDate,
@@ -69,12 +85,13 @@ public class MovieRepository : IMovieRepository
         return result.Entity;
     }
 
-    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language)
+    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language = "und")
     {
         try
         {
             // Check if movie already exists
-            var existingMovie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+            var existingMovie =
+                await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.InformationLanguage == language);
             if (existingMovie != null)
             {
                 return ResultOf<Movie>.Failure("Movie already exists");
@@ -82,12 +99,9 @@ public class MovieRepository : IMovieRepository
 
             // Fetch details from TMDB
             var details = await GetTmdbMovieDetailsAsync(tmdbId, language);
-            if (details == null)
-            {
-                return ResultOf<Movie>.Failure("Movie not found on TMDB");
-            }
-
-            return ResultOf<Movie>.Success(await AddMovieAsync(details));
+            return details == null
+                ? ResultOf<Movie>.Failure("Movie not found on TMDB")
+                : ResultOf<Movie>.Success(await AddMovieAsync(details, language));
         }
         catch (HttpRequestException)
         {
@@ -95,19 +109,17 @@ public class MovieRepository : IMovieRepository
         }
     }
 
-    public async Task<Movie> UpdateMovieAsync(Movie movie)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId)
     {
-        var movie = await _db.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
-        if (movie == null) return ResultOf<Movie>.Failure("Movie not found");
-        _db.Movies.Remove(movie);
-        await _db.SaveChangesAsync();
-        return ResultOf<Movie>.Success(movie);
+        var movies = await GetMoviesByTmdbIdAsync(tmdbId);
+        if (movies.IsFailure) return ResultOf<Movie>.Failure("Movie not found");
+        foreach (var movie in movies.Value)
+        {
+            _db.Movies.Remove(movie);
+            await _db.SaveChangesAsync();
+        }
 
+        return ResultOf<Movie>.Success(movies.Value.First());
     }
 
     public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language)
@@ -184,7 +196,6 @@ public class MovieRepository : IMovieRepository
         }
         catch (JsonException e)
         {
-            Console.WriteLine($"Error parsing movie details: {e.Message}");
             throw new Exception("Error parsing movie details", e);
         }
     }
