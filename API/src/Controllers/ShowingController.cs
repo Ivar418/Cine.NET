@@ -64,6 +64,14 @@ namespace API.src.Controllers
             return Ok(showings);
         }
 
+        [HttpGet("{id:int}/with-prices")]
+        public async Task<IActionResult> GetShowingWithPrices(int id)
+        {
+            var showing = await _showingService.GetShowingAsync(id);
+            if (showing == null) return NotFound();
+            return Ok(showing);
+        }
+
         // [HttpGet]
         // [Route("{ShowingId:int}/state")]
         // public async Task<IActionResult> GetShowingStateById(int ShowingId)

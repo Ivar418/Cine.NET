@@ -21,4 +21,11 @@ public class ShowingApi : IShowingApi
 
         return result ?? [];
     }
+
+    public async Task<ShowingsWithPricesResponse?> GetShowingPricesAsync(int id)
+    {
+        return await _http.GetFromJsonAsync<ShowingsWithPricesResponse>(
+            $"api/showings/{id}/with-prices"
+        );
+    }
 }
