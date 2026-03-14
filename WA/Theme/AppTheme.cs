@@ -43,34 +43,34 @@ public static class AppTheme
     {
         PaletteDark = new PaletteDark
         {
-            Primary = "#D4AF37", // Muted gold
-            PrimaryContrastText = "#1A1A1A", // Near black
+            Primary = "#FB6F17",               // Bright orange
+            PrimaryContrastText = "#FFFFFF",   // White
 
-            Secondary = "#5A4A7A", // Muted royal purple
+            Secondary = "#7927FE",             // Vivid purple / violet
             SecondaryContrastText = "#FFFFFF", // White
 
-            Tertiary = "#2B2B2B", // Anthracite
-            TertiaryContrastText = "#FFFFFF", // White
+            Tertiary = "#2B2B2B",              // Anthracite / dark gray
+            TertiaryContrastText = "#FFFFFF",  // White
 
-            Background = "#121212", // Very dark gray
-            Surface = "#1E1E1E", // Dark gray
+            Background = "#111424",            // Very dark navy blue
+            Surface = "#080A11",               // Near-black with slight blue tint
 
-            AppbarBackground = "#1A1A1A", // Near black
-            AppbarText = "#D4AF37", // Muted gold
+            AppbarBackground = "#080A11",      // Near-black (same as surface)
+            AppbarText = "#27BAFE",            // Bright cyan / electric blue
 
-            DrawerBackground = "#181818", // Deep charcoal
-            DrawerText = "#E0E0E0", // Light gray
-            DrawerIcon = "#D4AF37", // Muted gold
+            DrawerBackground = "#181818",      // Deep charcoal gray
+            DrawerText = "#E0E0E0",            // Light gray
+            DrawerIcon = "#D4AF37",            // Muted gold
 
-            TextPrimary = "#FFFFFF", // White
-            TextSecondary = "#B0B0B0", // Soft gray
+            TextPrimary = "#27BAFE",           // Bright cyan / electric blue
+            TextSecondary = "#7927FE",         // Purple / violet
 
-            Divider = "#2C2C2C", // Dark divider gray
+            Divider = "#2C2C2C",               // Dark neutral gray
 
-            Success = "#66BB6A", // Soft green
-            Error = "#EF5350", // Soft red
-            Warning = "#FFA726", // Soft orange
-            Info = "#29B6F6" // Light blue
+            Success = "#66BB6A",               // Soft green
+            Error = "#EF5350",                 // Soft red
+            Warning = "#FFA726",               // Warm orange
+            Info = "#29B6F6"                   // Light blue / sky blue
         }
     };
 }
