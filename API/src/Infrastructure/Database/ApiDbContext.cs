@@ -15,6 +15,7 @@ public class ApiDbContext : DbContext
         public DbSet<User> Users => Set<User>();
         public DbSet<Movie> Movies => Set<Movie>();
         public DbSet<Photo> Photos => Set<Photo>();
+        public DbSet<Ticket> Tickets => Set<Ticket>();
         public DbSet<Auditorium> Auditoriums => Set<Auditorium>();
         public DbSet<Showing> Showings => Set<Showing>();
         public DbSet<Reservation> Reservations => Set<Reservation>();
@@ -30,6 +31,7 @@ public class ApiDbContext : DbContext
             modelBuilder.Entity<User>().ToTable("users");
             modelBuilder.Entity<Movie>().ToTable("movies");
             modelBuilder.Entity<Photo>().ToTable("photos");
+            modelBuilder.Entity<Ticket>().ToTable("tickets");
             modelBuilder.Entity<Auditorium>().ToTable("auditoriums");
             modelBuilder.Entity<Showing>().ToTable("showings");
             modelBuilder.Entity<Reservation>().ToTable("reservations");
