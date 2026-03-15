@@ -1,10 +1,7 @@
 @page "/thisweek"
 @using SharedLibrary.DTOs.Responses
-@using SharedLibrary.Domain.Entities
 @using WA.Services.Http.Interfaces
-@inject IMovieApiClient MovieApiClient
 @inject IShowingApi ShowingApi
-@inject IAuditoriumApi AuditoriumApi
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @using WA.Layout
@@ -28,7 +25,6 @@ else if (_loadError)
 else
 {
     <div class="weekly-schedule-container">
-        @* Header rij met dagen *@
         <div class="weekly-header">
             @foreach (var day in _daysInWeek)
             {
@@ -44,13 +40,16 @@ else
             }
         </div>
 
-        @* Week inhoud *@
         <div class="weekly-grid">
             @foreach (var day in _daysInWeek)
             {
                 <div class="day-column">
-                    @foreach (var showing in _showings.Where(s => s.StartsAt.Date == day.Date).OrderBy(s => s.StartsAt))
+                    @foreach (var showing in _showings
+                        .Where(s => s.StartsAt.ToLocalTime().Date == day.Date)
+                        .OrderBy(s => s.StartsAt))
                     {
+                        var localStart = showing.StartsAt.ToLocalTime();
+
                         <MudCard Elevation="4" Class="movie-card-weekly mb-3">
                             <MudCardContent Class="pa-2">
                                 <div class="d-flex">
@@ -60,19 +59,21 @@ else
                                                 @showing.MovieTitle
                                             </MudText>
                                             <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Style="font-size: 0.7rem; height: 20px;">
-                                                @showing.StartsAt.ToString("HH:mm")
+                                                @localStart.ToString("HH:mm")
                                             </MudChip>
                                         </div>
-                                        
+
                                         <div class="d-flex align-center mt-2">
                                             <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" Size="Size.Small" Style="font-size: 0.9rem; color: #555;" />
                                             <MudText Typo="Typo.caption" Class="ml-1" Style="color: #444; font-weight: 500;">
                                                 @showing.AuditoriumName
                                             </MudText>
+
                                             <MudDivider Vertical="true" FlexItem="true" Class="mx-2" Style="height: 12px; align-self: center; background-color: #999;" />
+
                                             <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Style="font-size: 0.9rem; color: #555;" />
                                             <MudText Typo="Typo.caption" Class="ml-1" Style="color: #444; font-weight: 500;">
-                                                @(showing.Runtime)m
+                                                @(showing.Runtime ?? 0)m
                                             </MudText>
                                         </div>
 
@@ -87,7 +88,8 @@ else
                             </MudCardContent>
                         </MudCard>
                     }
-                    @if (!_showings.Any(s => s.StartsAt.Date == day.Date))
+
+                    @if (!_showings.Any(s => s.StartsAt.ToLocalTime().Date == day.Date))
                     {
                         <div class="no-showings pa-4 d-flex align-center justify-center">
                             <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">Geen vertoningen</MudText>
@@ -196,7 +198,6 @@ else
     private void InitializeWeekDays()
     {
         var today = DateTime.Today;
-        // Start vanaf maandag van de huidige week
         int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
         var startOfWeek = today.AddDays(-1 * diff);
 
@@ -219,13 +220,17 @@ else
             var endDay = _daysInWeek.Last().Date.AddDays(1);
 
             _showings = allShowings
-                .Where(s => s.StartsAt.Date >= startDay && s.StartsAt.Date < endDay)
+                .Where(s =>
+                {
+                    var localDate = s.StartsAt.ToLocalTime().Date;
+                    return localDate >= startDay && localDate < endDay;
+                })
                 .ToList();
         }
         catch (Exception ex)
         {
             _loadError = true;
-            Snackbar.Add("Failed to load data.", Severity.Error);
+            Snackbar.Add($"Failed to load data: {ex.Message}", Severity.Error);
         }
         finally
         {

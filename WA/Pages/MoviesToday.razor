@@ -2,7 +2,6 @@
 @using SharedLibrary.DTOs.Responses
 @using SharedLibrary.Domain.Entities
 @using WA.Services.Http.Interfaces
-@inject IMovieApiClient MovieApiClient
 @inject IShowingApi ShowingApi
 @inject IAuditoriumApi AuditoriumApi
 @inject NavigationManager Navigation
@@ -14,7 +13,7 @@
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
     <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">Movies Today</MudText>
-    <MudText Typo="Typo.h6" Style="color: #03DAC6;">@DateTime.Now.ToString("dddd, MMMM do, yyyy HH:mm")</MudText>
+    <MudText Typo="Typo.h6" Style="color: #03DAC6;">@DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm")</MudText>
 </MudStack>
 
 @if (_loading)
@@ -28,7 +27,6 @@ else if (_loadError)
 else
 {
     <div class="schedule-container">
-        @* Header rij met zalen *@
         <div class="schedule-header">
             <div class="time-column-header"></div>
             @foreach (var auditorium in _auditoriums.OrderBy(a => a.Name))
@@ -40,22 +38,17 @@ else
             }
         </div>
 
-        @* Rooster inhoud *@
         <div class="schedule-grid">
-            @* Tijdlijn voor huidige tijd *@
             @{
-                // Gebruik DateTimeOffset.Now voor de offset berekening
                 var now = DateTimeOffset.Now;
                 var currentTimeOffset = CalculateTopOffset(now);
-                
-                // Alleen tonen tussen 12:00 en 23:00 (0 tot 880px)
+
                 if (currentTimeOffset >= 0 && currentTimeOffset <= 880)
                 {
                     <div class="current-time-line" style="top: @(currentTimeOffset)px;"></div>
                 }
             }
-            
-            @* Tijd kolom *@
+
             <div class="time-column">
                 @for (int hour = 12; hour <= 22; hour++)
                 {
@@ -65,20 +58,20 @@ else
                 }
             </div>
 
-            @* Zalen kolommen *@
             @foreach (var auditorium in _auditoriums.OrderBy(a => a.Name))
             {
                 <div class="auditorium-column">
-                    @* Hulplijnen voor uren *@
                     @for (int hour = 12; hour <= 22; hour++)
                     {
                         <div class="grid-line"></div>
                     }
 
-            @* Vertoningen *@
-                    @foreach (var showing in _showings.Where(s => s.AuditoriumId == auditorium.Id))
+                    @foreach (var showing in _showings
+                        .Where(s => s.AuditoriumId == auditorium.Id)
+                        .OrderBy(s => s.StartsAt))
                     {
-                        var topOffset = CalculateTopOffset(showing.StartsAt);
+                        var localStart = showing.StartsAt.ToLocalTime();
+                        var topOffset = CalculateTopOffset(localStart);
                         var height = CalculateHeight(showing.Runtime);
 
                         <div class="movie-card-container" style="top: @(topOffset)px; height: @(height)px;">
@@ -86,14 +79,23 @@ else
                                 <MudCardContent Class="pa-2">
                                     <div class="d-flex">
                                         <div class="flex-grow-1">
-                                            <MudText Typo="Typo.subtitle2" Style="font-weight: bold; font-size: 0.8rem;">@showing.MovieTitle</MudText>
-                                            
-                                            <MudText Typo="Typo.caption" Class="d-block mt-1" Style="color: #444; font-weight: 500;">Runtime: @(showing.Runtime)m</MudText>
-                                            
-                                            @* Voorbeeld van status indicator zoals in afbeelding *@
+                                            <MudText Typo="Typo.subtitle2" Style="font-weight: bold; font-size: 0.8rem;">
+                                                @showing.MovieTitle
+                                            </MudText>
+
+                                            <MudText Typo="Typo.caption" Class="d-block mt-1" Style="color: #444; font-weight: 500;">
+                                                Start: @localStart.ToString("HH:mm")
+                                            </MudText>
+
+                                            <MudText Typo="Typo.caption" Class="d-block mt-1" Style="color: #444; font-weight: 500;">
+                                                Runtime: @(showing.Runtime ?? 0)m
+                                            </MudText>
+
                                             <div class="d-flex align-center mt-auto pt-2">
                                                 <div class="status-dot @GetStatusClass(showing)"></div>
-                                                <MudText Typo="Typo.caption" Style="font-size: 0.7rem; margin-left: 4px; color: #333;">@GetStatusText(showing)</MudText>
+                                                <MudText Typo="Typo.caption" Style="font-size: 0.7rem; margin-left: 4px; color: #333;">
+                                                    @GetStatusText(showing)
+                                                </MudText>
                                             </div>
                                         </div>
                                     </div>
@@ -280,20 +282,17 @@ else
 
     private double CalculateTopOffset(DateTimeOffset dateTime)
     {
-        // De tijdlijn begint om 12:00. Elke 80px stelt 1 uur voor.
+        var localTime = dateTime.ToLocalTime();
         var startHour = 12.0;
-        var hourValue = dateTime.Hour + (dateTime.Minute / 60.0);
+        var hourValue = localTime.Hour + (localTime.Minute / 60.0);
         var diff = hourValue - startHour;
-        
-        // We zorgen dat we niet boven de header uitkomen (negatieve offset)
+
         return Math.Max(0, diff * 80.0);
     }
 
     private double CalculateHeight(int? runtimeMinutes)
     {
-        // 60 minuten = 80px
-        if (!runtimeMinutes.HasValue || runtimeMinutes == 0) return 120; // Default
-        // We leggen een minimum hoogte op van 100px om de poster (90px) goed te kunnen tonen
+        if (!runtimeMinutes.HasValue || runtimeMinutes == 0) return 120;
         return Math.Max(100.0, (runtimeMinutes.Value / 60.0) * 80.0);
     }
 

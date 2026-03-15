@@ -22,6 +22,7 @@ public class ShowingService : IShowingService
     {
         var showings = await _db.Showings
             .Include(s => s.Movie)
+            .Include(s => s.Auditorium)
             .ToListAsync();
         
         var (adult, child, student, senior) = await GetTicketTypes();
@@ -30,8 +31,10 @@ public class ShowingService : IShowingService
         {
             ShowingId = s.Id,
             MovieTitle = s.Movie.Title,
+            Runtime = s.Movie.Runtime,
+            AuditoriumId = s.AuditoriumId,
+            AuditoriumName = s.Auditorium.Name,
             StartsAt = s.StartsAt,
-
             Prices = new ShowingPricesResponse
             {
                 Adult = _pricingService.CalculatePrice(s.Movie, s.IsThreeD, adult),
@@ -39,7 +42,6 @@ public class ShowingService : IShowingService
                 Student = _pricingService.CalculatePrice(s.Movie, s.IsThreeD, student),
                 Senior = _pricingService.CalculatePrice(s.Movie, s.IsThreeD, senior)
             }
-
         }).ToList();
     }
     
@@ -47,6 +49,7 @@ public class ShowingService : IShowingService
     {
         var showing = await _db.Showings
             .Include(s => s.Movie)
+            .Include(s => s.Auditorium)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (showing == null)
@@ -58,6 +61,9 @@ public class ShowingService : IShowingService
         {
             ShowingId = showing.Id,
             MovieTitle = showing.Movie.Title,
+            Runtime = showing.Movie.Runtime,
+            AuditoriumId = showing.AuditoriumId,
+            AuditoriumName = showing.Auditorium.Name,
             StartsAt = showing.StartsAt,
             Prices = new ShowingPricesResponse
             {
