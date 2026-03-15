@@ -117,19 +117,16 @@ namespace API.src.Controllers
         /// Returns a status indicating the result of the operation:
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> AddAuditoriumById( 
-            [FromQuery] string name,
-            [FromQuery] List<RowConfig> rows)
-        { 
-            try
-            {
-                var result = await _AuditoriumRepository.AddAuditoriumAsync(new CreateAuditoriumRequest(name, rows));
-                return Ok(result);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, new { error = "An error occurred" });
-            }
+        public async Task<IActionResult> AddAuditoriumById(
+        [FromQuery] string name,
+        [FromBody] List<RowConfig> rows)
+        {
+            var result = await _AuditoriumRepository.AddAuditoriumAsync(
+                new CreateAuditoriumRequest(name, rows));
+
+            return Ok(result);
         }
+
+
     }
 }

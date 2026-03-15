@@ -88,12 +88,13 @@ namespace API.Infrastructure.Database
             if (!await db.Auditoriums.AnyAsync())
             {
                 db.Auditoriums.AddRange(
-                    new Auditorium { Name = "Zaal 1" },
-                    new Auditorium { Name = "Zaal 2" },
-                    new Auditorium { Name = "Zaal 3" },
-                    new Auditorium { Name = "Zaal 4" },
-                    new Auditorium { Name = "Zaal 5" },
-                    new Auditorium { Name = "Zaal 6" }
+                    new Auditorium { Name = "Zaal 1", RowConfigJson = "[{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":15,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0}]" },
+                    new Auditorium { Name = "Zaal 1", RowConfigJson = "[{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":15,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0}]" },
+                    new Auditorium { Name = "Zaal 2", RowConfigJson = "[{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":15,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0}]" },
+                    new Auditorium { Name = "Zaal 3", RowConfigJson = "[{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":15,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0}]" },
+                    new Auditorium { Name = "Zaal 4", RowConfigJson = "[{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":15,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0}]" },
+                    new Auditorium { Name = "Zaal 5", RowConfigJson = "[{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":15,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0}]" },
+                    new Auditorium { Name = "Zaal 6", RowConfigJson = "[{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":15,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0},{\"Seats\":10,\"Wheelchair\":0,\"LeftWheelchair\":0,\"RightWheelchair\":0}]" }
                 );
             }
             

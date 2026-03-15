@@ -5,6 +5,7 @@ using API.Infrastructure.Database;
 using API.src.Repositories.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
+using API.src.Mappers;
 
 namespace API.src.Repositories.Implementations
 {
@@ -55,6 +56,11 @@ namespace API.src.Repositories.Implementations
             try
             {
                 var Showings = await _db.Showings.ToListAsync();
+                foreach (var showing in Showings)
+                {
+                    showing.Movie = await _db.Movies.FindAsync(showing.MovieId);
+                    showing.Auditorium = await _db.Auditoriums.FindAsync(showing.AuditoriumId);
+                }
 
                 return ResultOf<ICollection<Showing>>.Success(Showings);
             }
@@ -77,14 +83,25 @@ namespace API.src.Repositories.Implementations
          - Return a successful ResultOf<ShowingStateDto> with the constructed DTO.
         */
 
-        Task<ResultOf<ShowingStateDto>> IShowingRepository.GetShowingStateAsync(int id)
+        async Task<ResultOf<ShowingStateDto>> IShowingRepository.GetShowingStateAsync(int id)
         {
-            throw new NotImplementedException();
+            IReservationRepository reservationRepository = new ReservationRepository(_db);
+            var showing = await _db.Showings
+                .Include(s => s.Movie)
+                .Include(s => s.Auditorium)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (showing == null)
+                return ResultOf<ShowingStateDto>.Failure("Showing not found");
+
+            ShowingStateDto showingState = ShowingMapper.ToStateDto(showing, reservationRepository);
+            return showingState == null ? ResultOf<ShowingStateDto>.Failure("ShowingState not found") : ResultOf<ShowingStateDto>.Success(showingState);
         }
 
         async Task<Showing> IShowingRepository.UpdateShowingAsync(Showing Showing)
         {
             throw new NotImplementedException();
         }
+
     }
 }

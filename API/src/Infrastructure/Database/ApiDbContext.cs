@@ -18,9 +18,9 @@ public class ApiDbContext : DbContext
         public DbSet<Auditorium> Auditoriums => Set<Auditorium>();
         public DbSet<Showing> Showings => Set<Showing>();
         public DbSet<Reservation> Reservations => Set<Reservation>();
-        
-        // Pricing related entities
-        public DbSet<TicketType> TicketTypes => Set<TicketType>();
+
+    // Pricing related entities
+    public DbSet<TicketType> TicketTypes => Set<TicketType>();
         public DbSet<PricingConfig> PricingConfigs => Set<PricingConfig>();
         public DbSet<PricingOption> PricingOptions => Set<PricingOption>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)

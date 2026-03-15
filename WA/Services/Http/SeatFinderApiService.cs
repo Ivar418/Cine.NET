@@ -18,11 +18,11 @@ namespace WA.Services.Http
 
         // ── Auditoriums ──────────────────────────────────────────────────────────
 
-        public async Task<List<AuditoriumDto>?> GetAuditoriumsAsync()
+        public async Task<List<Auditorium>?> GetAuditoriumsAsync()
         {
             try
             {
-                return await _http.GetFromJsonAsync<List<AuditoriumDto>>("api/auditoriums");
+                return await _http.GetFromJsonAsync<List<Auditorium>>("api/auditoriums");
             }
             catch (Exception ex)
             {
@@ -31,11 +31,11 @@ namespace WA.Services.Http
             }
         }
 
-        public async Task<AuditoriumDto?> GetAuditoriumAsync(int id)
+        public async Task<Auditorium?> GetAuditoriumAsync(int id)
         {
             try
             {
-                return await _http.GetFromJsonAsync<AuditoriumDto>($"api/auditoriums/{id}");
+                return await _http.GetFromJsonAsync<Auditorium>($"api/auditoriums/{id}");
             }
             catch (Exception ex)
             {
@@ -44,13 +44,13 @@ namespace WA.Services.Http
             }
         }
 
-        public async Task<AuditoriumDto?> CreateAuditoriumAsync(CreateAuditoriumRequest req)
+        public async Task<Auditorium?> CreateAuditoriumAsync(CreateAuditoriumRequest req)
         {
             try
             {
                 var response = await _http.PostAsJsonAsync("api/auditoriums", req);
                 return response.IsSuccessStatusCode
-                    ? await response.Content.ReadFromJsonAsync<AuditoriumDto>()
+                    ? await response.Content.ReadFromJsonAsync<Auditorium>()
                     : null;
             }
             catch (Exception ex)
@@ -60,13 +60,13 @@ namespace WA.Services.Http
             }
         }
 
-        public async Task<AuditoriumDto?> UpdateAuditoriumAsync(int id, UpdateAuditoriumRequest req)
+        public async Task<Auditorium?> UpdateAuditoriumAsync(int id, UpdateAuditoriumRequest req)
         {
             try
             {
                 var response = await _http.PutAsJsonAsync($"api/auditoriums/{id}", req);
                 return response.IsSuccessStatusCode
-                    ? await response.Content.ReadFromJsonAsync<AuditoriumDto>()
+                    ? await response.Content.ReadFromJsonAsync<Auditorium>()
                     : null;
             }
             catch (Exception ex)
@@ -166,13 +166,13 @@ namespace WA.Services.Http
             }
         }
 
-        public async Task<ReservationDto?> ConfirmAsync(Guid suggestionId)
+        public async Task<Reservation?> ConfirmAsync(Guid suggestionId)
         {
             try
             {
                 var response = await _http.PostAsJsonAsync("api/reservations/confirm", new ConfirmRequest(suggestionId));
                 return response.IsSuccessStatusCode
-                    ? await response.Content.ReadFromJsonAsync<ReservationDto>()
+                    ? await response.Content.ReadFromJsonAsync<Reservation>()
                     : null;
             }
             catch (Exception ex)
@@ -182,13 +182,13 @@ namespace WA.Services.Http
             }
         }
 
-        public async Task<ReservationDto?> CancelAsync(Guid reservationId)
+        public async Task<Reservation?> CancelAsync(Guid reservationId)
         {
             try
             {
                 var response = await _http.PostAsJsonAsync("api/reservations/cancel", new CancelRequest(reservationId));
                 return response.IsSuccessStatusCode
-                    ? await response.Content.ReadFromJsonAsync<ReservationDto>()
+                    ? await response.Content.ReadFromJsonAsync<Reservation>()
                     : null;
             }
             catch (Exception ex)

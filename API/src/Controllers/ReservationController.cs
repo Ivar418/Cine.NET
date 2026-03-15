@@ -1,5 +1,8 @@
 
+using API.src.Repositories.Implementations;
 using API.src.Repositories.Interfaces;
+using API.src.Services.Implementations;
+using API.src.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
@@ -17,6 +20,7 @@ namespace API.src.Controllers
         /// search, creation, updating, and deletion of Reservation records.
         /// </summary>
         private readonly IReservationRepository _ReservationRepository;
+        private readonly IReservationService _reservationService;
 
         /// <summary>
         /// A controller for managing Reservation-related operations, providing endpoints to retrieve,
@@ -25,6 +29,7 @@ namespace API.src.Controllers
         public ReservationController(IReservationRepository ReservationRepository)
         {
             _ReservationRepository = ReservationRepository;
+            _reservationService = new ReservationService();
         }
 
 
@@ -33,11 +38,11 @@ namespace API.src.Controllers
         /// <returns>An IActionResult containing the Reservation details if found, a 404 Not Found response if the Reservation is not found, or a 500 Internal Server Error response if an unexpected error occurs.</returns>
         [HttpGet]
         [Route("/{reservationId:guid}")]
-        public async Task<IActionResult> GetReservationById(Guid id)
+        public async Task<IActionResult> GetReservationById(Guid reservationId)
         {
             try
             {
-                var Reservation = await _ReservationRepository.GetReservationByIdAsync(id);
+                var Reservation = await _ReservationRepository.GetReservationByIdAsync(reservationId);
                 return Reservation switch
                 {
                     { IsFailure: true, Error: "Reservation not found" } => NotFound(new { error = "Reservation not found" }),
@@ -73,25 +78,32 @@ namespace API.src.Controllers
         /// <summary>
         /// Adds a Reservation to the database.
         /// </summary>
-        /// <param name="name">The Reservation name to be added. Must be a positive integer. that does not exist</param>
-        /// <param name="rows">The list of row configurations for the Reservation. Each row configuration should specify the number of seats and wheelchair spaces.</param>
+        /// <param name="showingId">The showingId to be added. Must be a positive integer.</param>
+        /// <param name="seats">The list of seatInfo for the Reservation.</param>
+        /// <param name="status">The Reservation status to be added. Must be a enum of the type ReservationStatus.</param>
         /// <returns>
         /// Returns a status indicating the result of the operation:
         /// </returns>
         [HttpPost]
         [Route("/suggest")]
         public async Task<IActionResult> AddReservationById(
-            [FromQuery] int showtimeId,
+            [FromQuery] int showingId,
             [FromQuery] IEnumerable<SeatInfo> seats,
             [FromQuery] string status)
         {
             try
             {
-                var result = await _ReservationRepository.CreateReservationAsync(showtimeId, seats, status);
+                SuggestRequest request = new SuggestRequest(
+                    showingId,
+                    seats.Count(s => s.Type == SeatType.Normal),
+                    seats.Count(s => s.Type == SeatType.Wheelchair));
+
+                var result = _reservationService.SuggestAsync(request);
                 return Ok(result);
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 return StatusCode(500, new { error = "An error occurred" });
             }
         }

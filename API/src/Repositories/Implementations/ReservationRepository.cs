@@ -33,6 +33,7 @@ public class ReservationRepository : IReservationRepository
         res.SetSeats(seats);
         _db.Reservations.Add(res);
         await _db.SaveChangesAsync();
+
         return res;
     }
 
@@ -43,5 +44,19 @@ public class ReservationRepository : IReservationRepository
         res.Status = status;
         await _db.SaveChangesAsync();
         return res;
+    }
+
+    public async Task<HashSet<string>> GetOccupiedKeysAsync(int showingId)
+    {
+        var reservations = await _db.Reservations
+            .AsNoTracking()
+            .Where(r => r.ShowingId == showingId
+                     && (r.Status == "Confirmed" || r.Status == "Pending"))
+            .ToListAsync();
+
+        return reservations
+            .SelectMany(r => r.GetSeats())
+            .Select(s => $"{s.Row}-{s.Col}")
+            .ToHashSet();
     }
 }

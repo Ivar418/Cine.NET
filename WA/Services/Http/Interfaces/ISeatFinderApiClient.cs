@@ -6,10 +6,10 @@ namespace WA.Services.Http;
 public interface ISeatFinderApiClient
 {
     // ── Auditoriums ──────────────────────────────────────────────────────────
-    Task<List<AuditoriumDto>?> GetAuditoriumsAsync();
-    Task<AuditoriumDto?> GetAuditoriumAsync(int id);
-    Task<AuditoriumDto?> CreateAuditoriumAsync(CreateAuditoriumRequest req);
-    Task<AuditoriumDto?> UpdateAuditoriumAsync(int id, UpdateAuditoriumRequest req);
+    Task<List<Auditorium>?> GetAuditoriumsAsync();
+    Task<Auditorium?> GetAuditoriumAsync(int id);
+    Task<Auditorium?> CreateAuditoriumAsync(CreateAuditoriumRequest req);
+    Task<Auditorium?> UpdateAuditoriumAsync(int id, UpdateAuditoriumRequest req);
     Task<bool> DeleteAuditoriumAsync(int id);
 
     // ── Showings ─────────────────────────────────────────────────────────────
@@ -20,6 +20,6 @@ public interface ISeatFinderApiClient
 
     // ── Reservations ──────────────────────────────────────────────────────────
     Task<SuggestResponse?> SuggestAsync(SuggestRequest req);
-    Task<ReservationDto?> ConfirmAsync(Guid suggestionId);
-    Task<ReservationDto?> CancelAsync(Guid reservationId);
+    Task<Reservation?> ConfirmAsync(Guid suggestionId);
+    Task<Reservation?> CancelAsync(Guid reservationId);
 }
