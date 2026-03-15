@@ -11,7 +11,7 @@
 
 @* ── Page header ── *@
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h4">Movies</MudText>
+    <MudText Typo="Typo.h4" Style="color: var(--mud-palette-text-secondary);" >Movies</MudText>
     <MudButton Variant="Variant.Filled"
                Color="Color.Primary"
                StartIcon="@Icons.Material.Filled.Add"
@@ -39,7 +39,8 @@ else
                  Hover="true"
                  Pageable="true"
                  PageSize="10"
-                 QuickFilter="_quickFilter">
+                 QuickFilter="_quickFilter"
+                 Class="white-datagrid">
         <ToolBarContent>
             
             <MudTextField @bind-Value="_searchString"

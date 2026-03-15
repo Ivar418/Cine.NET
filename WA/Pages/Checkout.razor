@@ -1,0 +1,83 @@
+@page "/checkout/{ShowingId:int}"
+@namespace WA.Pages
+
+<MudContainer MaxWidth="MaxWidth.Small">
+
+    <MudStepper @bind-ActiveIndex="step">
+
+        <MudStep Label="Stoelen">
+
+            <MudText>Stoelen placeholder (komt later)</MudText>
+
+            <MudButton OnClick="@(()=>step++)">
+                Volgende
+            </MudButton>
+
+        </MudStep>
+
+        <MudStep Label="Tickets">
+
+            @if (showing == null)
+            {
+                <MudProgressCircular Indeterminate="true"/>
+            }
+            else
+            {
+
+                @foreach (var seat in seats)
+                {
+                    <MudPaper Class="pa-4 mb-2">
+
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+
+                            <MudText>
+                                Rij @seat.Row Stoel @seat.SeatNumber
+                            </MudText>
+
+                            <MudSelect T="string" @bind-Value="seat.TicketType">
+
+                                <MudSelectItem Value="@("Adult")">
+                                    Adult €@(showing?.Prices.Adult ?? 0)
+                                </MudSelectItem>
+
+                                <MudSelectItem Value="@("Student")">
+                                    Student €@(showing?.Prices.Student ?? 0)
+                                </MudSelectItem>
+
+                                <MudSelectItem Value="@("Child")">
+                                    Child €@(showing?.Prices.Child ?? 0)
+                                </MudSelectItem>
+
+                                <MudSelectItem Value="@("Senior")">
+                                    Senior €@(showing?.Prices.Senior ?? 0)
+                                </MudSelectItem>
+
+                            </MudSelect>
+
+                        </MudStack>
+
+                    </MudPaper>
+                }
+
+                <MudButton OnClick="@(()=>step++)">
+                    Volgende
+                </MudButton>
+
+            }
+
+        </MudStep>
+
+        <MudStep Label="Overzicht">
+
+            @foreach (var seat in seats)
+            {
+                <MudText>
+                    Rij @seat.Row Stoel @seat.SeatNumber - @seat.TicketType
+                </MudText>
+            }
+
+        </MudStep>
+
+    </MudStepper>
+
+</MudContainer>

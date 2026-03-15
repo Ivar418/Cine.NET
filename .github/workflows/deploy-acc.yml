@@ -1,8 +1,8 @@
 name: Deploy API ACC
 
 on:
-  push:
-    branches: [develop, main]
+    push:
+        branches: [develop]
 
 jobs:
   deploy:

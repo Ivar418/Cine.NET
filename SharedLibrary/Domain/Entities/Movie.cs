@@ -11,9 +11,15 @@ public class Movie
 
     [Column("tmdb_id")] public int TmdbId { get; set; } = 0;
 
+    //Defines the language of the information about the movie, not the language of the movie itself. E.g. "en" for English, "nl" for Dutch.
+    [Column("information_language")]
+    public string InformationLanguage { get; set; } =
+        "und"; // "und" stands for undefined, used when language is not specified or unknown.
+
     [Column("language")] public string? Language { get; set; }
 
-    [Column("poster_url")] public string? PosterUrl { get; set; }
+    [Column("poster_url")] public string? PosterPath { get; set; }
+    [Column("backdrop_url")] public string? BackdropPath { get; set; }
 
     [Column("runtime")] public int? Runtime { get; set; }
 

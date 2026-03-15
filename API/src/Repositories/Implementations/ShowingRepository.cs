@@ -6,6 +6,7 @@ using API.src.Repositories.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 using API.src.Mappers;
+using SharedLibrary.DTOs.Responses;
 
 namespace API.src.Repositories.Implementations
 {
@@ -102,6 +103,33 @@ namespace API.src.Repositories.Implementations
         {
             throw new NotImplementedException();
         }
+        
+        async Task<ResultOf<ShowingDisplayResponse>> IShowingRepository.GetShowingDisplayByIdAsync(int id)
+        {
+            try
+            {
+                var showing = await _db.Showings
+                    .Where(s => s.Id == id)
+                    .Select(s => new ShowingDisplayResponse
+                    {
+                        Id = s.Id,
+                        MovieId = s.MovieId,
+                        AuditoriumId = s.AuditoriumId,
+                        MovieTitle = s.Movie.Title,
+                        AuditoriumName = s.Auditorium.Name,
+                        Is3D = s.IsThreeD,
+                        StartsAt = s.StartsAt
+                    })
+                    .FirstOrDefaultAsync();
 
+                return showing == null
+                    ? ResultOf<ShowingDisplayResponse>.Failure("Showing not found")
+                    : ResultOf<ShowingDisplayResponse>.Success(showing);
+            }
+            catch (Exception e)
+            {
+                return ResultOf<ShowingDisplayResponse>.Failure(e.Message);
+            }
+        }
     }
 }

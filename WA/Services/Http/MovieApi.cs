@@ -29,6 +29,25 @@ public class MovieApiClient : IMovieApiClient
             return null;
         }
     }
+    
+    public async Task<MovieResponse?> GetMovieByIdAsync(int id)
+    {
+        try
+        {
+            var response = await _http.GetAsync($"{BasePath}/{id}");
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadFromJsonAsync<MovieResponse>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[MovieApiClient] GetMovieById({id}) failed: {ex.Message}");
+            return null;
+        }
+    }
 
     public async Task<bool> DeleteMovieAsync(int tmdbId)
     {
