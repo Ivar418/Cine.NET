@@ -19,7 +19,7 @@ namespace API.Infrastructure.Database
 
     public static class DbSeeder
     {
-        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService, ITicketService ticketService, IAuditoriumRepository auditoriumRepository)
+        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService,IShowingService showingService, ITicketService ticketService,IPricingService pricingService, IAuditoriumRepository auditoriumRepository)
         {
             var movieEntities = new List<Movie>();
             if (!await db.Users.AnyAsync())
@@ -144,7 +144,7 @@ namespace API.Infrastructure.Database
                         AuditoriumId = auditoriums[i % auditoriums.Count].Id,
                         StartsAt = start.AddHours(i * 2), // elke 2 uur
                         IsThreeD = (i % 2 == 0), // om en om 3D
-                        AuditoriumLayoutSnapshot = "[]" // snapshot leeg laten
+                        AuditoriumLayoutSnapshot = auditoriums[i].RowConfigJson // Sla de auditorium layout op als JSON string in de showing
                     });
                 }
 

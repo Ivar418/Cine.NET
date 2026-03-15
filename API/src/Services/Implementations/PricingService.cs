@@ -1,9 +1,10 @@
 using API.Infrastructure.Database;
+using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
 
 namespace API.Services.Implementations;
 
-public class PricingService
+public class PricingService : IPricingService
 {
     private readonly Dictionary<string, decimal> _config;
 
