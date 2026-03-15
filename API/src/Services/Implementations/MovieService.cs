@@ -30,26 +30,15 @@ public class MovieService : IMovieService
                 {
                     listOfAddedMovies.Add(movie.Value);
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"[MovieService] Failed to add movie with TMDB ID {tmdbId} for language '{informationLanguage}': {ex.Message}");
+                Console.Error.WriteLine(
+                    $"[MovieService] Failed to add movie with TMDB ID {tmdbId} for language '{informationLanguage}': {ex.Message}");
             }
         }
+
         return ResultOf<IEnumerable<Movie>>.Success(listOfAddedMovies);
-    }
-
-    public async Task<ResultOf<Movie>> AddMovieAsync(TmdbMovieDetailsResponse movieDetails)
-    {
-        try
-        {
-            var movie = await _movieRepository.AddMovieAsync(movieDetails);
-
-            return ResultOf<Movie>.Success(movie);
-        }
-        catch (Exception ex)
-        {
-            return ResultOf<Movie>.Failure(ex.Message);
-        }
     }
 
     public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage)
@@ -78,5 +67,40 @@ public class MovieService : IMovieService
     {
         return await _movieRepository.GetMovieTmdbSearchResultsAsync(query, primary_release_year, page, include_adult,
             language);
+    }
+
+    public async Task<ResultOf<IEnumerable<Genre>>> FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb(
+        IEnumerable<string>? language = null)
+    {
+        language ??= ["en", "nl"];
+        foreach (var languageItem in language)
+        {
+            var genreList = await _movieRepository.GetAllGenresFromTmdb(languageItem);
+            var genres = genreList.Value.Genres.Select(genre => new Genre
+                { TmdbId = genre.Id, Name = genre.Name, Language = languageItem });
+            await _movieRepository.SaveGenres(genres);
+        }
+
+        var genresOnDb = await _movieRepository.GetAllGenresOnDb();
+        if (genresOnDb.IsFailure) return ResultOf<IEnumerable<Genre>>.Failure(genresOnDb.Error);
+        return ResultOf<IEnumerable<Genre>>.Success(genresOnDb.Value);
+    }
+
+
+    public async Task<ResultOf<IEnumerable<Genre>>> FetchGenreByLanguage(int tmdbGenreId, string language)
+    {
+        var genres = await _movieRepository.GetAllGenresOnDb();
+        var result = genres.Value.Where(g => g.TmdbId == tmdbGenreId && g.Language == language);
+        if (result.Count() == 0)
+        {
+            var fetchResult = await _movieRepository.SaveGenreByTmdbGenreId(language, tmdbGenreId);
+            if (fetchResult.IsFailure)
+                return ResultOf<IEnumerable<Genre>>.Failure(fetchResult.Error);
+            return fetchResult;
+        }
+        else
+        {
+            return ResultOf<IEnumerable<Genre>>.Success(result);
+        }
     }
 }

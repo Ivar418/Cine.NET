@@ -42,6 +42,8 @@ namespace API.Infrastructure.Database
                 {
                     var movie = await movieService.AddMovieAsyncForEachSpecifiedLanguage(tmdbId: id);
                 }
+
+                await movieService.FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb();
             }
 
             if (!await db.TicketTypes.AnyAsync())

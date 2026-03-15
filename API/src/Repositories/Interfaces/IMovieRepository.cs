@@ -1,6 +1,7 @@
 ﻿using API.Domain.Common;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses.TMDB;
+using SharedLibrary.DTOs.Responses.TMDB.Genre;
 using SharedLibrary.DTOs.Responses.TMDB.MovieReleaseDatesAndInfo;
 
 namespace API.Repositories.Interfaces;
@@ -14,6 +15,11 @@ public interface IMovieRepository
     Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie, string? informationLanguage = null);
     Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language = "und");
     Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId);
+    Task<ResultOf<GenreResultList>> GetAllGenresFromTmdb(string language = "nl");
+    Task<ResultOf<IEnumerable<Genre>>> SaveGenres(IEnumerable<Genre> genres);
+    Task<ResultOf<IEnumerable<Genre>>> SaveGenreByTmdbGenreId(string language, int tmdbGenreId);
+    Task<ResultOf<Genre>> GetGenreByTmdbGenreId(int tmdbGenreId, string language);
+    Task<ResultOf<IEnumerable<Genre>>> GetAllGenresOnDb();
     Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language);
     Task<MovieReleaseDatesDto> GetMovieReleaseDatesAllCountriesAsync(int id);
     Task<ReleaseInformationDto?> GetDutchMovieReleaseDatesAsync(int id);
