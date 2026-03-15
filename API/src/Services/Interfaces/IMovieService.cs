@@ -10,8 +10,6 @@ public interface IMovieService
     Task<ResultOf<IEnumerable<Movie>>> AddMovieAsyncForEachSpecifiedLanguage(int tmdbId,
         IEnumerable<string>? informationLanguages = null);
 
-    Task<ResultOf<Movie>> AddMovieAsync(TmdbMovieDetailsResponse movieDetails);
-    Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage);
     Task<ResultOf<ICollection<Movie>>> GetMoviesAsync(string informationLanguage);
     Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId);
     Task<ResultOf<Movie>> GetMovieAsync(int id);

@@ -41,20 +41,6 @@ public class MovieService : IMovieService
         return ResultOf<IEnumerable<Movie>>.Success(listOfAddedMovies);
     }
 
-    public async Task<ResultOf<Movie>> AddMovieAsync(TmdbMovieDetailsResponse movieDetails)
-    {
-        try
-        {
-            var movie = await _movieRepository.AddMovieAsync(movieDetails);
-
-            return ResultOf<Movie>.Success(movie);
-        }
-        catch (Exception ex)
-        {
-            return ResultOf<Movie>.Failure(ex.Message);
-        }
-    }
-
     public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage)
     {
         return await _movieRepository.AddMovieFromTmdbAsync(tmdbId, informationLanguage);
@@ -99,7 +85,6 @@ public class MovieService : IMovieService
         if (genresOnDb.IsFailure) return ResultOf<IEnumerable<Genre>>.Failure(genresOnDb.Error);
         return ResultOf<IEnumerable<Genre>>.Success(genresOnDb.Value);
     }
-
 
 
     public async Task<ResultOf<IEnumerable<Genre>>> FetchGenreByLanguage(int tmdbGenreId, string language)
