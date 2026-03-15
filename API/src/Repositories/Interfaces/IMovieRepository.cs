@@ -3,6 +3,7 @@ using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses.TMDB;
 using SharedLibrary.DTOs.Responses.TMDB.Genre;
 using SharedLibrary.DTOs.Responses.TMDB.MovieReleaseDatesAndInfo;
+using SharedLibrary.DTOs.Responses.TMDB.Videos;
 
 namespace API.Repositories.Interfaces;
 
@@ -23,5 +24,6 @@ public interface IMovieRepository
     Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language);
     Task<MovieReleaseDatesDto> GetMovieReleaseDatesAllCountriesAsync(int id);
     Task<ReleaseInformationDto?> GetDutchMovieReleaseDatesAsync(int id);
+    Task<IEnumerable<VideoResultItem>> GetMovieYoutubeTrailerAsync(int tmdbId);
     Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query, string? primary_release_year, int? page, bool include_adult, string language);
 }
