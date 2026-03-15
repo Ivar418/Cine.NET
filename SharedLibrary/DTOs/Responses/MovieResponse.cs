@@ -6,7 +6,7 @@ public class MovieResponse
     public string Title { get; init; } = string.Empty;
     public int TmdbId { get; init; }
     public string? Language { get; init; }
-    public string? PosterUrl { get; init; }
+    public string? PosterPath { get; init; }
     public int? Runtime { get; init; }
     public string? ImdbId { get; init; }
     public string? ReleaseDate { get; init; }

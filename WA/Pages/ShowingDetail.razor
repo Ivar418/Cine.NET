@@ -99,7 +99,7 @@
     private bool _loading = true;
     private bool _mismatch = false;
 
-    private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterUrl}";
+    private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterPath}";
     
     private List<string> _genreNames = new();
 
