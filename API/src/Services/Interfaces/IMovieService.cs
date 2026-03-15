@@ -19,6 +19,8 @@ public interface IMovieService
     Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query, string? primary_release_year, int? page,
         bool include_adult, string language);
 
-    Task<ResultOf<IEnumerable<Genre>>> FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb(IEnumerable<string>? informationLanguages = null);
-    Task<ResultOf<IEnumerable<Genre>>> FetchGenreByLanguage(string language);
+    Task<ResultOf<IEnumerable<Genre>>> FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb(
+        IEnumerable<string>? informationLanguages = null);
+
+    Task<ResultOf<IEnumerable<Genre>>> FetchGenreByLanguage(int tmdbGenreId, string language);
 }

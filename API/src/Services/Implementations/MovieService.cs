@@ -100,6 +100,8 @@ public class MovieService : IMovieService
         return ResultOf<IEnumerable<Genre>>.Success(genresOnDb.Value);
     }
 
+
+
     public async Task<ResultOf<IEnumerable<Genre>>> FetchGenreByLanguage(int tmdbGenreId, string language)
     {
         var genres = await _movieRepository.GetAllGenresOnDb();
