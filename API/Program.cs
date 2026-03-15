@@ -38,8 +38,9 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
-builder.Services.AddScoped<ShowingService>();
+builder.Services.AddScoped<IShowingService, ShowingService>();
 builder.Services.AddScoped<PricingService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();
@@ -69,7 +70,7 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     ServerVersion? serverVersion = null;
     var retries = 0;
     const int maxRetries = 10;
-    var delay  = TimeSpan.FromSeconds(5);
+    var delay = TimeSpan.FromSeconds(5);
 
     while (serverVersion == null && retries < maxRetries)
     {
@@ -158,7 +159,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var db = services.GetRequiredService<ApiDbContext>();
-    var movieRepository = services.GetRequiredService<IMovieRepository>();
+    var movieService = services.GetRequiredService<IMovieService>();
 
     // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
     // Since this is a school project which always destroys the database on recreation it does not matter
@@ -167,7 +168,7 @@ using (var scope = app.Services.CreateScope())
     // Seed data
     try
     {
-        await DbSeeder.SeedAsync(db, movieRepository);
+        await DbSeeder.SeedAsync(db, movieService);
     }
     catch (Exception ex)
     {
