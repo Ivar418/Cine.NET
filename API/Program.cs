@@ -38,6 +38,7 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
+builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IShowingService, ShowingService>();
 builder.Services.AddScoped<PricingService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
@@ -160,7 +161,10 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var db = services.GetRequiredService<ApiDbContext>();
     var movieService = services.GetRequiredService<IMovieService>();
+    // var showingService = services.GetRequiredService<IShowingService>();
+    var ticketService = services.GetRequiredService<ITicketService>();
 
+    var auditoriumRepository = services.GetRequiredService<IAuditoriumRepository>();
     // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
     // Since this is a school project which always destroys the database on recreation it does not matter
     db.Database.EnsureCreated();
@@ -168,7 +172,7 @@ using (var scope = app.Services.CreateScope())
     // Seed data
     try
     {
-        await DbSeeder.SeedAsync(db, movieService);
+        await DbSeeder.SeedAsync(db, movieService, ticketService, auditoriumRepository);
     }
     catch (Exception ex)
     {

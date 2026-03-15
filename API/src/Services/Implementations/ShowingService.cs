@@ -1,11 +1,10 @@
-using Microsoft.EntityFrameworkCore;
 using API.Infrastructure.Database;
-using API.Services.Implementations;
 using API.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses;
 
-namespace API.Services;
+namespace API.Services.Implementations;
 
 public class ShowingService : IShowingService
 {
