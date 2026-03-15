@@ -29,7 +29,7 @@ public class ShowingApi : IShowingApi
         {
             return await _http.GetFromJsonAsync<ShowingResponse>($"{BasePath}/{id}");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Console.Error.WriteLine($"[ShowingApiClient] GetShowingById({id}) failed: {ex.Message}");
             return null;
@@ -53,12 +53,12 @@ public class ShowingApi : IShowingApi
             Console.Error.WriteLine($"[ShowingApiClient] GetShowingDisplayById({id}) failed: {ex.Message}");
             return null;
         }
-    
+    }
+
     public async Task<ShowingsWithPricesResponse?> GetShowingPricesAsync(int showingId)
     {
         return await _http.GetFromJsonAsync<ShowingsWithPricesResponse>(
             $"api/showings/{showingId}/prices"
         );
     }
-    
 }
