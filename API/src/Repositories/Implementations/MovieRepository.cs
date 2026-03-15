@@ -8,6 +8,7 @@ using SharedLibrary.DTOs.Responses.TMDB;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
+using SharedLibrary.DTOs.Responses.TMDB.Genre;
 using SharedLibrary.DTOs.Responses.TMDB.MovieReleaseDatesAndInfo;
 
 namespace API.Repositories.Implementations;
@@ -120,6 +121,90 @@ public class MovieRepository : IMovieRepository
         }
 
         return ResultOf<Movie>.Success(movies.Value.First());
+    }
+
+    public async Task<ResultOf<GenreResultList>> GetAllGenresFromTmdb(string language = "und")
+    {
+        try
+        {
+            Env.Load();
+            // Get the API key from environment variables
+            var apiKey = Environment.GetEnvironmentVariable("TMDB_API_KEY_READ_ONLY");
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("TMDB API key is not set in environment variables.");
+            }
+
+            using var client = new HttpClient();
+            // Set the authorization header
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            // Make the GET request
+            var url = $"https://api.themoviedb.org/3/genre/movie/list?language={language}";
+            var response = await client.GetAsync(url);
+
+            // Ensure success status code
+            if (!response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+            {
+                return ResultOf<GenreResultList>.Failure("Failed to fetch genres from TMDB");
+            }
+
+            // Read response content
+            var content = await response.Content.ReadAsStringAsync();
+            var genreList = JsonSerializer.Deserialize<GenreResultList>(content) ??
+                            throw new Exception("Could not deserialize genre list");
+
+            return ResultOf<GenreResultList>.Success(genreList);
+        }
+        catch (Exception e)
+        {
+            return ResultOf<GenreResultList>.Failure(e.Message);
+        }
+    }
+
+    public async Task<ResultOf<IEnumerable<Genre>>> SaveGenres(IEnumerable<Genre> genres)
+    {
+        _db.Genres.AddRange(genres);
+        await _db.SaveChangesAsync();
+        return ResultOf<IEnumerable<Genre>>.Success(genres);
+    }
+
+    public async Task<ResultOf<IEnumerable<Genre>>> SaveGenreByTmdbGenreId(string language, int tmdbGenreId)
+    {
+        var genres = await GetAllGenresFromTmdb(language);
+        if (genres.IsFailure) return ResultOf<IEnumerable<Genre>>.Failure(genres.Error);
+        var genre = genres.Value.Genres.FirstOrDefault(g => g.Id == tmdbGenreId);
+        if (genre == null) return ResultOf<IEnumerable<Genre>>.Failure("Genre not found");
+        var genreEntity = new Genre
+        {
+            TmdbId = genre.Id,
+            Name = genre.Name,
+            Language = language
+        };
+        var savedGenre = SaveGenres(new List<Genre> { genreEntity });
+        if (savedGenre.Result.IsFailure) return ResultOf<IEnumerable<Genre>>.Failure(savedGenre.Result.Error);
+
+        return ResultOf<IEnumerable<Genre>>.Success(savedGenre.Result.Value);
+    }
+
+    public async Task<ResultOf<Genre>> GetGenreByTmdbGenreId(int tmdbGenreId, string language)
+    {
+        var genreResult = await _db.Genres
+            .FirstOrDefaultAsync(g => g.TmdbId == tmdbGenreId && g.Language == language);
+
+        return genreResult != null ? ResultOf<Genre>.Success(genreResult) : ResultOf<Genre>.Failure("Genre not found");
+    }
+
+    public async Task<ResultOf<IEnumerable<Genre>>> GetAllGenresOnDb()
+    {
+        try
+        {
+            var result = await _db.Genres.ToListAsync();
+            return ResultOf<IEnumerable<Genre>>.Success(result);
+        }
+        catch (Exception e)
+        {
+            return ResultOf<IEnumerable<Genre>>.Failure(e.Message);
+        }
     }
 
     public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language)
