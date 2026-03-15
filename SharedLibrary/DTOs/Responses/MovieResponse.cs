@@ -14,7 +14,7 @@ public class MovieResponse
     public string? AgeIndication { get; init; }
     public string? SpokenLanguageName { get; init; }
     public string? SpokenLanguageCodeIso6391 { get; init; }
-    public List<int>? GenreIds { get; init; }
+    public List<int>? GenresIds { get; init; }
     public string RowCreatedTimestampUtc { get; init; } = string.Empty;
     public string? RowUpdatedTimestampUtc { get; init; } 
 }

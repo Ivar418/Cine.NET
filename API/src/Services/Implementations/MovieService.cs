@@ -87,20 +87,17 @@ public class MovieService : IMovieService
     }
 
 
-    public async Task<ResultOf<IEnumerable<Genre>>> FetchGenreByLanguage(int tmdbGenreId, string language)
+    public async Task<ResultOf<Genre>> FetchGenreByLanguage(int tmdbGenreId, string language)
     {
         var genres = await _movieRepository.GetAllGenresOnDb();
-        var result = genres.Value.Where(g => g.TmdbId == tmdbGenreId && g.Language == language);
-        if (result.Count() == 0)
+        var result = genres.Value.FirstOrDefault(g => g.TmdbId == tmdbGenreId && g.Language == language);
+        if (result == null)
         {
             var fetchResult = await _movieRepository.SaveGenreByTmdbGenreId(language, tmdbGenreId);
             if (fetchResult.IsFailure)
-                return ResultOf<IEnumerable<Genre>>.Failure(fetchResult.Error);
-            return fetchResult;
+                return ResultOf<Genre>.Failure(fetchResult.Error);
+            return ResultOf<Genre>.Success(fetchResult.Value.First());
         }
-        else
-        {
-            return ResultOf<IEnumerable<Genre>>.Success(result);
-        }
+        return ResultOf<Genre>.Success(result);
     }
 }
