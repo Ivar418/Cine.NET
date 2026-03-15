@@ -1,4 +1,8 @@
-﻿using System.Text.Json;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using SharedLibrary.DTOs.Responses;
+using System.Text.Json;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using SharedLibrary.DTOs.Responses.TMDB;

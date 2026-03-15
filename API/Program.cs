@@ -34,6 +34,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
 builder.Services.AddScoped<IShowingService, ShowingService>();
@@ -129,7 +131,10 @@ if (app.Environment.IsDevelopment())
 }
 
 // Security: redirect HTTP to HTTPS
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseStaticFiles(); // serves wwwroot/*
 
