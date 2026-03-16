@@ -20,7 +20,7 @@ public class Movie
 
     [Column("poster_url")] public string? PosterPath { get; set; }
     [Column("backdrop_url")] public string? BackdropPath { get; set; }
-
+    [Column("youtube_trailer_key")] public string? YoutubeTrailerKey { get; set; }
     [Column("runtime")] public int? Runtime { get; set; }
 
     [Column("imdb_id")] public string? ImdbId { get; set; }

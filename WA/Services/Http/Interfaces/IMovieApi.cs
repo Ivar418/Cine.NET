@@ -1,5 +1,6 @@
 using SharedLibrary.DTOs.Responses;
 using SharedLibrary.DTOs.Responses.TMDB;
+using SharedLibrary.DTOs.Responses.TMDB.Genre;
 
 namespace WA.Services.Http.Interfaces;
 
@@ -28,4 +29,6 @@ public interface IMovieApiClient
     Task<(bool Success, string? ErrorMessage, MovieResponse? Movie)> AddMovieFromTmdbAsync(
         int tmdbId,
         string language = "nl");
+    
+    Task<GenreResponse?> GetGenreByIdAsync(int tmdbGenreId, string language = "nl");
 }

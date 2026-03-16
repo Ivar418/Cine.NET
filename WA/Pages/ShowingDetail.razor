@@ -45,6 +45,7 @@
                         <MudText><strong>Release date:</strong> @_movie.ReleaseDate</MudText>
                         <MudText><strong>Age indication:</strong> @(_movie.AgeIndication ?? "Unknown")</MudText>
                         <MudText><strong>Language:</strong> @(_movie.SpokenLanguageName ?? "Unknown")</MudText>
+                        <MudText><strong>Genres:</strong> @(_genreNames.Any() ? string.Join(", ", _genreNames) : "Unknown")</MudText>
                     </div>
 
                     <MudDivider Class="my-4" />
@@ -98,8 +99,9 @@
     private bool _loading = true;
     private bool _mismatch = false;
 
-    private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterUrl}";
-
+    private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterPath}";
+    
+    private List<string> _genreNames = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -107,8 +109,16 @@
         _showing = await ShowingApi.GetShowingDisplayByIdAsync(ShowingId);
 
         if (_movie != null && _showing != null && _showing.MovieId != MovieId)
-        {
             _mismatch = true;
+
+        if (_movie?.GenresIds != null)
+        {
+            foreach (var genreId in _movie.GenresIds)
+            {
+                var genre = await MovieApi.GetGenreByIdAsync(genreId, "nl");
+                if (genre != null)
+                    _genreNames.Add(genre.Name);
+            }
         }
 
         _loading = false;
