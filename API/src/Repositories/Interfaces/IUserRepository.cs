@@ -1,10 +1,11 @@
-﻿using SharedLibrary.Domain.Entities;
+﻿using API.Domain.Common;
+using SharedLibrary.Domain.Entities;
 
 namespace API.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        Task<IReadOnlyList<User>> GetAllAsync();
-        Task<User?> GetByIdAsync(int id);
+        Task<ResultOf<IReadOnlyList<User>>> GetAllAsync();
+        Task<ResultOf<User?>> GetByIdAsync(int id);
     }
 }

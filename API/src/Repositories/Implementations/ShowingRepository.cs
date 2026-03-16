@@ -46,17 +46,24 @@ namespace API.src.Repositories.Implementations
 
         async Task<ResultOf<Showing>> IShowingRepository.GetShowingAsync(int id)
         {
-            var Showing = await _db.Showings.FindAsync(id);
-            return Showing == null ? ResultOf<Showing>.Failure("Auditorium not found") : ResultOf<Showing>.Success(Showing);
+            var showing = await _db.Showings
+                .Include(s => s.Movie)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            
+            return showing == null
+                ? ResultOf<Showing>.Failure("Showing not found")
+                : ResultOf<Showing>.Success(showing);
         }
 
         async Task<ResultOf<ICollection<Showing>>> IShowingRepository.GetShowingsAsync()
         {
             try
             {
-                var Showings = await _db.Showings.ToListAsync();
+                var showings = await _db.Showings
+                    .Include(s => s.Movie)
+                    .ToListAsync();
 
-                return ResultOf<ICollection<Showing>>.Success(Showings);
+                return ResultOf<ICollection<Showing>>.Success(showings);
             }
             catch (Exception e)
             {
