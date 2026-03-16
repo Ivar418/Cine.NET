@@ -49,7 +49,7 @@ public class MoviesController : ControllerBase
     /// </returns>
     [HttpGet]
     public async Task<IActionResult> GetAll(
-        [FromQuery] string language = "nl")
+        [FromQuery] string language = "all")
     {
         try
         {
