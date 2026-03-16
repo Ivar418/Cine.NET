@@ -7,9 +7,9 @@ using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses.TMDB;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
 using SharedLibrary.DTOs.Responses.TMDB.Genre;
 using SharedLibrary.DTOs.Responses.TMDB.MovieReleaseDatesAndInfo;
+using SharedLibrary.DTOs.Responses.TMDB.Videos;
 
 namespace API.Repositories.Implementations;
 
@@ -63,7 +63,7 @@ public class MovieRepository : IMovieRepository
         var firstLanguage = movie.SpokenLanguages?.FirstOrDefault();
         var dutchReleaseInfo = await GetDutchMovieReleaseDatesAsync(movie.Id);
         var dutchAgeIndication = dutchReleaseInfo?.Certification;
-
+        var youtubeKey = await GetMovieYoutubeTrailerAsync(movie.Id);
         var result = await _db.Movies.AddAsync(new Movie
         {
             Title = movie.OriginalTitle,
@@ -72,6 +72,7 @@ public class MovieRepository : IMovieRepository
             Language = movie.OriginalLanguage,
             PosterPath = movie.PosterPath,
             BackdropPath = movie.BackdropPath,
+            YoutubeTrailerKey = youtubeKey.FirstOrDefault()?.Key,
             Runtime = movie.Runtime,
             ImdbId = movie.ImdbId,
             ReleaseDate = movie.ReleaseDate,
@@ -235,8 +236,6 @@ public class MovieRepository : IMovieRepository
                 return null;
             }
 
-            // Read response content
-            // var content = await response.Content.ReadAsStringAsync();
             var content = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<TmdbMovieDetailsResponse>(content) ??
                    throw new Exception("Could not deserialize movie details");
@@ -296,6 +295,42 @@ public class MovieRepository : IMovieRepository
         }
 
         return null;
+    }
+
+    public async Task<IEnumerable<VideoResultItem>> GetMovieYoutubeTrailerAsync(int tmdbId)
+    {
+        try
+        {
+            Env.Load();
+            // Get the API key from environment variables
+            var apiKey = Environment.GetEnvironmentVariable("TMDB_API_KEY_READ_ONLY");
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("TMDB API key is not set in environment variables.");
+            }
+
+            using var client = new HttpClient();
+            // Set the authorization header
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            var url = $"https://api.themoviedb.org/3/movie/{tmdbId}/videos";
+            var response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+
+            var items = JsonSerializer.Deserialize<VideoResultList>(content)
+                        ?? throw new Exception("Could not deserialize movie details");
+
+            var youtubeTrailers = items.Results
+                .Where(v => v.Type == "Trailer" && v.Site == "YouTube");
+
+            return youtubeTrailers
+                .OrderByDescending(v => v.Official) // official first
+                .ThenByDescending(v => v.PublishedAt); // newest second
+        }
+        catch (Exception e)
+        {
+            return new List<VideoResultItem>();
+        }
     }
 
     public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(
