@@ -1,4 +1,5 @@
-﻿using SharedLibrary.Domain.Entities;
+﻿using API.Domain.Common;
+using SharedLibrary.Domain.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 
@@ -13,14 +14,19 @@ namespace API.Services.Implementations
             _repository = repository;
         }
 
-        public async Task<IReadOnlyList<User>> GetAllUsersAsync()
+        public async Task<ResultOf<IReadOnlyList<User>>> GetAllUsersAsync()
         {
-            return await _repository.GetAllAsync();
+            var users = await _repository.GetAllAsync();
+            return ResultOf<IReadOnlyList<User>>.Success(users);
         }
 
-        public async Task<User?> GetUserByIdAsync(int id)
+        public async Task<ResultOf<User>> GetUserByIdAsync(int id)
         {
-            return await _repository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id);
+            if (user == null)
+                return ResultOf<User>.Failure($"User with id {id} not found.");
+            
+            return ResultOf<User>.Success(user);
         }
     }
 }
