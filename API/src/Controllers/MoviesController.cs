@@ -180,12 +180,10 @@ public class MoviesController : ControllerBase
     public async Task<IActionResult> AddMovieByTmdbId(
         [FromQuery] int tmdbId,
         [FromQuery] string? language = null)
-
     {
         string[]? languages = string.IsNullOrWhiteSpace(language)
             ? null
-            : language
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            : language.Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(l => l.Trim())
                 .ToArray();
 
@@ -194,23 +192,22 @@ public class MoviesController : ControllerBase
 
         try
         {
-            Console.WriteLine($"Adding movie with tmdbId {tmdbId} and languages {languages}");
-            // Repository should: fetch TMDB details, map to Movie, save, return Result<Movie>
             var result = await _movieService.AddMovieAsyncForEachSpecifiedLanguage(tmdbId, languages);
-            return result switch
-            {
-                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                { IsSuccess: true, Value: var movies } when movies != null && movies.Any() => CreatedAtAction(
-                    nameof(GetMovieById),
-                    new { id = movies.First().Id },
-                    movies
-                ),
-                { IsSuccess: true, Value: var movies } when movies != null && !movies.Any() =>
-                    Conflict(new { message = "No new movies were added" }),
-                _ => StatusCode(500, new { error = "Unexpected result" })
-            };
+
+            if (result.IsFailure)
+                return StatusCode(500, new { error = "An error occurred" });
+
+            var movies = result.Value?.ToList();
+
+            if (movies == null || !movies.Any())
+                return Conflict(new { message = "No new movies were added" });
+
+            return CreatedAtAction(
+                nameof(GetMovieById),
+                new { id = movies.First().Id },
+                movies);  // ✅ pass list directly — serializer handles it
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return StatusCode(500, new { error = "An error occurred" });
         }
