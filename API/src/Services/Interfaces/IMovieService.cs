@@ -20,5 +20,5 @@ public interface IMovieService
     Task<ResultOf<IEnumerable<Genre>>> FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb(
         IEnumerable<string>? informationLanguages = null);
 
-    Task<ResultOf<IEnumerable<Genre>>> FetchGenreByLanguage(int tmdbGenreId, string language);
+    Task<ResultOf<Genre>> FetchGenreByLanguage(int tmdbGenreId, string language);
 }

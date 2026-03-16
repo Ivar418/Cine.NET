@@ -123,4 +123,23 @@ public class MovieApiClient : IMovieApiClient
             return (false, "An unexpected error occurred. Please try again.", null);
         }
     }
+    
+    public async Task<GenreResponse?> GetGenreByIdAsync(int tmdbGenreId, string language = "nl")
+    {
+        try
+        {
+            var response = await _http.GetAsync($"{BasePath}/genres/{tmdbGenreId}?language={language}");
+        
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return null;
+            response.EnsureSuccessStatusCode();
+        
+            return await response.Content.ReadFromJsonAsync<GenreResponse>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[MovieApiClient] GetGenreById({tmdbGenreId}) failed: {ex.Message}");
+            return null;
+        }
+    }
 }
