@@ -1,7 +1,7 @@
 ﻿using API.Infrastructure.Database;
-using API.src.Repositories.Implementations;
-using API.src.Repositories.Interfaces;
-using API.src.Services.Interfaces;
+using API.Repositories.Implementations;
+using API.Repositories.Interfaces;
+using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 using SharedLibrary.Logic.Algorithm;
@@ -9,19 +9,20 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.Domain.Common;
+using API.Services.Interfaces;
+using API.src.Services.Interfaces;
+using API.Repositories.Interfaces;
 
-namespace API.src.Services.Implementations
+namespace API.Services.Implementations
 {
     public class ReservationService : IReservationService
     {
+        private readonly IShowingService _showingService;
         private readonly IReservationRepository _reservationRepository;
-        private readonly IShowingRepository _showingRepository;
-        private readonly IAuditoriumRepository _auditoriumRepository;
-        private readonly ApiDbContext _db;
-        public ReservationService() { 
-            _auditoriumRepository = new AuditoriumRepository(_db);
-            _reservationRepository = new ReservationRepository(_db);
-            _showingRepository = new ShowingRepository(_db);
+        public ReservationService(IShowingService showingService, IReservationRepository reservationRepository)
+        {
+            _showingService = showingService;
+            _reservationRepository = reservationRepository;
         }
 
         Task<Reservation?> IReservationService.CancelAsync(Guid reservationId)
@@ -36,8 +37,8 @@ namespace API.src.Services.Implementations
 
         async Task<SuggestResponse?> IReservationService.SuggestAsync(SuggestRequest req)
         {
-            ResultOf<Showing> showingResult = await _showingRepository.GetShowingAsync(1);
-            if (showingResult.Value == null)
+            var showingResult = _showingService.GetShowingAsync(req.ShowingId);
+            if (showingResult == null)
             {
                 Console.WriteLine("Showing was not found!");
                 return new SuggestResponse(Guid.Empty,
@@ -47,8 +48,8 @@ namespace API.src.Services.Implementations
             }
 
             // Use the frozen snapshot rows.
-            var rows = showingResult.Value.GetLayoutSnapshot();
-            var occupied = await _reservationRepository.GetOccupiedKeysAsync(req.ShowingId);
+            var rows = showingResult.GetLayoutSnapshot();
+            var occupied = _reservationRepository.GetOccupiedKeysAsync(req.ShowingId);
             var request = new ReservationRequest(req.NormalCount, req.WheelchairCount);
             var best = SeatFinder.FindBest(rows, occupied, request);
 
