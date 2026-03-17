@@ -23,21 +23,21 @@ public class AuditoriumService : IAuditoriumService
 
     public async Task<ResultOf<ICollection<Auditorium>>> GetAuditoriumsAsync()
     {
-        throw new NotImplementedException();
+        return await _auditoriumRepository.GetAuditoriumsAsync();
     }
 
     public async Task<Auditorium> AddAuditoriumAsync(CreateAuditoriumRequest auditorium)
     {
-        throw new NotImplementedException();
+        return await _auditoriumRepository.AddAuditoriumAsync(auditorium);
     }
 
     public async Task<Auditorium> UpdateAuditoriumAsync(Auditorium auditorium)
     {
-        throw new NotImplementedException();
+        return await _auditoriumRepository.UpdateAuditoriumAsync(auditorium);
     }
 
     public async Task<ResultOf<Auditorium>> DeleteAuditoriumByIdAsync(int auditoriumId)
     {
-        throw new NotImplementedException();
+        return await _auditoriumRepository.DeleteAuditoriumByIdAsync(auditoriumId);
     }
 }
