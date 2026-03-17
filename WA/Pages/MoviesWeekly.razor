@@ -43,53 +43,68 @@ else
         <div class="weekly-grid">
             @foreach (var day in _daysInWeek)
             {
+                var dayShowings = _showings
+                    .Where(s => s.StartsAt.ToLocalTime().Date == day.Date)
+                    .OrderBy(s => s.StartsAt)
+                    .ToList();
+
                 <div class="day-column">
-                    @foreach (var showing in _showings
-                        .Where(s => s.StartsAt.ToLocalTime().Date == day.Date)
-                        .OrderBy(s => s.StartsAt))
+                    @foreach (var showing in dayShowings)
                     {
                         var localStart = showing.StartsAt.ToLocalTime();
 
                         <MudCard Elevation="4" Class="movie-card-weekly mb-3">
-                            <MudCardContent Class="pa-2">
-                                <div class="d-flex">
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-space-between align-center">
-                                            <MudText Typo="Typo.subtitle2" Style="font-weight: bold; font-size: 0.85rem; color: #121212;">
-                                                @showing.MovieTitle
-                                            </MudText>
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Style="font-size: 0.7rem; height: 20px;">
-                                                @localStart.ToString("HH:mm")
-                                            </MudChip>
-                                        </div>
+                            <MudCardContent Class="pa-3">
+                                <div class="d-flex justify-space-between align-start">
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: bold; font-size: 0.85rem; color: #121212; max-width: 70%;">
+                                        @showing.MovieTitle
+                                    </MudText>
 
-                                        <div class="d-flex align-center mt-2">
-                                            <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" Size="Size.Small" Style="font-size: 0.9rem; color: #555;" />
-                                            <MudText Typo="Typo.caption" Class="ml-1" Style="color: #444; font-weight: 500;">
-                                                @showing.AuditoriumName
-                                            </MudText>
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Color="Color.Primary"
+                                             Variant="Variant.Filled"
+                                             Style="font-size: 0.75rem; height: 26px;">
+                                        @localStart.ToString("HH:mm")
+                                    </MudChip>
+                                </div>
 
-                                            <MudDivider Vertical="true" FlexItem="true" Class="mx-2" Style="height: 12px; align-self: center; background-color: #999;" />
+                                <MudDivider Class="my-2" />
 
-                                            <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Style="font-size: 0.9rem; color: #555;" />
-                                            <MudText Typo="Typo.caption" Class="ml-1" Style="color: #444; font-weight: 500;">
-                                                @(showing.StartsAt ?? 0)m
-                                            </MudText>
-                                        </div>
+                                <div class="price-list">
+                                    <div class="price-row">
+                                        <MudText Typo="Typo.caption" Style="color: #555;">Adult</MudText>
+                                        <MudText Typo="Typo.caption" Style="color: #121212; font-weight: 600;">
+                                            € @showing.Prices.Adult.ToString("0.00")
+                                        </MudText>
+                                    </div>
 
-                                        <div class="d-flex align-center mt-2">
-                                            <div class="status-dot-weekly @GetStatusClass(showing)"></div>
-                                            <MudText Typo="Typo.caption" Style="font-size: 0.7rem; margin-left: 4px; color: #333;">
-                                                @GetStatusText(showing)
-                                            </MudText>
-                                        </div>
+                                    <div class="price-row">
+                                        <MudText Typo="Typo.caption" Style="color: #555;">Child</MudText>
+                                        <MudText Typo="Typo.caption" Style="color: #121212; font-weight: 600;">
+                                            € @showing.Prices.Child.ToString("0.00")
+                                        </MudText>
+                                    </div>
+
+                                    <div class="price-row">
+                                        <MudText Typo="Typo.caption" Style="color: #555;">Student</MudText>
+                                        <MudText Typo="Typo.caption" Style="color: #121212; font-weight: 600;">
+                                            € @showing.Prices.Student.ToString("0.00")
+                                        </MudText>
+                                    </div>
+
+                                    <div class="price-row">
+                                        <MudText Typo="Typo.caption" Style="color: #555;">Senior</MudText>
+                                        <MudText Typo="Typo.caption" Style="color: #121212; font-weight: 600;">
+                                            € @showing.Prices.Senior.ToString("0.00")
+                                        </MudText>
                                     </div>
                                 </div>
                             </MudCardContent>
                         </MudCard>
                     }
 
-                    @if (!_showings.Any(s => s.StartsAt.ToLocalTime().Date == day.Date))
+                    @if (dayShowings.Count == 0)
                     {
                         <div class="no-showings pa-4 d-flex align-center justify-center">
                             <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">Geen vertoningen</MudText>
@@ -114,19 +129,19 @@ else
 
     .weekly-header {
         display: flex;
-        min-width: 100%;
+        min-width: max-content;
         margin-bottom: 20px;
         gap: 12px;
     }
 
     .day-column-header {
-        flex: 1;
-        min-width: 200px;
+        flex: 0 0 250px;
+        width: 250px;
         display: flex;
         flex-direction: column;
         align-items: center;
         background-color: rgba(187, 134, 252, 0.05);
-        padding: 10px 0;
+        padding: 14px 0;
         border-radius: 8px 8px 0 0;
     }
 
@@ -140,17 +155,17 @@ else
 
     .weekly-grid {
         display: flex;
-        min-width: 100%;
+        min-width: max-content;
         gap: 12px;
         align-items: flex-start;
     }
 
     .day-column {
-        flex: 1;
-        min-width: 200px;
+        flex: 0 0 250px;
+        width: 250px;
         display: flex;
         flex-direction: column;
-        min-height: 200px;
+        min-height: 260px;
         background-color: rgba(255, 255, 255, 0.02);
         padding: 8px;
         border-radius: 0 0 8px 8px;
@@ -158,7 +173,7 @@ else
 
     .movie-card-weekly {
         background-color: #D1D5DB !important;
-        border-radius: 10px;
+        border-radius: 12px;
         transition: transform 0.2s;
     }
 
@@ -167,17 +182,21 @@ else
         background-color: #E5E7EB !important;
     }
 
-    .status-dot-weekly {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
+    .price-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
     }
 
-    .status-available { background-color: #4CAF50; }
-    .status-few { background-color: #FFEB3B; }
-    .status-soldout { background-color: #F44336; }
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
 
     .no-showings {
+        min-height: 64px;
         border: 1px dashed #333;
         border-radius: 8px;
     }
@@ -197,6 +216,8 @@ else
 
     private void InitializeWeekDays()
     {
+        _daysInWeek.Clear();
+
         var today = DateTime.Today;
         int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
         var startOfWeek = today.AddDays(-1 * diff);
@@ -214,7 +235,7 @@ else
 
         try
         {
-            var allShowings = await ShowingApi.GetShowingDisplayAsync();
+            var allShowings = await ShowingApi.GetShowingsWithPricesAsync();
 
             var startDay = _daysInWeek.First().Date;
             var endDay = _daysInWeek.Last().Date.AddDays(1);
@@ -225,26 +246,18 @@ else
                     var localDate = s.StartsAt.ToLocalTime().Date;
                     return localDate >= startDay && localDate < endDay;
                 })
+                .OrderBy(s => s.StartsAt)
                 .ToList();
         }
         catch (Exception ex)
         {
             _loadError = true;
+            Console.WriteLine($"Error loading data: {ex.Message}");
             Snackbar.Add($"Failed to load data: {ex.Message}", Severity.Error);
         }
         finally
         {
             _loading = false;
         }
-    }
-
-    private string GetStatusClass(ShowingsWithPricesResponse showing)
-    {
-        return "status-available";
-    }
-
-    private string GetStatusText(ShowingsWithPricesResponse showing)
-    {
-        return "Seats available";
     }
 }

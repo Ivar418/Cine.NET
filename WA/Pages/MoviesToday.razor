@@ -1,9 +1,7 @@
 @page "/today"
 @using SharedLibrary.DTOs.Responses
-@using SharedLibrary.Domain.Entities
 @using WA.Services.Http.Interfaces
 @inject IShowingApi ShowingApi
-@inject IAuditoriumApi AuditoriumApi
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @using WA.Layout
@@ -24,222 +22,103 @@ else if (_loadError)
 {
     <MudAlert Severity="Severity.Error">Failed to load data. Please try again.</MudAlert>
 }
+else if (_showings.Count == 0)
+{
+    <MudAlert Severity="Severity.Info">No showings found for today.</MudAlert>
+}
 else
 {
-    <div class="schedule-container">
-        <div class="schedule-header">
-            <div class="time-column-header"></div>
-            @foreach (var auditorium in _auditoriums.OrderBy(a => a.Name))
-            {
-                <div class="auditorium-column-header">
-                    <MudText Typo="Typo.h6" Align="Align.Center" Style="color: #BB86FC; font-weight: bold;">@auditorium.Name</MudText>
-                    <div class="header-line"></div>
-                </div>
-            }
-        </div>
+    <div class="today-showings-grid">
+        @foreach (var showing in _showings.OrderBy(s => s.StartsAt))
+        {
+            var localStart = showing.StartsAt.ToLocalTime();
 
-        <div class="schedule-grid">
-            @{
-                var now = DateTimeOffset.Now;
-                var currentTimeOffset = CalculateTopOffset(now);
+            <MudCard Elevation="4" Class="movie-card-today">
+                <MudCardContent Class="pa-4">
+                    <div class="d-flex justify-space-between align-start flex-wrap gap-2">
+                        <div>
+                            <MudText Typo="Typo.h6" Style="font-weight: bold; color: #121212;">
+                                @showing.MovieTitle
+                            </MudText>
 
-                if (currentTimeOffset >= 0 && currentTimeOffset <= 880)
-                {
-                    <div class="current-time-line" style="top: @(currentTimeOffset)px;"></div>
-                }
-            }
-
-            <div class="time-column">
-                @for (int hour = 12; hour <= 22; hour++)
-                {
-                    <div class="time-slot">
-                        <MudText Typo="Typo.caption" Style="color: #3f51b5;">@($"{hour}:00")</MudText>
-                    </div>
-                }
-            </div>
-
-            @foreach (var auditorium in _auditoriums.OrderBy(a => a.Name))
-            {
-                <div class="auditorium-column">
-                    @for (int hour = 12; hour <= 22; hour++)
-                    {
-                        <div class="grid-line"></div>
-                    }
-
-                    @foreach (var showing in _showings
-                        .Where(s => s.AuditoriumId == auditorium.Id)
-                        .OrderBy(s => s.StartsAt))
-                    {
-                        var localStart = showing.StartsAt.ToLocalTime();
-                        var topOffset = CalculateTopOffset(localStart);
-                        var height = CalculateHeight(showing.Runtime);
-
-                        <div class="movie-card-container" style="top: @(topOffset)px; height: @(height)px;">
-                            <MudCard Elevation="4" Class="movie-card">
-                                <MudCardContent Class="pa-2">
-                                    <div class="d-flex">
-                                        <div class="flex-grow-1">
-                                            <MudText Typo="Typo.subtitle2" Style="font-weight: bold; font-size: 0.8rem;">
-                                                @showing.MovieTitle
-                                            </MudText>
-
-                                            <MudText Typo="Typo.caption" Class="d-block mt-1" Style="color: #444; font-weight: 500;">
-                                                Start: @localStart.ToString("HH:mm")
-                                            </MudText>
-
-                                            <MudText Typo="Typo.caption" Class="d-block mt-1" Style="color: #444; font-weight: 500;">
-                                                Runtime: @(showing.Runtime ?? 0)m
-                                            </MudText>
-
-                                            <div class="d-flex align-center mt-auto pt-2">
-                                                <div class="status-dot @GetStatusClass(showing)"></div>
-                                                <MudText Typo="Typo.caption" Style="font-size: 0.7rem; margin-left: 4px; color: #333;">
-                                                    @GetStatusText(showing)
-                                                </MudText>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </MudCardContent>
-                            </MudCard>
+                            <MudText Typo="Typo.body2" Class="mt-1" Style="color: #444; font-weight: 500;">
+                                Start: @localStart.ToString("HH:mm")
+                            </MudText>
                         </div>
-                    }
-                </div>
-            }
-        </div>
+
+                        <MudChip T="string"
+                                 Size="Size.Medium"
+                                 Color="Color.Primary"
+                                 Variant="Variant.Filled">
+                            Vandaag
+                        </MudChip>
+                    </div>
+
+                    <MudDivider Class="my-3" />
+
+                    <div class="prices-grid">
+                        <div class="price-item">
+                            <MudText Typo="Typo.caption" Style="color: #666;">Adult</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight: 600; color: #121212;">
+                                € @showing.Prices.Adult.ToString("0.00")
+                            </MudText>
+                        </div>
+
+                        <div class="price-item">
+                            <MudText Typo="Typo.caption" Style="color: #666;">Child</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight: 600; color: #121212;">
+                                € @showing.Prices.Child.ToString("0.00")
+                            </MudText>
+                        </div>
+
+                        <div class="price-item">
+                            <MudText Typo="Typo.caption" Style="color: #666;">Student</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight: 600; color: #121212;">
+                                € @showing.Prices.Student.ToString("0.00")
+                            </MudText>
+                        </div>
+
+                        <div class="price-item">
+                            <MudText Typo="Typo.caption" Style="color: #666;">Senior</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight: 600; color: #121212;">
+                                € @showing.Prices.Senior.ToString("0.00")
+                            </MudText>
+                        </div>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        }
     </div>
 }
 
 <style>
-    .schedule-container {
-        display: flex;
-        flex-direction: column;
-        background-color: #121212;
-        padding: 20px;
-        border-radius: 8px;
-        overflow-x: auto;
-        min-width: 100%;
+    .today-showings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
     }
 
-    .schedule-header {
-        display: inline-flex;
-        min-width: 100%;
-        margin-bottom: 10px;
-    }
-
-    .time-column-header {
-        width: 60px;
-        flex-shrink: 0;
-        position: sticky;
-        left: 0;
-        background-color: #121212;
-        z-index: 30;
-    }
-
-    .auditorium-column-header {
-        flex: 0 0 250px;
-        width: 250px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .header-line {
-        width: 80%;
-        height: 2px;
-        background: repeating-linear-gradient(to right, #BB86FC 0, #BB86FC 4px, transparent 4px, transparent 8px);
-        margin-top: 8px;
-    }
-
-    .schedule-grid {
-        display: inline-flex;
-        min-width: 100%;
-        position: relative;
-        min-height: 1000px;
-    }
-
-    .current-time-line {
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background-color: #03DAC6;
-        z-index: 20;
-        pointer-events: none;
-    }
-
-    .current-time-line::before {
-        content: "";
-        position: absolute;
-        left: 55px;
-        top: -4px;
-        width: 10px;
-        height: 10px;
-        background-color: #03DAC6;
-        border-radius: 50%;
-    }
-
-    .time-column {
-        width: 60px;
-        flex-shrink: 0;
-        display: flex;
-        flex-direction: column;
-        position: sticky;
-        left: 0;
-        background-color: #121212;
-        z-index: 30;
-    }
-
-    .time-slot {
-        height: 80px;
-        border-right: 1px solid #333;
-        display: flex;
-        justify-content: center;
-        padding-top: 4px;
-    }
-
-    .auditorium-column {
-        flex: 0 0 250px;
-        width: 250px;
-        position: relative;
-        border-right: 1px solid #333;
-    }
-
-    .grid-line {
-        height: 80px;
-        border-bottom: 1px dashed #333;
-    }
-
-    .movie-card-container {
-        position: absolute;
-        left: 5px;
-        right: 5px;
-        z-index: 10;
-    }
-
-    .movie-card {
+    .movie-card-today {
         background-color: #D1D5DB !important;
         color: #121212 !important;
-        height: 100%;
         border-radius: 12px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
     }
 
-    .status-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
+    .prices-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+        gap: 12px;
     }
 
-    .status-available { background-color: #4CAF50; }
-    .status-few { background-color: #FFEB3B; }
-    .status-soldout { background-color: #F44336; }
+    .price-item {
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
 </style>
 
 @code {
     private List<ShowingsWithPricesResponse> _showings = new();
-    private List<Auditorium> _auditoriums = new();
     private bool _loading = true;
     private bool _loadError;
 
@@ -255,17 +134,12 @@ else
 
         try
         {
-            var auditoriumTask = AuditoriumApi.GetAllAuditoriumsAsync();
-            var showingTask = ShowingApi.GetShowingsWithPricesAsync();
-
-            await Task.WhenAll(auditoriumTask, showingTask);
-
-            _auditoriums = auditoriumTask.Result ?? new List<Auditorium>();
-            var allShowings = showingTask.Result ?? new List<ShowingsWithPricesResponse>();
+            var allShowings = await ShowingApi.GetShowingsWithPricesAsync();
 
             var today = DateTimeOffset.Now.Date;
             _showings = allShowings
                 .Where(s => s.StartsAt.ToLocalTime().Date == today)
+                .OrderBy(s => s.StartsAt)
                 .ToList();
         }
         catch (Exception ex)
@@ -278,31 +152,5 @@ else
         {
             _loading = false;
         }
-    }
-
-    private double CalculateTopOffset(DateTimeOffset dateTime)
-    {
-        var localTime = dateTime.ToLocalTime();
-        var startHour = 12.0;
-        var hourValue = localTime.Hour + (localTime.Minute / 60.0);
-        var diff = hourValue - startHour;
-
-        return Math.Max(0, diff * 80.0);
-    }
-
-    private double CalculateHeight(int? runtimeMinutes)
-    {
-        if (!runtimeMinutes.HasValue || runtimeMinutes == 0) return 120;
-        return Math.Max(100.0, (runtimeMinutes.Value / 60.0) * 80.0);
-    }
-
-    private string GetStatusClass(ShowingsWithPricesResponse showing)
-    {
-        return "status-available";
-    }
-
-    private string GetStatusText(ShowingsWithPricesResponse showing)
-    {
-        return "Seats available";
     }
 }
