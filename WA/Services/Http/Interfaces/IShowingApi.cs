@@ -10,4 +10,5 @@ public interface IShowingApi
     
     Task<ShowingDisplayResponse?> GetShowingDisplayByIdAsync(int id);
     Task<ShowingsWithPricesResponse?> GetShowingPricesAsync(int showingId);
+    Task<IReadOnlyList<ShowingDisplayResponse>> GetShowingDisplayAsync();
 }

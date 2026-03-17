@@ -114,5 +114,30 @@ namespace API.src.Repositories.Implementations
                 return ResultOf<ShowingDisplayResponse>.Failure(e.Message);
             }
         }
+        
+        async Task<ResultOf<ICollection<ShowingDisplayResponse>>> IShowingRepository.GetShowingDisplayAsync()
+        {
+            try
+            {
+                var showings = await _db.Showings
+                    .Select(s => new ShowingDisplayResponse
+                    {
+                        Id = s.Id,
+                        MovieId = s.MovieId,
+                        AuditoriumId = s.AuditoriumId,
+                        MovieTitle = s.Movie.Title,
+                        AuditoriumName = s.Auditorium.Name,
+                        Is3D = s.IsThreeD,
+                        StartsAt = s.StartsAt
+                    })
+                    .ToListAsync();
+ 
+                return ResultOf<ICollection<ShowingDisplayResponse>>.Success(showings);
+            }
+            catch (Exception e)
+            {
+                return ResultOf<ICollection<ShowingDisplayResponse>>.Failure(e.Message);
+            }
+        }
     }
 }

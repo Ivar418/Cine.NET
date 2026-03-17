@@ -14,5 +14,6 @@ namespace API.src.Repositories.Interfaces
         Task<ResultOf<Showing>> DeleteShowingByIdAsync(int ShowingId);
         Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id);
         Task<ResultOf<ShowingDisplayResponse>> GetShowingDisplayByIdAsync(int id);
+        Task<ResultOf<ICollection<ShowingDisplayResponse>>> GetShowingDisplayAsync();
     }
 }

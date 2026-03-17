@@ -73,7 +73,7 @@ else
 
                                             <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Style="font-size: 0.9rem; color: #555;" />
                                             <MudText Typo="Typo.caption" Class="ml-1" Style="color: #444; font-weight: 500;">
-                                                @(showing.Runtime ?? 0)m
+                                                @(showing.StartsAt ?? 0)m
                                             </MudText>
                                         </div>
 
@@ -214,7 +214,7 @@ else
 
         try
         {
-            var allShowings = await ShowingApi.GetShowingsWithPricesAsync() ?? new List<ShowingsWithPricesResponse>();
+            var allShowings = await ShowingApi.GetShowingDisplayAsync();
 
             var startDay = _daysInWeek.First().Date;
             var endDay = _daysInWeek.Last().Date.AddDays(1);
