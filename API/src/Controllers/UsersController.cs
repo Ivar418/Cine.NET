@@ -19,9 +19,21 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            try {
             var users = await _userService.GetAllUsersAsync();
-            var response = UserMapper.ToResponses(users);
-            return Ok(response);
+            
+            return users switch
+            {
+                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                { IsSuccess: true } => Ok(UserMapper.ToResponses(users.Value!)),
+                _ => StatusCode(500, new { error = "Unexpected result" })
+            };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
+            
         }
 
         [HttpGet("{id}")]
@@ -32,7 +44,7 @@ namespace API.Controllers
             if (user == null)
                 return NotFound();
 
-            var response = UserMapper.ToResponse(user);
+            var response = UserMapper.ToResponse(user.Value!);
             return Ok(response);
         }
     }

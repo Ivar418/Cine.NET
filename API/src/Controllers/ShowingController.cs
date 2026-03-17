@@ -59,19 +59,27 @@ namespace API.src.Controllers
         [HttpGet("with-prices")]
         public async Task<IActionResult> GetShowingsWithPrices()
         {
-            var showings = await _showingService.GetShowingsAsync();
-            return Ok(showings);
+            var result = await _showingService.GetShowingsAsync();
+
+            return result switch
+            {
+                { IsFailure: true } => StatusCode(500, result.Error),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500)
+            };
         }
         
-        [HttpGet("{id:int}/prices")]
+        [HttpGet("{id}/prices")]
         public async Task<IActionResult> GetShowingWithPrices(int id)
         {
-            var showing = await _showingService.GetShowingAsync(id);
+            var result = await _showingService.GetShowingAsync(id);
 
-            if (showing == null)
-                return NotFound();
-
-            return Ok(showing);
+            return result switch
+            {
+                { IsFailure: true } => StatusCode(500, result.Error),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500)
+            };
         }
 
 
