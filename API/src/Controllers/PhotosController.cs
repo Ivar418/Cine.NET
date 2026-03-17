@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.DTOs.Responses;
 using API.Storage;
+using API.Storage.Interfaces;
 
 namespace API.Controllers
 {
