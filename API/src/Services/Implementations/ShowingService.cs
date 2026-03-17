@@ -79,4 +79,24 @@ public class ShowingService : IShowingService
             ticketTypes.First(t => t.Name == "Senior")
         );
     }
+    
+    public async Task<List<ShowingResponse>> GetUpcomingShowingsByMovieIdAsync(int movieId)
+    {
+        var cutoff = DateTimeOffset.UtcNow.AddMinutes(-15);
+
+        var showings = await _db.Showings
+            .Where(s => s.MovieId == movieId && s.StartsAt > cutoff)
+            .OrderBy(s => s.StartsAt)
+            .ToListAsync();
+
+        return showings.Select(s => new ShowingResponse
+        {
+            Id                       = s.Id,
+            MovieId                  = s.MovieId,
+            AuditoriumId             = s.AuditoriumId,
+            Is3D                     = s.IsThreeD,
+            StartsAt                 = s.StartsAt,
+            AuditoriumLayoutSnapshot = s.AuditoriumLayoutSnapshot
+        }).ToList();
+    }
 }

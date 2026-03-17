@@ -195,5 +195,12 @@ namespace API.src.Controllers
                 return StatusCode(500, new { error = "An error occurred" });
             }
         }
+        
+        [HttpGet("movie/{movieId:int}/upcoming")]
+        public async Task<IActionResult> GetUpcomingShowingsByMovieId(int movieId)
+        {
+            var showings = await _showingService.GetUpcomingShowingsByMovieIdAsync(movieId);
+            return Ok(showings);
+        }
     }
 }
