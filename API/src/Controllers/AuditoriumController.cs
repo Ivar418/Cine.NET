@@ -1,4 +1,5 @@
 ﻿using API.Repositories.Interfaces;
+using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.DTOs.Models;
 
@@ -14,15 +15,15 @@ namespace API.Controllers
         /// such as databases or external APIs, to perform operations including retrieval,
         /// search, creation, updating, and deletion of Auditorium records.
         /// </summary>
-        private readonly IAuditoriumRepository _AuditoriumRepository;
+        private readonly IAuditoriumService _AuditoriumService;
 
         /// <summary>
         /// A controller for managing Auditorium-related operations, providing endpoints to retrieve,
         /// and manage Auditorium data.
         /// </summary>
-        public AuditoriumController(IAuditoriumRepository AuditoriumRepository)
+        public AuditoriumController(IAuditoriumService auditoriumService)
         {
-            _AuditoriumRepository = AuditoriumRepository;
+            _AuditoriumService = auditoriumService;
         }
 
 
@@ -37,7 +38,7 @@ namespace API.Controllers
         {
             try
             {
-                var Auditoriums = await _AuditoriumRepository.GetAuditoriumsAsync();
+                var Auditoriums = await _AuditoriumService.GetAuditoriumsAsync();
                 return Auditoriums switch
                 {
                     { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
@@ -67,7 +68,7 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _AuditoriumRepository.DeleteAuditoriumByIdAsync(AuditoriumId);
+                var result = await _AuditoriumService.DeleteAuditoriumByIdAsync(AuditoriumId);
                 return result switch
                 {
                     { IsFailure: true, Error: "Auditorium not found" } => NotFound($"Auditorium with TmdbId {AuditoriumId} not found"),
@@ -91,7 +92,7 @@ namespace API.Controllers
         {
             try
             {
-                var Auditorium = await _AuditoriumRepository.GetAuditoriumAsync(id);
+                var Auditorium = await _AuditoriumService.GetAuditoriumAsync(id);
                 return Auditorium switch
                 {
                     { IsFailure: true, Error: "Auditorium not found" } => NotFound(new { error = "Auditorium not found" }),
@@ -121,7 +122,7 @@ namespace API.Controllers
         { 
             try
             {
-                var result = await _AuditoriumRepository.AddAuditoriumAsync(new CreateAuditoriumRequest(name, rows));
+                var result = await _AuditoriumService.AddAuditoriumAsync(new CreateAuditoriumRequest(name, rows));
                 return Ok(result);
             }
             catch (Exception e)
