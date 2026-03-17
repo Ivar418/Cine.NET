@@ -74,26 +74,6 @@ namespace API.src.Controllers
             return Ok(showing);
         }
 
-        // [HttpGet]
-        // [Route("{ShowingId:int}/state")]
-        // public async Task<IActionResult> GetShowingStateById(int ShowingId)
-        // {
-        //     try
-        //     {
-        //         var result = await _ShowingRepository.GetShowingStateByIdAsync(ShowingId);
-        //         return result switch
-        //         {
-        //             { IsFailure: true, Error: "Showing not found" } => NotFound(new { error = "Showing not found" }),
-        //             { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-        //             { IsSuccess: true } => Ok(result.Value),
-        //             _ => StatusCode(500, new { error = "Unexpected result" })
-        //         };
-        //     }
-        //     catch (Exception)
-        //     {
-        //         return StatusCode(500, new { error = "An error occurred" });
-        //     }
-        // }
 
         [HttpGet]
         [Route("{ShowingId:int}/state")]

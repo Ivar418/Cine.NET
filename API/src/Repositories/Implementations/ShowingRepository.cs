@@ -18,7 +18,7 @@ namespace API.src.Repositories.Implementations
         {
             _db = db;
         }
-        async Task<Showing> IShowingRepository.AddShowingAsync(CreateShowingRequest Showing)
+        public async Task<Showing> AddShowingAsync(CreateShowingRequest Showing)
         {
             Console.WriteLine($"Adding Showing of movie: {Showing.MovieId}");
             Showing newShowing = new Showing
@@ -41,18 +41,18 @@ namespace API.src.Repositories.Implementations
             return result.Entity;
         }
 
-        async Task<ResultOf<Showing>> IShowingRepository.DeleteShowingByIdAsync(int ShowingId)
+        public async Task<ResultOf<Showing>> DeleteShowingByIdAsync(int ShowingId)
         {
             throw new NotImplementedException();
         }
 
-        async Task<ResultOf<Showing>> IShowingRepository.GetShowingAsync(int id)
+        public async Task<ResultOf<Showing>> GetShowingAsync(int id)
         {
             var Showing = await _db.Showings.FindAsync(id);
-            return Showing == null ? ResultOf<Showing>.Failure("Auditorium not found") : ResultOf<Showing>.Success(Showing);
+            return Showing == null ? ResultOf<Showing>.Failure("Showing not found") : ResultOf<Showing>.Success(Showing);
         }
 
-        async Task<ResultOf<ICollection<Showing>>> IShowingRepository.GetShowingsAsync()
+        public async Task<ResultOf<ICollection<Showing>>> GetShowingsAsync()
         {
             try
             {
@@ -84,7 +84,7 @@ namespace API.src.Repositories.Implementations
          - Return a successful ResultOf<ShowingStateDto> with the constructed DTO.
         */
 
-        async Task<ResultOf<ShowingStateDto>> IShowingRepository.GetShowingStateAsync(int id)
+        public async Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id)
         {
             IReservationRepository reservationRepository = new ReservationRepository(_db);
             var showing = await _db.Showings
@@ -99,12 +99,12 @@ namespace API.src.Repositories.Implementations
             return showingState == null ? ResultOf<ShowingStateDto>.Failure("ShowingState not found") : ResultOf<ShowingStateDto>.Success(showingState);
         }
 
-        async Task<Showing> IShowingRepository.UpdateShowingAsync(Showing Showing)
+        public async Task<Showing> UpdateShowingAsync(Showing Showing)
         {
             throw new NotImplementedException();
         }
         
-        async Task<ResultOf<ShowingDisplayResponse>> IShowingRepository.GetShowingDisplayByIdAsync(int id)
+        public async Task<ResultOf<ShowingDisplayResponse>> GetShowingDisplayByIdAsync(int id)
         {
             try
             {

@@ -155,9 +155,7 @@ namespace WA.Services.Http
             try
             {
                 var response = await _http.PostAsJsonAsync("api/reservations/suggest", req);
-                return response.IsSuccessStatusCode
-                    ? await response.Content.ReadFromJsonAsync<SuggestResponse>()
-                    : null;
+                return await response.Content.ReadFromJsonAsync<SuggestResponse>();
             }
             catch (Exception ex)
             {

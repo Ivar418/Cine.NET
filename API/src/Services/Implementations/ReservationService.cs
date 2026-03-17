@@ -8,6 +8,7 @@ using SharedLibrary.Logic.Algorithm;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using API.Domain.Common;
 
 namespace API.src.Services.Implementations
 {
@@ -35,8 +36,15 @@ namespace API.src.Services.Implementations
 
         async Task<SuggestResponse?> IReservationService.SuggestAsync(SuggestRequest req)
         {
-            var showingResult = await _showingRepository.GetShowingAsync(req.ShowingId);
-            if (showingResult.Value is null) return null;
+            ResultOf<Showing> showingResult = await _showingRepository.GetShowingAsync(1);
+            if (showingResult.Value == null)
+            {
+                Console.WriteLine("Showing was not found!");
+                return new SuggestResponse(Guid.Empty,
+                    new List<SeatInfo>(),
+                    false
+                );
+            }
 
             // Use the frozen snapshot rows.
             var rows = showingResult.Value.GetLayoutSnapshot();

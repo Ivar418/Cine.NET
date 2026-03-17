@@ -37,7 +37,7 @@ namespace API.src.Controllers
         /// <param reservationId="id">The unique identifier of the Reservation to retrieve.</param>
         /// <returns>An IActionResult containing the Reservation details if found, a 404 Not Found response if the Reservation is not found, or a 500 Internal Server Error response if an unexpected error occurs.</returns>
         [HttpGet]
-        [Route("/{reservationId:guid}")]
+        [Route("{reservationId:guid}")]
         public async Task<IActionResult> GetReservationById(Guid reservationId)
         {
             try
@@ -61,7 +61,7 @@ namespace API.src.Controllers
         /// <param reservationId="id">The unique identifier of the Reservation to retrieve.</param>
         /// <returns>An IActionResult containing the Reservation details if found, a 404 Not Found response if the Reservation is not found, or a 500 Internal Server Error response if an unexpected error occurs.</returns>
         [HttpGet]
-        [Route("/showtime/{showingId:guid}")]
+        [Route("showtime/{showingId:guid}")]
         public async Task<IActionResult> GetReservationByShowingIdAsync(int showingId)
         {
             try
@@ -79,25 +79,18 @@ namespace API.src.Controllers
         /// Adds a Reservation to the database.
         /// </summary>
         /// <param name="showingId">The showingId to be added. Must be a positive integer.</param>
-        /// <param name="seats">The list of seatInfo for the Reservation.</param>
-        /// <param name="status">The Reservation status to be added. Must be a enum of the type ReservationStatus.</param>
+        /// <param name="normalCount">The list of seatInfo for the Reservation.</param>
+        /// <param name="wheelchairCount">The Reservation status to be added. Must be a enum of the type ReservationStatus.</param>
         /// <returns>
         /// Returns a status indicating the result of the operation:
         /// </returns>
         [HttpPost]
-        [Route("/suggest")]
+        [Route("suggest")]
         public async Task<IActionResult> AddReservationById(
-            [FromQuery] int showingId,
-            [FromQuery] IEnumerable<SeatInfo> seats,
-            [FromQuery] string status)
+            [FromBody] SuggestRequest request)
         {
             try
             {
-                SuggestRequest request = new SuggestRequest(
-                    showingId,
-                    seats.Count(s => s.Type == SeatType.Normal),
-                    seats.Count(s => s.Type == SeatType.Wheelchair));
-
                 var result = _reservationService.SuggestAsync(request);
                 return Ok(result);
             }
@@ -109,7 +102,7 @@ namespace API.src.Controllers
         }
 
         [HttpPost]
-        [Route("/confirm")]
+        [Route("confirm")]
         public async Task<IActionResult> ConfirmReservationById(
             [FromQuery] Guid reservationId)
         {
@@ -125,7 +118,7 @@ namespace API.src.Controllers
         }
 
         [HttpPost]
-        [Route("/cancel")]
+        [Route("cancel")]
         public async Task<IActionResult> CancelReservationById(
             [FromQuery] Guid reservationId)
         {
