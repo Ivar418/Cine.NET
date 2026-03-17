@@ -1,10 +1,8 @@
-﻿
-using API.src.Repositories.Interfaces;
+﻿using API.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 
-namespace API.src.Controllers
+namespace API.Controllers
 {
     [ApiController]
     [Route("api/auditoriums")]

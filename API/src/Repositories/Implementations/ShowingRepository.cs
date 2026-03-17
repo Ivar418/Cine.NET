@@ -1,14 +1,13 @@
-﻿using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using API.Domain.Common;
+﻿using API.Domain.Common;
 using API.Infrastructure.Database;
-using API.src.Repositories.Interfaces;
+using API.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 using API.src.Mappers;
 using SharedLibrary.DTOs.Responses;
 
-namespace API.src.Repositories.Implementations
+namespace API.Repositories.Implementations
 {
     public class ShowingRepository : IShowingRepository
     {
