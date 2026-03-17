@@ -6,8 +6,10 @@ using System.Text.Json;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using API.src.Repositories.Interfaces;
 using SharedLibrary.DTOs.Responses.TMDB;
 using Microsoft.EntityFrameworkCore;
+using SharedLibrary.DTOs.Models;
 
 
 namespace API.Infrastructure.Database
@@ -17,7 +19,7 @@ namespace API.Infrastructure.Database
 
     public static class DbSeeder
     {
-        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService)
+        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService,IShowingService showingService, ITicketService ticketService,IPricingService pricingService, IAuditoriumRepository auditoriumRepository)
         {
             var movieEntities = new List<Movie>();
             if (!await db.Users.AnyAsync())
@@ -37,11 +39,13 @@ namespace API.Infrastructure.Database
                 // 1272837 = 28 Years Later: The Bone Temple
                 // 1242898 = Predator: Badlands
                 var MovieIdList = new List<int> { 285, 83533, 1272837, 1242898 };
-
                 foreach (var id in MovieIdList)
                 {
                     var movie = await movieService.AddMovieAsyncForEachSpecifiedLanguage(tmdbId: id);
                 }
+
+                // Fill the genres table with all genres from TMDB for all specified languages (en, nl)
+                await movieService.FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb();
             }
 
             if (!await db.TicketTypes.AnyAsync())
@@ -78,22 +82,56 @@ namespace API.Infrastructure.Database
             // AUDITORIUMS
             if (!await db.Auditoriums.AnyAsync())
             {
-                db.Auditoriums.AddRange(
-                    new Auditorium { Name = "Zaal 1" },
-                    new Auditorium { Name = "Zaal 2" },
-                    new Auditorium { Name = "Zaal 3" },
-                    new Auditorium { Name = "Zaal 4" },
-                    new Auditorium { Name = "Zaal 5" },
-                    new Auditorium { Name = "Zaal 6" }
-                );
+                var auditoriumsRequest = new List<CreateAuditoriumRequest>
+                {
+                    new CreateAuditoriumRequest("Zaal 1", new List<RowConfig>
+                    {
+                        new RowConfig(10, 1),
+                        new RowConfig(11, 2),
+                        new RowConfig(12, 3)
+                    }),
+                    new CreateAuditoriumRequest("Zaal 2", new List<RowConfig>
+                    {
+                        new RowConfig(13, 0),
+                        new RowConfig(14, 1),
+                        new RowConfig(15, 2)
+                    }),
+                    new CreateAuditoriumRequest("Zaal 3", new List<RowConfig>
+                    {
+                        new RowConfig(16, 0),
+                        new RowConfig(17, 1),
+                        new RowConfig(18, 2)
+                    }),
+                    new CreateAuditoriumRequest("Zaal 4", new List<RowConfig>
+                    {
+                        new RowConfig(19, 0),
+                        new RowConfig(20, 1),
+                        new RowConfig(21, 2)
+                    }),
+                    new CreateAuditoriumRequest("Zaal 5", new List<RowConfig>
+                    {
+                        new RowConfig(22, 10),
+                        new RowConfig(23, 23),
+                        new RowConfig(24, 11)
+                    }),
+                    new CreateAuditoriumRequest("Zaal 6", new List<RowConfig>
+                    {
+                        new RowConfig(25, 0),
+                        new RowConfig(30, 1),
+                        new RowConfig(40, 2)
+                    }),
+                };
+                foreach (var request in auditoriumsRequest)
+                {
+                    await auditoriumRepository.AddAuditoriumAsync(request);
+                }
             }
 
-            await db.SaveChangesAsync();
 
             if (!await db.Showings.AnyAsync())
             {
-                var movies = await db.Movies.ToListAsync();
-                var auditoriums = await db.Auditoriums.ToListAsync();
+                var movies =  movieService.GetMoviesAsync("nl").Result.Value?.ToList();
+                var auditoriums =  auditoriumRepository.GetAuditoriumsAsync().Result.Value?.ToList();
 
                 var showings = new List<Showing>();
                 var start = DateTimeOffset.UtcNow.Date.AddHours(18); // 18:00 start
@@ -106,13 +144,14 @@ namespace API.Infrastructure.Database
                         AuditoriumId = auditoriums[i % auditoriums.Count].Id,
                         StartsAt = start.AddHours(i * 2), // elke 2 uur
                         IsThreeD = (i % 2 == 0), // om en om 3D
-                        AuditoriumLayoutSnapshot = "[]" // snapshot leeg laten
+                        AuditoriumLayoutSnapshot = auditoriums[i].RowConfigJson // Sla de auditorium layout op als JSON string in de showing
                     });
                 }
 
                 db.Showings.AddRange(showings);
-                await db.SaveChangesAsync();
             }
+
+            await db.SaveChangesAsync();
         }
     }
 }
