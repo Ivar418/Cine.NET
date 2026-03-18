@@ -88,7 +88,7 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _ShowingRepository.GetShowingStateAsync(ShowingId);
+                var result = await _showingService.GetShowingStateAsync(ShowingId);
                 return result switch
                 {
                     { IsFailure: true } => StatusCode(500, new { error = result.Error }),

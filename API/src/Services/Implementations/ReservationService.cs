@@ -9,9 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.Domain.Common;
-using API.Services.Interfaces;
-using API.src.Services.Interfaces;
-using API.Repositories.Interfaces;
 
 namespace API.Services.Implementations
 {
@@ -37,7 +34,7 @@ namespace API.Services.Implementations
 
         async Task<SuggestResponse?> IReservationService.SuggestAsync(SuggestRequest req)
         {
-            var showingResult = _showingService.GetShowingAsync(req.ShowingId);
+            var showingResult = _showingService.GetFullShowingByIdAsync(req.ShowingId);
             if (showingResult == null)
             {
                 Console.WriteLine("Showing was not found!");
@@ -47,11 +44,11 @@ namespace API.Services.Implementations
                 );
             }
 
-            // Use the frozen snapshot rows.
-            var rows = showingResult.GetLayoutSnapshot();
+            // Use the frozen snapshot rows from Showing
+            var rows = showingResult.Result.Value.GetLayoutSnapshot();
             var occupied = _reservationRepository.GetOccupiedKeysAsync(req.ShowingId);
             var request = new ReservationRequest(req.NormalCount, req.WheelchairCount);
-            var best = SeatFinder.FindBest(rows, occupied, request);
+            var best = SeatFinder.FindBest(rows, occupied.Result, request);
 
             if (best is null)
             {
@@ -67,6 +64,11 @@ namespace API.Services.Implementations
                 best,
                 true
             );
+        }
+
+        public async Task<HashSet<string>> GetOccupiedKeysAsync(int showingId)
+        {
+            return await _reservationRepository.GetOccupiedKeysAsync(showingId);
         }
     }
 }

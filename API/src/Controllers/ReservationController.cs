@@ -1,8 +1,8 @@
 
-using API.src.Repositories.Implementations;
-using API.src.Repositories.Interfaces;
-using API.src.Services.Implementations;
-using API.src.Services.Interfaces;
+using API.Repositories.Implementations;
+using API.Repositories.Interfaces;
+using API.Services.Implementations;
+using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
@@ -26,10 +26,10 @@ namespace API.src.Controllers
         /// A controller for managing Reservation-related operations, providing endpoints to retrieve,
         /// and manage Reservation data.
         /// </summary>
-        public ReservationController(IReservationRepository ReservationRepository)
+        public ReservationController(IReservationRepository ReservationRepository, IReservationService reservationService)
         {
             _ReservationRepository = ReservationRepository;
-            _reservationService = new ReservationService();
+            _reservationService = reservationService;
         }
 
 
@@ -91,7 +91,7 @@ namespace API.src.Controllers
         {
             try
             {
-                var result = _reservationService.SuggestAsync(request);
+                var result = await _reservationService.SuggestAsync(request);
                 return Ok(result);
             }
             catch (Exception e)

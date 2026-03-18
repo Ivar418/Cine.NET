@@ -4,6 +4,7 @@ using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
+using API.src.Repositories.Implementations;
 using API.Storage;
 using API.Storage.Implementations;
 using API.Storage.Interfaces;
@@ -33,16 +34,17 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
-builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IShowingService, ShowingService>();
+builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IPricingService, PricingService>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
-builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
 
 // Monitoring: health check endpoint

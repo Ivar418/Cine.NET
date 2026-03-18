@@ -2,9 +2,10 @@ using API.Domain.Common;
 using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
-using API.src.Repositories.Interfaces;
+using API.Mappers;
 using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
+using SharedLibrary.DTOs.Models;
 using SharedLibrary.DTOs.Responses;
 
 namespace API.Services.Implementations;
@@ -14,15 +15,24 @@ public class ShowingService : IShowingService
     private readonly IShowingRepository _showingRepository;
     private readonly IPricingService _pricingService;
     private readonly ITicketTypeRepository _ticketTypeRepository;
+    private readonly IReservationRepository _reservationrepository;
 
     public ShowingService(
         IShowingRepository repository,
         IPricingService pricingService,
-        ITicketTypeRepository ticketTypeRepository)
+        ITicketTypeRepository ticketTypeRepository,
+        IReservationRepository reservationRepository)
     {
         _showingRepository = repository;
         _pricingService = pricingService;
         _ticketTypeRepository = ticketTypeRepository;
+        _reservationrepository = reservationRepository;
+    }
+
+    public async Task<ResultOf<Showing>> GetFullShowingByIdAsync(int id)
+    {
+        var showingsResult = await _showingRepository.GetShowingAsync(id);
+        return showingsResult;
     }
 
     public async Task<ResultOf<List<ShowingsWithPricesResponse>>> GetShowingsAsync()
@@ -91,5 +101,16 @@ public class ShowingService : IShowingService
             ticketTypes.First(t => t.Name == "Student"),
             ticketTypes.First(t => t.Name == "Senior")
         );
+    }
+
+    public async Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id)
+    {
+        var showing = _showingRepository.GetShowingAsync(id).Result.Value;
+
+        if (showing == null)
+            return ResultOf<ShowingStateDto>.Failure("Showing not found");
+
+        ShowingStateDto showingState = ShowingMapper.ToStateDto(showing, _reservationrepository);
+        return showingState == null ? ResultOf<ShowingStateDto>.Failure("ShowingState not found") : ResultOf<ShowingStateDto>.Success(showingState);
     }
 }

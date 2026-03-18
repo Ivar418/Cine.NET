@@ -1,11 +1,13 @@
-﻿using API.Services;
-using API.src.Repositories.Interfaces;
+﻿using API.Repositories.Interfaces;
+using API.Services;
+using API.Services.Implementations;
+using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 using SharedLibrary.Logic.Algorithm;
 using System.Threading.Tasks;
 
-namespace API.src.Mappers
+namespace API.Mappers
 {
     public static class ShowingMapper
     {

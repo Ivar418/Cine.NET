@@ -1,6 +1,6 @@
 using API.Domain.Common;
 using API.Infrastructure.Database;
-using API.src.Repositories.Interfaces;
+using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
