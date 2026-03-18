@@ -2,7 +2,6 @@
 using SharedLibrary.Domain.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
-using Sprache;
 
 namespace API.Services.Implementations
 {

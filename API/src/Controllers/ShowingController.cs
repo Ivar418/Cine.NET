@@ -64,7 +64,7 @@ namespace API.src.Controllers
 
             return result switch
             {
-                { IsFailure: true } => StatusCode(500, result.Error),
+                { IsFailure: true } => StatusCode(500, "An error occurred"),
                 { IsSuccess: true } => Ok(result.Value),
                 _ => StatusCode(500)
             };
@@ -77,7 +77,8 @@ namespace API.src.Controllers
 
             return result switch
             {
-                { IsFailure: true } => StatusCode(500, result.Error),
+                { IsFailure: true, Error: "NotFound" } => NotFound("Not found"),
+                { IsFailure: true } => StatusCode(500, "An error occurred"),
                 { IsSuccess: true } => Ok(result.Value),
                 _ => StatusCode(500)
             };

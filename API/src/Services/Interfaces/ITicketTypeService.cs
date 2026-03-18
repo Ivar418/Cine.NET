@@ -1,9 +1,9 @@
 using API.Domain.Common;
 using SharedLibrary.Domain.Entities;
 
-namespace API.Repositories.Interfaces;
+namespace API.Services.Interfaces;
 
-public interface ITicketTypeRepository
+public interface ITicketTypeService
 {
     Task<ResultOf<List<TicketType>>> GetAllAsync();
 }
