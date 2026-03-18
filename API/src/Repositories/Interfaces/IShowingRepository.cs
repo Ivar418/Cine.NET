@@ -3,7 +3,7 @@ using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 using SharedLibrary.DTOs.Responses;
 
-namespace API.src.Repositories.Interfaces
+namespace API.Repositories.Interfaces
 {
     public interface IShowingRepository
     {
