@@ -71,35 +71,11 @@ else
 
                                 <MudDivider Class="my-2" />
 
-                                <div class="price-list">
-                                    <div class="price-row">
-                                        <MudText Typo="Typo.caption" Style="color: #555;">Adult</MudText>
-                                        <MudText Typo="Typo.caption" Style="color: #121212; font-weight: 600;">
-                                            € @showing.Prices.Adult.ToString("0.00")
-                                        </MudText>
-                                    </div>
-
-                                    <div class="price-row">
-                                        <MudText Typo="Typo.caption" Style="color: #555;">Child</MudText>
-                                        <MudText Typo="Typo.caption" Style="color: #121212; font-weight: 600;">
-                                            € @showing.Prices.Child.ToString("0.00")
-                                        </MudText>
-                                    </div>
-
-                                    <div class="price-row">
-                                        <MudText Typo="Typo.caption" Style="color: #555;">Student</MudText>
-                                        <MudText Typo="Typo.caption" Style="color: #121212; font-weight: 600;">
-                                            € @showing.Prices.Student.ToString("0.00")
-                                        </MudText>
-                                    </div>
-
-                                    <div class="price-row">
-                                        <MudText Typo="Typo.caption" Style="color: #555;">Senior</MudText>
-                                        <MudText Typo="Typo.caption" Style="color: #121212; font-weight: 600;">
-                                            € @showing.Prices.Senior.ToString("0.00")
-                                        </MudText>
-                                    </div>
-                                </div>
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.caption"><b>Is 3D:</b> @(showing.Is3D ? "Ja" : "Nee")</MudText>
+                                    <MudText Typo="Typo.caption"><b>Movie ID:</b> @showing.MovieId</MudText>
+                                    <MudText Typo="Typo.caption"><b>Auditorium:</b> @showing.AuditoriumName</MudText>
+                                </MudStack>
                             </MudCardContent>
                         </MudCard>
                     }
@@ -182,19 +158,6 @@ else
         background-color: #E5E7EB !important;
     }
 
-    .price-list {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .price-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-    }
-
     .no-showings {
         min-height: 64px;
         border: 1px dashed #333;
@@ -203,7 +166,7 @@ else
 </style>
 
 @code {
-    private List<ShowingsWithPricesResponse> _showings = new();
+    private List<ShowingDisplayResponse> _showings = new();
     private List<DateTime> _daysInWeek = new();
     private bool _loading = true;
     private bool _loadError;
@@ -235,7 +198,8 @@ else
 
         try
         {
-            var allShowings = await ShowingApi.GetShowingsWithPricesAsync();
+            // Oorspronkelijke database-ophaalcode teruggezet:
+            var allShowings = await ShowingApi.GetShowingDisplayAsync();
 
             var startDay = _daysInWeek.First().Date;
             var endDay = _daysInWeek.Last().Date.AddDays(1);

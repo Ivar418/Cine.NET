@@ -44,6 +44,10 @@ else
                             <MudText Typo="Typo.body2" Class="mt-1" Style="color: #444; font-weight: 500;">
                                 Start: @localStart.ToString("HH:mm")
                             </MudText>
+
+                            <MudText Typo="Typo.caption" Class="mt-2" Style="color: #666;">
+                                Zaal: @showing.AuditoriumName
+                            </MudText>
                         </div>
 
                         <MudChip T="string"
@@ -56,35 +60,11 @@ else
 
                     <MudDivider Class="my-3" />
 
-                    <div class="prices-grid">
-                        <div class="price-item">
-                            <MudText Typo="Typo.caption" Style="color: #666;">Adult</MudText>
-                            <MudText Typo="Typo.body1" Style="font-weight: 600; color: #121212;">
-                                € @showing.Prices.Adult.ToString("0.00")
-                            </MudText>
-                        </div>
-
-                        <div class="price-item">
-                            <MudText Typo="Typo.caption" Style="color: #666;">Child</MudText>
-                            <MudText Typo="Typo.body1" Style="font-weight: 600; color: #121212;">
-                                € @showing.Prices.Child.ToString("0.00")
-                            </MudText>
-                        </div>
-
-                        <div class="price-item">
-                            <MudText Typo="Typo.caption" Style="color: #666;">Student</MudText>
-                            <MudText Typo="Typo.body1" Style="font-weight: 600; color: #121212;">
-                                € @showing.Prices.Student.ToString("0.00")
-                            </MudText>
-                        </div>
-
-                        <div class="price-item">
-                            <MudText Typo="Typo.caption" Style="color: #666;">Senior</MudText>
-                            <MudText Typo="Typo.body1" Style="font-weight: 600; color: #121212;">
-                                € @showing.Prices.Senior.ToString("0.00")
-                            </MudText>
-                        </div>
-                    </div>
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.caption"><b>Is 3D:</b> @(showing.Is3D ? "Ja" : "Nee")</MudText>
+                        <MudText Typo="Typo.caption"><b>Movie ID:</b> @showing.MovieId</MudText>
+                        <MudText Typo="Typo.caption"><b>Auditorium ID:</b> @showing.AuditoriumId</MudText>
+                    </MudStack>
                 </MudCardContent>
             </MudCard>
         }
@@ -94,7 +74,7 @@ else
 <style>
     .today-showings-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
         gap: 16px;
     }
 
@@ -103,22 +83,10 @@ else
         color: #121212 !important;
         border-radius: 12px;
     }
-
-    .prices-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(120px, 1fr));
-        gap: 12px;
-    }
-
-    .price-item {
-        background-color: rgba(255, 255, 255, 0.5);
-        border-radius: 8px;
-        padding: 10px 12px;
-    }
 </style>
 
 @code {
-    private List<ShowingsWithPricesResponse> _showings = new();
+    private List<ShowingDisplayResponse> _showings = new();
     private bool _loading = true;
     private bool _loadError;
 
@@ -134,9 +102,10 @@ else
 
         try
         {
-            var allShowings = await ShowingApi.GetShowingsWithPricesAsync();
+            // Oorspronkelijke database-ophaalcode teruggezet:
+            var allShowings = await ShowingApi.GetShowingDisplayAsync();
 
-            var today = DateTimeOffset.Now.Date;
+            var today = DateTime.Today;
             _showings = allShowings
                 .Where(s => s.StartsAt.ToLocalTime().Date == today)
                 .OrderBy(s => s.StartsAt)
