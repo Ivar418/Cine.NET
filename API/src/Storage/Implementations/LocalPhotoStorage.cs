@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using API.Storage.Interfaces;
 using Microsoft.AspNetCore.StaticFiles;
 using SharedLibrary.Domain.Entities;
 

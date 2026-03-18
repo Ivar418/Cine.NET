@@ -6,7 +6,6 @@ using System.Text.Json;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
-using API.src.Repositories.Interfaces;
 using SharedLibrary.DTOs.Responses.TMDB;
 using Microsoft.EntityFrameworkCore;
 using SharedLibrary.DTOs.Models;
