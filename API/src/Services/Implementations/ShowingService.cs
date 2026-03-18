@@ -22,7 +22,7 @@ public class ShowingService : IShowingService
     public ShowingService(
         IShowingRepository repository,
         IPricingService pricingService,
-        ITicketTypeService ticketTypeService)
+        ITicketTypeService ticketTypeService,
         ITicketTypeRepository ticketTypeRepository,
         IReservationRepository reservationRepository)
     {
@@ -46,7 +46,9 @@ public class ShowingService : IShowingService
         if (showing == null)
             return ResultOf<ShowingsWithPricesResponse>.Failure("NotFound");
 
-        var (adult, child, student, senior) = await GetTicketTypes();
+        var tickets = await GetTicketTypes();
+
+        var (adult, child, student, senior) = tickets.Value;
 
         var response = new ShowingsWithPricesResponse
         {
@@ -81,7 +83,9 @@ public class ShowingService : IShowingService
 
         var showings = showingsResult.Value!;
 
-        var (adult, child, student, senior) = await GetTicketTypes();
+        var tickets = await GetTicketTypes();
+
+        var (adult, child, student, senior) = tickets.Value;
 
         var result = showings.Select(s => new ShowingsWithPricesResponse
         {
