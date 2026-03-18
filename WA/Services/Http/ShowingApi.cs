@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using SharedLibrary.DTOs.Responses;
 using WA.Services.Http.Interfaces;
+using 
 
 namespace WA.Services.Http;
 
@@ -57,8 +58,9 @@ public class ShowingApi : IShowingApi
 
     public async Task<ShowingsWithPricesResponse?> GetShowingPricesAsync(int showingId)
     {
-        return await _http.GetFromJsonAsync<ShowingsWithPricesResponse>(
-            $"api/showings/{showingId}/prices"
-        );
+        var result = await _http.GetFromJsonAsync<ShowingsWithPricesResponse>(
+            $"api/showings/{showingId}/prices");
+
+        return result?.Value;
     }
 }
