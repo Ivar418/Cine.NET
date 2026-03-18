@@ -84,6 +84,45 @@
                 </div>
             }
         </MudPaper>
+        
+        <MudPaper Elevation="3" Class="pa-6 mt-6">
+            <MudText Typo="Typo.h4"
+                     Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                     Class="mb-4">
+                Upcoming Showings
+            </MudText>
+
+            @if (!_showings.Any())
+            {
+                <MudText Class="white-text">No upcoming showings scheduled.</MudText>
+            }
+            else
+            {
+                @foreach (var day in _showings.GroupBy(s => s.StartsAt.LocalDateTime.Date).OrderBy(g => g.Key))
+                {
+                    <MudText Typo="Typo.h6"
+                             Class="mb-2 mt-4 white-text">
+                        @day.Key.ToString("dddd d MMMM", new System.Globalization.CultureInfo("nl-NL"))
+                    </MudText>
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;" class="mb-2">
+                        @foreach (var showing in day.OrderBy(s => s.StartsAt))
+                        {
+                            <MudButton Class="nav-button"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="@(() => Nav.NavigateTo($"/showingdetail/{showing.MovieId}/{showing.Id}"))">
+                                @showing.StartsAt.ToString("HH:mm")
+                                @if (showing.Is3D)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Class="ml-2">3D</MudChip>
+                                }
+                            </MudButton>
+                        }
+                    </div>
+                }
+            }
+        </MudPaper>
     }
 </MudContainer>
 
@@ -138,6 +177,8 @@
 
     private MovieResponse? _movie;
     
+    private IReadOnlyList<ShowingResponse> _showings = [];
+    
     private bool _loading = true;
     
     private bool _trailerPlaying = false;
@@ -157,6 +198,8 @@
     protected override async Task OnInitializedAsync()
     {
         _movie = await MovieApi.GetMovieByIdAsync(MovieId);
+
+        _showings = await ShowingApi.GetUpcomingShowingsByMovieIdAsync(MovieId);
 
         if (_movie?.GenresIds != null)
         {
