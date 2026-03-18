@@ -1,3 +1,4 @@
+using API.Domain.Common;
 using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,19 @@ public class TicketTypeRepository : ITicketTypeRepository
         _db = db;
     }
 
-    public async Task<List<TicketType>> GetAllAsync()
+    public async Task<ResultOf<List<TicketType>>> GetAllAsync()
     {
-        return await _db.TicketTypes
-            .AsNoTracking()
-            .ToListAsync();
+        try
+        {
+            var ticketTypes = await _db.TicketTypes
+                .AsNoTracking()
+                .ToListAsync();
+
+            return ResultOf<List<TicketType>>.Success(ticketTypes);
+        }
+        catch (Exception ex)
+        {
+            return ResultOf<List<TicketType>>.Failure(ex.Message);
+        }
     }
 }

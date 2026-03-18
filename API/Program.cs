@@ -45,6 +45,7 @@ builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IPricingService, PricingService>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
 
 // Monitoring: health check endpoint

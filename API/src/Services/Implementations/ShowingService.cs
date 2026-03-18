@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices.JavaScript;
 using API.Domain.Common;
 using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
@@ -14,12 +15,14 @@ public class ShowingService : IShowingService
 {
     private readonly IShowingRepository _showingRepository;
     private readonly IPricingService _pricingService;
+    private readonly ITicketTypeService _ticketTypeService;
     private readonly ITicketTypeRepository _ticketTypeRepository;
     private readonly IReservationRepository _reservationrepository;
 
     public ShowingService(
         IShowingRepository repository,
         IPricingService pricingService,
+        ITicketTypeService ticketTypeService)
         ITicketTypeRepository ticketTypeRepository,
         IReservationRepository reservationRepository)
     {
@@ -27,8 +30,42 @@ public class ShowingService : IShowingService
         _pricingService = pricingService;
         _ticketTypeRepository = ticketTypeRepository;
         _reservationrepository = reservationRepository;
+        _ticketTypeService = ticketTypeService;
     }
 
+    // /{id}/prices 
+    public async Task<ResultOf<ShowingsWithPricesResponse>> GetShowingAsync(int id)
+    {
+        var showingResult = await _showingRepository.GetShowingAsync(id);
+
+        if (showingResult.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(showingResult.Error!);
+
+        var showing = showingResult.Value;
+
+        if (showing == null)
+            return ResultOf<ShowingsWithPricesResponse>.Failure("NotFound");
+
+        var (adult, child, student, senior) = await GetTicketTypes();
+
+        var response = new ShowingsWithPricesResponse
+        {
+            ShowingId = showing.Id,
+            MovieTitle = showing.Movie.Title,
+            StartsAt = showing.StartsAt,
+            Prices = new ShowingPricesResponse
+            {
+                Adult = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, adult),
+                Child = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, child),
+                Student = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, student),
+                Senior = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, senior)
+            }
+        };
+
+        return ResultOf<ShowingsWithPricesResponse>.Success(response);
+    }
+    
+    // /prices
     public async Task<ResultOf<Showing>> GetFullShowingByIdAsync(int id)
     {
         var showingsResult = await _showingRepository.GetShowingAsync(id);
@@ -63,44 +100,28 @@ public class ShowingService : IShowingService
         return ResultOf<List<ShowingsWithPricesResponse>>.Success(result);
     }
     
-    public async Task<ResultOf<ShowingsWithPricesResponse>> GetShowingAsync(int id)
+    private async Task<ResultOf<(TicketType adult, TicketType child, TicketType student, TicketType senior)>> GetTicketTypes()
     {
-        var showingResult = await _showingRepository.GetShowingAsync(id);
+        var result = await _ticketTypeService.GetAllAsync();
 
-        if (showingResult.IsFailure)
-            return ResultOf<ShowingsWithPricesResponse>.Failure(showingResult.Error!);
+        if (result.IsFailure)
+            return ResultOf<(TicketType, TicketType, TicketType, TicketType)>.Failure(result.Error!);
 
-        var showing = showingResult.Value!;
+        var ticketTypes = result.Value!;
 
-        var (adult, child, student, senior) = await GetTicketTypes();
-
-        var response = new ShowingsWithPricesResponse
+        try
         {
-            ShowingId = showing.Id,
-            MovieTitle = showing.Movie.Title,
-            StartsAt = showing.StartsAt,
-            Prices = new ShowingPricesResponse
-            {
-                Adult = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, adult),
-                Child = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, child),
-                Student = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, student),
-                Senior = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, senior)
-            }
-        };
-
-        return ResultOf<ShowingsWithPricesResponse>.Success(response);
-    }
-    
-    private async Task<(TicketType adult, TicketType child, TicketType student, TicketType senior)> GetTicketTypes()
-    {
-        var ticketTypes = await _ticketTypeRepository.GetAllAsync();
-
-        return (
-            ticketTypes.First(t => t.Name == "Adult"),
-            ticketTypes.First(t => t.Name == "Child"),
-            ticketTypes.First(t => t.Name == "Student"),
-            ticketTypes.First(t => t.Name == "Senior")
-        );
+            return ResultOf<(TicketType, TicketType, TicketType, TicketType)>.Success((
+                ticketTypes.First(t => t.Name == "Adult"),
+                ticketTypes.First(t => t.Name == "Child"),
+                ticketTypes.First(t => t.Name == "Student"),
+                ticketTypes.First(t => t.Name == "Senior")
+            ));
+        }
+        catch
+        {
+            return ResultOf<(TicketType, TicketType, TicketType, TicketType)>.Failure("TicketTypes not configured correctly");
+        }
     }
 
     public async Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id)
