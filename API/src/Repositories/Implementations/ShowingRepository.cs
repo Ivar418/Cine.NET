@@ -16,20 +16,21 @@ namespace API.Repositories.Implementations
         {
             _db = db;
         }
-        async Task<Showing> IShowingRepository.AddShowingAsync(CreateShowingRequest Showing)
+        async Task<Showing> IShowingRepository.AddShowingAsync(CreateShowingRequest showingRequest)
         {
-            Console.WriteLine($"Adding Showing of movie: {Showing.MovieId}");
+            Console.WriteLine($"Adding Showing of movie: {showingRequest.MovieId}");
             Showing newShowing = new Showing
             {
-                MovieId = Showing.MovieId,
-                AuditoriumId = Showing.AuditoriumId,
-                StartsAt = Showing.StartsAt
+                MovieId = showingRequest.MovieId,
+                AuditoriumId = showingRequest.AuditoriumId,
+                StartsAt = showingRequest.StartsAt,
+                IsThreeD = showingRequest.Is3D,
             };
-            Auditorium auditorium = _db.Auditoriums.FirstOrDefault(a => a.Id == Showing.AuditoriumId);
-
+            Auditorium auditorium = _db.Auditoriums.FirstOrDefault(a => a.Id == showingRequest.AuditoriumId);
+            Movie movie = _db.Movies.FirstOrDefault(m => m.Id == showingRequest.MovieId);
             if (auditorium == null)
             {
-                throw new Exception($"Auditorium with id {Showing.AuditoriumId} not found.");
+                throw new Exception($"Auditorium with id {showingRequest.AuditoriumId} not found.");
             }
             newShowing.SetLayoutSnapshot(auditorium.GetRows());
 
@@ -125,7 +126,7 @@ namespace API.Repositories.Implementations
                         MovieId = s.MovieId,
                         AuditoriumId = s.AuditoriumId,
                         MovieTitle = s.Movie.Title,
-                        AuditoriumName = s.Auditorium.Name,
+                        // AuditoriumName = s.Auditorium.Name,
                         Is3D = s.IsThreeD,
                         StartsAt = s.StartsAt
                     })

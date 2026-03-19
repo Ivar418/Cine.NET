@@ -23,7 +23,5 @@ namespace SharedLibrary.Domain.Entities
         public void SetRows(IEnumerable<RowConfig> rows) =>
             RowConfigJson = JsonSerializer.Serialize(rows.ToList());
 
-        // Navigation
-        public ICollection<Showing> Showings { get; set; } = [];
     }
 }
