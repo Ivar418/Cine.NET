@@ -1,12 +1,9 @@
-﻿
-using API.Services;
+﻿using API.Repositories.Interfaces;
 using API.Services.Interfaces;
-using API.src.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 
-namespace API.src.Controllers
+namespace API.Controllers
 {
     [ApiController]
     [Route("api/showings")]
@@ -60,19 +57,28 @@ namespace API.src.Controllers
         [HttpGet("with-prices")]
         public async Task<IActionResult> GetShowingsWithPrices()
         {
-            var showings = await _showingService.GetShowingsAsync();
-            return Ok(showings);
+            var result = await _showingService.GetShowingsAsync();
+
+            return result switch
+            {
+                { IsFailure: true } => StatusCode(500, "An error occurred"),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500)
+            };
         }
         
-        [HttpGet("{id:int}/prices")]
+        [HttpGet("{id}/prices")]
         public async Task<IActionResult> GetShowingWithPrices(int id)
         {
-            var showing = await _showingService.GetShowingAsync(id);
+            var result = await _showingService.GetShowingAsync(id);
 
-            if (showing == null)
-                return NotFound();
-
-            return Ok(showing);
+            return result switch
+            {
+                { IsFailure: true, Error: "NotFound" } => NotFound("Not found"),
+                { IsFailure: true } => StatusCode(500, "An error occurred"),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500)
+            };
         }
 
         // [HttpGet]
@@ -194,13 +200,6 @@ namespace API.src.Controllers
             {
                 return StatusCode(500, new { error = "An error occurred" });
             }
-        }
-        
-        [HttpGet("movie/{movieId:int}/upcoming")]
-        public async Task<IActionResult> GetUpcomingShowingsByMovieId(int movieId)
-        {
-            var showings = await _showingService.GetUpcomingShowingsByMovieIdAsync(movieId);
-            return Ok(showings);
         }
     }
 }
