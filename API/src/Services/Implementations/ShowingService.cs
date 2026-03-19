@@ -50,8 +50,6 @@ public class ShowingService : IShowingService
 
         var (adult, child, student, senior) = ticketTypesResult.Value;
 
-        var (adult, child, student, senior) = tickets.Value;
-
         var response = new ShowingsWithPricesResponse
         {
             ShowingId = showing.Id,
