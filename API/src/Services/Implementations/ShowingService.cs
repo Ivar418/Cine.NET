@@ -140,4 +140,16 @@ public class ShowingService : IShowingService
             }
         });
     }
+    
+    public async Task<ResultOf<IReadOnlyList<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId)
+    {
+        var cutoff = DateTimeOffset.UtcNow.AddMinutes(-15);
+
+        var result = await _showingRepository.GetUpcomingShowingsByMovieIdAsync(movieId, cutoff);
+
+        if (result.IsFailure)
+            return ResultOf<IReadOnlyList<ShowingResponse>>.Failure(result.Error!);
+
+        return ResultOf<IReadOnlyList<ShowingResponse>>.Success(result.Value!.ToList());
+    }
 }

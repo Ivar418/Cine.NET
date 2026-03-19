@@ -120,5 +120,31 @@ namespace API.Repositories.Implementations
                 return ResultOf<ShowingDisplayResponse>.Failure(e.Message);
             }
         }
+        
+        async Task<ResultOf<ICollection<ShowingResponse>>> IShowingRepository.GetUpcomingShowingsByMovieIdAsync(int movieId, DateTimeOffset cutoff)
+        {
+            try
+            {
+                var showings = await _db.Showings
+                    .Where(s => s.MovieId == movieId && s.StartsAt > cutoff)
+                    .OrderBy(s => s.StartsAt)
+                    .Select(s => new ShowingResponse
+                    {
+                        Id                       = s.Id,
+                        MovieId                  = s.MovieId,
+                        AuditoriumId             = s.AuditoriumId,
+                        Is3D                     = s.IsThreeD,
+                        StartsAt                 = s.StartsAt,
+                        AuditoriumLayoutSnapshot = s.AuditoriumLayoutSnapshot
+                    })
+                    .ToListAsync();
+
+                return ResultOf<ICollection<ShowingResponse>>.Success(showings);
+            }
+            catch (Exception e)
+            {
+                return ResultOf<ICollection<ShowingResponse>>.Failure(e.Message);
+            }
+        }
     }
 }
