@@ -19,24 +19,32 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _userService.GetAllUsersAsync();
-
-            if (result.IsFailure)
-                return BadRequest(result.Error);
-
-            var response = UserMapper.ToResponses(result.Value!);
-            return Ok(response);
+            try {
+            var users = await _userService.GetAllUsersAsync();
+            
+            return users switch
+            {
+                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                { IsSuccess: true } => Ok(UserMapper.ToResponses(users.Value!)),
+                _ => StatusCode(500, new { error = "Unexpected result" })
+            };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
+            
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var result = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(id);
 
-            if (result.IsFailure)
-                return NotFound(result.Error);
+            if (user == null)
+                return NotFound();
 
-            var response = UserMapper.ToResponse(result.Value!);
+            var response = UserMapper.ToResponse(user.Value!);
             return Ok(response);
         }
     }

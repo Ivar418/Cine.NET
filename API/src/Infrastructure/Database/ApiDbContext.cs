@@ -15,6 +15,7 @@ public class ApiDbContext : DbContext
         public DbSet<User> Users => Set<User>();
         public DbSet<Movie> Movies => Set<Movie>();
         public DbSet<Photo> Photos => Set<Photo>();
+        public DbSet<Genre> Genres => Set<Genre>();
         public DbSet<Ticket> Tickets => Set<Ticket>();
         public DbSet<Auditorium> Auditoriums => Set<Auditorium>();
         public DbSet<Showing> Showings => Set<Showing>();
@@ -84,5 +85,7 @@ public class ApiDbContext : DbContext
                 modelBuilder.Entity<PricingOption>()
                     .Property(p => p.PriceModifier)
                     .HasPrecision(10, 2);
+                modelBuilder.Entity<Genre>().ToTable("genres");
+
         }
     }

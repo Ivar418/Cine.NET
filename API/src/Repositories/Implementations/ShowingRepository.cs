@@ -1,13 +1,12 @@
-﻿using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using API.Domain.Common;
+﻿using API.Domain.Common;
 using API.Infrastructure.Database;
-using API.src.Repositories.Interfaces;
+using API.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 using SharedLibrary.DTOs.Responses;
 
-namespace API.src.Repositories.Implementations
+namespace API.Repositories.Implementations
 {
     public class ShowingRepository : IShowingRepository
     {
@@ -46,17 +45,24 @@ namespace API.src.Repositories.Implementations
 
         async Task<ResultOf<Showing>> IShowingRepository.GetShowingAsync(int id)
         {
-            var Showing = await _db.Showings.FindAsync(id);
-            return Showing == null ? ResultOf<Showing>.Failure("Auditorium not found") : ResultOf<Showing>.Success(Showing);
+            var showing = await _db.Showings
+                .Include(s => s.Movie)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            
+            return showing == null
+                ? ResultOf<Showing>.Failure("Showing not found")
+                : ResultOf<Showing>.Success(showing);
         }
 
         async Task<ResultOf<ICollection<Showing>>> IShowingRepository.GetShowingsAsync()
         {
             try
             {
-                var Showings = await _db.Showings.ToListAsync();
+                var showings = await _db.Showings
+                    .Include(s => s.Movie)
+                    .ToListAsync();
 
-                return ResultOf<ICollection<Showing>>.Success(Showings);
+                return ResultOf<ICollection<Showing>>.Success(showings);
             }
             catch (Exception e)
             {

@@ -5,10 +5,9 @@ using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
-using API.src.Repositories.Implementations;
-using API.src.Repositories.Interfaces;
 using API.Storage;
 using API.Storage.Implementations;
+using API.Storage.Interfaces;
 using DotNetEnv;
 
 Env.Load();
@@ -38,9 +37,12 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
+builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IShowingService, ShowingService>();
-builder.Services.AddScoped<PricingService>();
+builder.Services.AddScoped<IPricingService, PricingService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
+builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();
@@ -157,18 +159,24 @@ app.MapControllers();
 // Database: apply pending migrations at startup and seed some mock data
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var db = services.GetRequiredService<ApiDbContext>();
-    var movieService = services.GetRequiredService<IMovieService>();
-
     // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
     // Since this is a school project which always destroys the database on recreation it does not matter
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<ApiDbContext>();
     db.Database.EnsureCreated();
+    
+    //Get other required services for seeding
+    var movieService = services.GetRequiredService<IMovieService>();
+    var showingService = services.GetRequiredService<IShowingService>();
+    var ticketService = services.GetRequiredService<ITicketService>();
+    var pricingService = services.GetRequiredService<IPricingService>();
+    var auditoriumRepository = services.GetRequiredService<IAuditoriumRepository>();
+
 
     // Seed data
     try
     {
-        await DbSeeder.SeedAsync(db, movieService);
+        await DbSeeder.SeedAsync(db, movieService,showingService, ticketService,pricingService, auditoriumRepository);
     }
     catch (Exception ex)
     {

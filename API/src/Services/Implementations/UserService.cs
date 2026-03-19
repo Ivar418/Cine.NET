@@ -16,17 +16,12 @@ namespace API.Services.Implementations
 
         public async Task<ResultOf<IReadOnlyList<User>>> GetAllUsersAsync()
         {
-            var users = await _repository.GetAllAsync();
-            return ResultOf<IReadOnlyList<User>>.Success(users);
+            return await _repository.GetAllAsync();
         }
 
-        public async Task<ResultOf<User>> GetUserByIdAsync(int id)
+        public async Task<ResultOf<User?>> GetUserByIdAsync(int id)
         {
-            var user = await _repository.GetByIdAsync(id);
-            if (user == null)
-                return ResultOf<User>.Failure($"User with id {id} not found.");
-            
-            return ResultOf<User>.Success(user);
+            return await _repository.GetByIdAsync(id);
         }
     }
 }

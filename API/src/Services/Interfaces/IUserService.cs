@@ -6,6 +6,6 @@ namespace API.Services.Interfaces
     public interface IUserService
     {
         Task<ResultOf<IReadOnlyList<User>>> GetAllUsersAsync();
-        Task<ResultOf<User>> GetUserByIdAsync(int id);
+        Task<ResultOf<User?>> GetUserByIdAsync(int id);
     }
 }

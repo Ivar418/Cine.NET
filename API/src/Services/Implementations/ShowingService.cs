@@ -1,83 +1,147 @@
-using Microsoft.EntityFrameworkCore;
-using API.Infrastructure.Database;
-using API.Services.Implementations;
+using API.Domain.Common;
+using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses;
 
-namespace API.Services;
+namespace API.Services.Implementations;
 
 public class ShowingService : IShowingService
 {
-    private readonly ApiDbContext _db;
-    private readonly PricingService _pricingService;
+    private readonly IShowingRepository _showingRepository;
+    private readonly IPricingService _pricingService;
+    private readonly ITicketTypeService _ticketTypeService;
 
-    public ShowingService(ApiDbContext db, PricingService pricingService)
+    public ShowingService(
+        IShowingRepository repository,
+        IPricingService pricingService,
+        ITicketTypeService ticketTypeService)
     {
-        _db = db;
+        _showingRepository = repository;
         _pricingService = pricingService;
+        _ticketTypeService = ticketTypeService;
     }
 
-    public async Task<List<ShowingsWithPricesResponse>> GetShowingsAsync()
+    // /{id}/prices 
+    public async Task<ResultOf<ShowingsWithPricesResponse>> GetShowingAsync(int id)
     {
-        var showings = await _db.Showings
-            .Include(s => s.Movie)
-            .ToListAsync();
+        var showingResult = await _showingRepository.GetShowingAsync(id);
+
+        var showing = showingResult.Value;
+        if (showing == null)
+            return ResultOf<ShowingsWithPricesResponse>.Failure("NotFound");
         
-        var (adult, child, student, senior) = await GetTicketTypes();
+        if (showingResult.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(showingResult.Error!);
 
-        return showings.Select(s => new ShowingsWithPricesResponse
+        var ticketTypesResult = await GetTicketTypes();
+
+        if (ticketTypesResult.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(ticketTypesResult.Error!);
+
+        var (adult, child, student, senior) = ticketTypesResult.Value;
+
+        if (ticketTypesResult.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(ticketTypesResult.Error!);
+
+        var (adult, child, student, senior) = ticketTypesResult.Value!;
+
+        return await BuildShowingResponseAsync(showing, adult, child, student, senior);
+    }
+
+    // /prices
+    public async Task<ResultOf<List<ShowingsWithPricesResponse>>> GetShowingsAsync()
+    {
+        var showingsResult = await _showingRepository.GetShowingsAsync();
+
+        if (showingsResult.IsFailure)
+            return ResultOf<List<ShowingsWithPricesResponse>>.Failure(showingsResult.Error!);
+
+        var showings = showingsResult.Value!;
+
+        var ticketTypesResult = await GetTicketTypes();
+
+        if (ticketTypesResult.IsFailure)
+            return ResultOf<List<ShowingsWithPricesResponse>>.Failure(ticketTypesResult.Error!);
+
+        var (adult, child, student, senior) = ticketTypesResult.Value!;
+
+        var result = new List<ShowingsWithPricesResponse>();
+
+        foreach (var s in showings)
         {
-            ShowingId = s.Id,
-            MovieTitle = s.Movie.Title,
-            StartsAt = s.StartsAt,
+            var responseResult = await BuildShowingResponseAsync(s, adult, child, student, senior);
 
-            Prices = new ShowingPricesResponse
-            {
-                Adult = _pricingService.CalculatePrice(s.Movie, s.IsThreeD, adult),
-                Child = _pricingService.CalculatePrice(s.Movie, s.IsThreeD, child),
-                Student = _pricingService.CalculatePrice(s.Movie, s.IsThreeD, student),
-                Senior = _pricingService.CalculatePrice(s.Movie, s.IsThreeD, senior)
-            }
+            if (responseResult.IsFailure)
+                return ResultOf<List<ShowingsWithPricesResponse>>.Failure(responseResult.Error!);
 
-        }).ToList();
+            result.Add(responseResult.Value!);
+        }
+
+        return ResultOf<List<ShowingsWithPricesResponse>>.Success(result);
     }
     
-    public async Task<ShowingsWithPricesResponse?> GetShowingAsync(int id)
+    // Helpder: haalt alle TicketTypes op en mapt deze naar de vier verwachte categorieën
+    private async Task<ResultOf<(TicketType adult, TicketType child, TicketType student, TicketType senior)>> GetTicketTypes()
     {
-        var showing = await _db.Showings
-            .Include(s => s.Movie)
-            .FirstOrDefaultAsync(s => s.Id == id);
+        var result = await _ticketTypeService.GetAllAsync();
 
-        if (showing == null)
-            return null;
-        
-        var (adult, child, student, senior) = await GetTicketTypes();
+        if (result.IsFailure)
+            return ResultOf<(TicketType, TicketType, TicketType, TicketType)>.Failure(result.Error!);
 
-        return new ShowingsWithPricesResponse
+        var ticketTypes = result.Value!;
+
+        try
+        {
+            return ResultOf<(TicketType, TicketType, TicketType, TicketType)>.Success((
+                ticketTypes.First(t => t.Name == "Adult"),
+                ticketTypes.First(t => t.Name == "Child"),
+                ticketTypes.First(t => t.Name == "Student"),
+                ticketTypes.First(t => t.Name == "Senior")
+            ));
+        }
+        catch
+        {
+            return ResultOf<(TicketType, TicketType, TicketType, TicketType)>.Failure("TicketTypes not configured correctly");
+        }
+    }
+    
+    // Helper: bouwt een Showing response inclusief prijsberekeningen per tickettype.
+    private async Task<ResultOf<ShowingsWithPricesResponse>> BuildShowingResponseAsync(
+        Showing showing,
+        TicketType adult,
+        TicketType child,
+        TicketType student,
+        TicketType senior)
+    {
+        var adultPrice = await _pricingService.CalculatePriceAsync(showing.Movie, showing.IsThreeD, adult);
+        if (adultPrice.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(adultPrice.Error!);
+
+        var childPrice = await _pricingService.CalculatePriceAsync(showing.Movie, showing.IsThreeD, child);
+        if (childPrice.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(childPrice.Error!);
+
+        var studentPrice = await _pricingService.CalculatePriceAsync(showing.Movie, showing.IsThreeD, student);
+        if (studentPrice.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(studentPrice.Error!);
+
+        var seniorPrice = await _pricingService.CalculatePriceAsync(showing.Movie, showing.IsThreeD, senior);
+        if (seniorPrice.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(seniorPrice.Error!);
+
+        return ResultOf<ShowingsWithPricesResponse>.Success(new ShowingsWithPricesResponse
         {
             ShowingId = showing.Id,
             MovieTitle = showing.Movie.Title,
             StartsAt = showing.StartsAt,
             Prices = new ShowingPricesResponse
             {
-                Adult = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, adult),
-                Child = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, child),
-                Student = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, student),
-                Senior = _pricingService.CalculatePrice(showing.Movie, showing.IsThreeD, senior)
+                Adult = adultPrice.Value!,
+                Child = childPrice.Value!,
+                Student = studentPrice.Value!,
+                Senior = seniorPrice.Value!
             }
-        };
-    }
-    
-    private async Task<(TicketType adult, TicketType child, TicketType student, TicketType senior)> GetTicketTypes()
-    {
-        var ticketTypes = await _db.TicketTypes.ToListAsync();
-
-        return (
-            ticketTypes.First(t => t.Name == "Adult"),
-            ticketTypes.First(t => t.Name == "Child"),
-            ticketTypes.First(t => t.Name == "Student"),
-            ticketTypes.First(t => t.Name == "Senior")
-        );
+        });
     }
 }
