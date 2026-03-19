@@ -5,10 +5,9 @@ using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
-using API.src.Repositories.Implementations;
-using API.src.Repositories.Interfaces;
 using API.Storage;
 using API.Storage.Implementations;
+using API.Storage.Interfaces;
 using DotNetEnv;
 
 Env.Load();

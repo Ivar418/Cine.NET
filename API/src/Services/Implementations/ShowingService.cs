@@ -1,6 +1,6 @@
 using API.Domain.Common;
+using API.Repositories.Interfaces;
 using API.Services.Interfaces;
-using API.src.Repositories.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses;
 
@@ -27,15 +27,19 @@ public class ShowingService : IShowingService
     {
         var showingResult = await _showingRepository.GetShowingAsync(id);
 
+        var showing = showingResult.Value;
+        if (showing == null)
+            return ResultOf<ShowingsWithPricesResponse>.Failure("NotFound");
+        
         if (showingResult.IsFailure)
             return ResultOf<ShowingsWithPricesResponse>.Failure(showingResult.Error!);
 
-        var showing = showingResult.Value;
-
-        if (showing == null)
-            return ResultOf<ShowingsWithPricesResponse>.Failure("NotFound");
-
         var ticketTypesResult = await GetTicketTypes();
+
+        if (ticketTypesResult.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(ticketTypesResult.Error!);
+
+        var (adult, child, student, senior) = ticketTypesResult.Value;
 
         if (ticketTypesResult.IsFailure)
             return ResultOf<ShowingsWithPricesResponse>.Failure(ticketTypesResult.Error!);

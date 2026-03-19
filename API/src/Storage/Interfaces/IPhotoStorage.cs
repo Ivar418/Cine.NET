@@ -1,6 +1,6 @@
 ﻿using SharedLibrary.Domain.Entities;
 
-namespace API.Storage;
+namespace API.Storage.Interfaces;
 
 public record PhotoSaveResult(string Id, string Url, string StorageKey, long Size, string ContentType, int creatorId);
 
