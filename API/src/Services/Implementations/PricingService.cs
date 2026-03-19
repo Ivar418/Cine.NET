@@ -1,5 +1,4 @@
 using API.Domain.Common;
-using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
@@ -27,10 +26,13 @@ public class PricingService : IPricingService
             return ResultOf<Dictionary<string, decimal>>.Failure(result.Error!);
 
         _config = result.Value!;
-        return result;
+        return ResultOf<Dictionary<string, decimal>>.Success(_config);
     }
 
-    public async Task<ResultOf<decimal>> CalculatePriceAsync(Movie movie, bool isThreeD, TicketType ticketType)
+    public async Task<ResultOf<decimal>> CalculatePriceAsync(
+        Movie movie,
+        bool isThreeD,
+        TicketType ticketType)
     {
         var configResult = await GetConfigAsync();
 

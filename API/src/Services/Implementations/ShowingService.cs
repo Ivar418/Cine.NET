@@ -27,12 +27,13 @@ public class ShowingService : IShowingService
     {
         var showingResult = await _showingRepository.GetShowingAsync(id);
 
-        var showing = showingResult.Value;
-        if (showing == null)
-            return ResultOf<ShowingsWithPricesResponse>.Failure("NotFound");
-        
         if (showingResult.IsFailure)
             return ResultOf<ShowingsWithPricesResponse>.Failure(showingResult.Error!);
+
+        var showing = showingResult.Value;
+
+        if (showing == null)
+            return ResultOf<ShowingsWithPricesResponse>.Failure("NotFound");
 
         var ticketTypesResult = await GetTicketTypes();
 
@@ -41,6 +42,7 @@ public class ShowingService : IShowingService
 
         var (adult, child, student, senior) = ticketTypesResult.Value;
         
+
 
         return await BuildShowingResponseAsync(showing, adult, child, student, senior);
     }
