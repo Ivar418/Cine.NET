@@ -1,7 +1,6 @@
 using System.Net.Http.Json;
 using SharedLibrary.DTOs.Responses;
 using WA.Services.Http.Interfaces;
-using 
 
 namespace WA.Services.Http;
 
@@ -61,7 +60,7 @@ public class ShowingApi : IShowingApi
         var result = await _http.GetFromJsonAsync<ShowingsWithPricesResponse>(
             $"api/showings/{showingId}/prices");
 
-        return result?.Value;
+        return result;
     }
     
     public async Task<IReadOnlyList<ShowingResponse>> GetUpcomingShowingsByMovieIdAsync(int movieId)

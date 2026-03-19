@@ -43,6 +43,7 @@ builder.Services.AddScoped<IPricingService, PricingService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
+builder.Services.AddScoped<IPricingConfigRepository, PricingConfigRepository>();
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();
