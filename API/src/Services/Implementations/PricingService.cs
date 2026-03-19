@@ -1,4 +1,5 @@
-using API.Infrastructure.Database;
+using API.Domain.Common;
+using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
 
@@ -6,25 +7,49 @@ namespace API.Services.Implementations;
 
 public class PricingService : IPricingService
 {
-    private readonly Dictionary<string, decimal> _config;
+    private readonly IPricingConfigRepository _repo;
+    private Dictionary<string, decimal>? _config;
 
-    public PricingService(ApiDbContext db)
+    public PricingService(IPricingConfigRepository repo)
     {
-        _config = db.PricingConfigs
-            .ToDictionary(x => x.Key, x => x.Value);
+        _repo = repo;
     }
 
-    public decimal CalculatePrice(Movie movie, bool isThreeD, TicketType ticketType)
+    private async Task<ResultOf<Dictionary<string, decimal>>> GetConfigAsync()
     {
+        if (_config != null)
+            return ResultOf<Dictionary<string, decimal>>.Success(_config);
+
+        var result = await _repo.GetAllAsync();
+
+        if (result.IsFailure)
+            return ResultOf<Dictionary<string, decimal>>.Failure(result.Error!);
+
+        _config = result.Value!;
+        return ResultOf<Dictionary<string, decimal>>.Success(_config);
+    }
+
+    public async Task<ResultOf<decimal>> CalculatePriceAsync(
+        Movie movie,
+        bool isThreeD,
+        TicketType ticketType)
+    {
+        var configResult = await GetConfigAsync();
+
+        if (configResult.IsFailure)
+            return ResultOf<decimal>.Failure(configResult.Error!);
+
+        var config = configResult.Value!;
+
         var price = movie.Runtime > 120
-            ? _config["LongMoviePrice"]
-            : _config["BasePrice"];
+            ? config["LongMoviePrice"]
+            : config["BasePrice"];
 
         if (isThreeD)
-            price += _config["ThreeDSurcharge"];
+            price += config["ThreeDSurcharge"];
 
         price -= ticketType.Discount;
 
-        return price;
+        return ResultOf<decimal>.Success(price);
     }
 }
