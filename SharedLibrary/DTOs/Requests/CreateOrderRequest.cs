@@ -2,8 +2,7 @@ namespace SharedLibrary.DTOs.Requests;
 
 public class CreateOrderRequest
 {
-    public string OrderType { get; set; } = "Reservation";
-    public string PaymentMethod { get; set; } = "Unknown";
-    public List<TicketRequest> Tickets { get; set; } = [];
+    public required string OrderType { get; set; }
+    public required string PaymentMethod { get; set; }
+    public required List<TicketRequest> Tickets { get; set; }
 }
-
