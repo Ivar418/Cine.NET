@@ -1,6 +1,4 @@
-using System.Runtime.InteropServices.JavaScript;
 using API.Domain.Common;
-using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Mappers;
@@ -38,15 +36,19 @@ public class ShowingService : IShowingService
     {
         var showingResult = await _showingRepository.GetShowingAsync(id);
 
+        var showing = showingResult.Value;
+        if (showing == null)
+            return ResultOf<ShowingsWithPricesResponse>.Failure("NotFound");
+        
         if (showingResult.IsFailure)
             return ResultOf<ShowingsWithPricesResponse>.Failure(showingResult.Error!);
 
-        var showing = showingResult.Value;
+        var ticketTypesResult = await GetTicketTypes();
 
-        if (showing == null)
-            return ResultOf<ShowingsWithPricesResponse>.Failure("NotFound");
+        if (ticketTypesResult.IsFailure)
+            return ResultOf<ShowingsWithPricesResponse>.Failure(ticketTypesResult.Error!);
 
-        var tickets = await GetTicketTypes();
+        var (adult, child, student, senior) = ticketTypesResult.Value;
 
         var (adult, child, student, senior) = tickets.Value;
 
@@ -83,9 +85,12 @@ public class ShowingService : IShowingService
 
         var showings = showingsResult.Value!;
 
-        var tickets = await GetTicketTypes();
+        var ticketTypesResult = await GetTicketTypes();
 
-        var (adult, child, student, senior) = tickets.Value;
+        if (ticketTypesResult.IsFailure)
+            return ResultOf<List<ShowingsWithPricesResponse>>.Failure(ticketTypesResult.Error!);
+
+        var (adult, child, student, senior) = ticketTypesResult.Value;
 
         var result = showings.Select(s => new ShowingsWithPricesResponse
         {
