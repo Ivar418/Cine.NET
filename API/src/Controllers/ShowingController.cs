@@ -202,6 +202,17 @@ namespace API.Controllers
             }
         }
         
+        /// <summary>
+        /// Retrieves all upcoming showings for a specific movie, ordered by start time ascending.
+        /// A showing is considered upcoming if it starts no more than 15 minutes before the current time,
+        /// allowing users to still book tickets shortly after a showing has started.
+        /// </summary>
+        /// <param name="movieId">The internal ID of the movie to retrieve upcoming showings for.</param>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing a list of <see cref="ShowingResponse"/> on success.
+        /// Returns an empty list if no upcoming showings are scheduled — this is not treated as a 404.
+        /// Returns <c>500 Internal Server Error</c> if an unexpected error occurs.
+        /// </returns>
         [HttpGet("movie/{movieId:int}/upcoming")]
         public async Task<IActionResult> GetUpcomingShowingsByMovieId(int movieId)
         {

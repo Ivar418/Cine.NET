@@ -205,7 +205,7 @@ public class MoviesController : ControllerBase
             return CreatedAtAction(
                 nameof(GetMovieById),
                 new { id = movies.First().Id },
-                movies);  // ✅ pass list directly — serializer handles it
+                movies);
         }
         catch (Exception)
         {

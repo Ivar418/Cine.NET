@@ -121,6 +121,20 @@ namespace API.Repositories.Implementations
             }
         }
         
+        /// <summary>
+        /// Retrieves all upcoming showings for a specific movie from the database, projected directly
+        /// to <see cref="ShowingResponse"/>. Only showings with a start time greater than
+        /// <paramref name="cutoff"/> are included, ordered by start time ascending.
+        /// </summary>
+        /// <param name="movieId">The internal ID of the movie to retrieve showings for.</param>
+        /// <param name="cutoff">
+        /// The earliest allowed start time. Showings starting after this value will be included.
+        /// Passed in from the service layer to keep business rules out of the repository.
+        /// </param>
+        /// <returns>
+        /// A <see cref="ResultOf{T}"/> containing a collection of <see cref="ShowingResponse"/> on success,
+        /// or a failure with the exception message if the database query fails.
+        /// </returns>
         async Task<ResultOf<ICollection<ShowingResponse>>> IShowingRepository.GetUpcomingShowingsByMovieIdAsync(int movieId, DateTimeOffset cutoff)
         {
             try
