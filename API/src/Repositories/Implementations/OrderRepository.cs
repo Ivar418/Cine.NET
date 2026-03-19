@@ -28,9 +28,14 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(o => o.Id == orderId);
     }
 
+    public async Task<Order?> GetByIdAsync(int orderId)
+    {
+        return await _db.Orders
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+    }
+    
     public async Task SaveChangesAsync()
     {
         await _db.SaveChangesAsync();
     }
 }
-
