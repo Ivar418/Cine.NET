@@ -40,6 +40,7 @@ builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
 builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IShowingService, ShowingService>();
 builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<IPricingConfigRepository, PricingConfigRepository>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
