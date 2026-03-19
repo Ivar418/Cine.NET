@@ -34,25 +34,21 @@
                                 Rij @seat.Row Stoel @seat.SeatNumber
                             </MudText>
 
-                            <MudSelect T="string" @bind-Value="seat.TicketType">
+                            <MudSelectItem Value=@("Adult") Disabled="@(!showing.Prices.Adult.IsAvailable)">
+                                Adult €@showing.Prices.Adult.Price
+                            </MudSelectItem>
 
-                                <MudSelectItem Value="@("Adult")">
-                                    Adult €@(showing?.Prices.Adult ?? 0)
-                                </MudSelectItem>
+                            <MudSelectItem Value=@("Student") Disabled="@(!showing.Prices.Student.IsAvailable)">
+                                Student €@showing.Prices.Student.Price
+                            </MudSelectItem>
 
-                                <MudSelectItem Value="@("Student")">
-                                    Student €@(showing?.Prices.Student ?? 0)
-                                </MudSelectItem>
+                            <MudSelectItem Value=@("Child") Disabled="@(!showing.Prices.Child.IsAvailable)">
+                                Child €@showing.Prices.Child.Price
+                            </MudSelectItem>
 
-                                <MudSelectItem Value="@("Child")">
-                                    Child €@(showing?.Prices.Child ?? 0)
-                                </MudSelectItem>
-
-                                <MudSelectItem Value="@("Senior")">
-                                    Senior €@(showing?.Prices.Senior ?? 0)
-                                </MudSelectItem>
-
-                            </MudSelect>
+                            <MudSelectItem Value=@("Senior") Disabled="@(!showing.Prices.Senior.IsAvailable)">
+                                Senior €@showing.Prices.Senior.Price
+                            </MudSelectItem>
 
                         </MudStack>
 
