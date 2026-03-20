@@ -23,6 +23,6 @@ else
     docker compose -f .\docker-compose.yml down -v
 }
 Write-Host "==> Bringing up compose stack (rebuild images)..."
-docker compose -f docker-compose.yml up --build -d
+docker compose -f docker-compose.yml up --build 
 Start-Process "http://localhost:8080/swagger/"
 Write-Host "==> Done."
