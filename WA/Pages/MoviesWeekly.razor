@@ -2,6 +2,7 @@
 @using SharedLibrary.DTOs.Responses
 @using WA.Services.Http.Interfaces
 @inject IShowingApi ShowingApi
+@inject IMovieApiClient MovieApi
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @using WA.Layout
@@ -52,30 +53,71 @@ else
                     @foreach (var showing in dayShowings)
                     {
                         var localStart = showing.StartsAt.ToLocalTime();
+                        var posterUrl = GetPosterUrl(showing.MovieId);
+                        var runtime = GetRuntime(showing.MovieId);
+                        var genres = GetGenreNames(showing.MovieId);
 
-                        <MudCard Elevation="4" Class="movie-card-weekly mb-3">
-                            <MudCardContent Class="pa-3">
-                                <div class="d-flex justify-space-between align-start">
-                                    <MudText Typo="Typo.subtitle2" Style="font-weight: bold; font-size: 0.85rem; color: #121212; max-width: 70%;">
-                                        @showing.MovieTitle
-                                    </MudText>
+                        <MudCard Elevation="4"
+                                 Class="movie-card-weekly mb-3 clickable-card"
+                                 @onclick="@(() => NavigateToShowingDetail(showing.MovieId, showing.Id))">
+                            <div class="weekly-poster-wrap">
+                                @if (!string.IsNullOrWhiteSpace(posterUrl))
+                                {
+                                    <MudImage Src="@posterUrl"
+                                              Alt="@showing.MovieTitle"
+                                              Class="weekly-poster" />
+                                }
+                                else
+                                {
+                                    <div class="weekly-poster-placeholder">
+                                        <MudIcon Icon="@Icons.Material.Filled.Movie" Color="Color.Default" Size="Size.Large" />
+                                        <MudText Typo="Typo.caption" Style="color: #666; margin-top: 4px;">
+                                            Geen poster
+                                        </MudText>
+                                    </div>
+                                }
+                            </div>
 
+                            <div class="weekly-title-bar">
+                                <MudText Typo="Typo.subtitle2" Class="weekly-title">
+                                    @showing.MovieTitle
+                                </MudText>
+                            </div>
+
+                            <MudCardContent Class="weekly-details-panel">
+                                <div class="weekly-meta-row">
                                     <MudChip T="string"
                                              Size="Size.Small"
                                              Color="Color.Primary"
                                              Variant="Variant.Filled"
-                                             Style="font-size: 0.75rem; height: 26px;">
+                                             Class="weekly-time-chip">
                                         @localStart.ToString("HH:mm")
                                     </MudChip>
+
+                                    <MudText Typo="Typo.caption" Class="weekly-auditorium">
+                                        Zaal @showing.AuditoriumId
+                                    </MudText>
                                 </div>
 
-                                <MudDivider Class="my-2" />
+                                @if (genres.Any())
+                                {
+                                    <MudText Typo="Typo.caption" Class="weekly-info-text">
+                                        @string.Join(", ", genres.Take(2))
+                                    </MudText>
+                                }
 
-                                <MudStack Spacing="1">
-                                    <MudText Typo="Typo.caption"><b>Is 3D:</b> @(showing.Is3D ? "Ja" : "Nee")</MudText>
-                                    <MudText Typo="Typo.caption"><b>Movie ID:</b> @showing.MovieId</MudText>
-                                    <MudText Typo="Typo.caption"><b>Auditorium:</b> @showing.AuditoriumName</MudText>
-                                </MudStack>
+                                <div class="weekly-bottom-row">
+                                    @if (runtime.HasValue)
+                                    {
+                                        <MudText Typo="Typo.caption" Class="weekly-info-text">
+                                            @runtime min
+                                        </MudText>
+                                    }
+
+                                    <MudText Typo="Typo.caption" Class="weekly-info-text">
+                                        @(showing.Is3D ? "3D" : "2D")
+                                    </MudText>
+                                </div>
                             </MudCardContent>
                         </MudCard>
                     }
@@ -111,8 +153,8 @@ else
     }
 
     .day-column-header {
-        flex: 0 0 250px;
-        width: 250px;
+        flex: 0 0 200px;
+        width: 200px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -137,8 +179,8 @@ else
     }
 
     .day-column {
-        flex: 0 0 250px;
-        width: 250px;
+        flex: 0 0 200px;
+        width: 200px;
         display: flex;
         flex-direction: column;
         min-height: 260px;
@@ -148,14 +190,139 @@ else
     }
 
     .movie-card-weekly {
-        background-color: #D1D5DB !important;
-        border-radius: 12px;
-        transition: transform 0.2s;
+        background-color: #f0f0f0 !important;
+        border-radius: 8px;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        cursor: pointer;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
     }
 
     .movie-card-weekly:hover {
-        transform: translateY(-2px);
-        background-color: #E5E7EB !important;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        background-color: #ffffff !important;
+    }
+
+    .clickable-card {
+        cursor: pointer;
+    }
+
+    .weekly-card-inner {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .weekly-title-bar {
+        background: #06283a;
+        padding: 8px 10px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .weekly-title {
+        font-weight: 700;
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-size: 0.75rem;
+        line-height: 1.2;
+        text-align: center;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .weekly-poster-wrap {
+        width: 100%;
+        aspect-ratio: 2 / 3;
+        background: #1a1a1a;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .weekly-poster {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+
+    .movie-card-weekly:hover .weekly-poster {
+        transform: scale(1.05);
+    }
+
+    .weekly-poster-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #2a2a2a;
+    }
+
+    .weekly-details-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 10px !important;
+        background: #f7f7f7;
+        flex-grow: 1;
+    }
+
+    .weekly-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+
+    .weekly-time-chip {
+        font-weight: bold;
+        font-size: 0.75rem !important;
+        height: 24px !important;
+    }
+
+    .weekly-auditorium {
+        color: #1b6aa5;
+        font-weight: 600;
+        font-size: 0.7rem;
+    }
+
+    .weekly-info-text {
+        color: #555;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .weekly-bottom-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 4px;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .weekly-badge {
+        align-self: flex-start;
+        margin-top: 4px;
+        font-size: 0.68rem;
+        height: 20px;
+    }
+
+    .weekly-time-chip {
+        font-size: 0.68rem;
+        height: 20px;
     }
 
     .no-showings {
@@ -168,6 +335,9 @@ else
 @code {
     private List<ShowingDisplayResponse> _showings = new();
     private List<DateTime> _daysInWeek = new();
+    private readonly Dictionary<int, string?> _posterUrlsByMovieId = new();
+    private readonly Dictionary<int, int?> _runtimeByMovieId = new();
+    private readonly Dictionary<int, List<string>> _genreNamesByMovieId = new();
     private bool _loading = true;
     private bool _loadError;
 
@@ -191,6 +361,28 @@ else
         }
     }
 
+    private string? GetPosterUrl(int movieId)
+    {
+        return _posterUrlsByMovieId.TryGetValue(movieId, out var posterPath) && !string.IsNullOrWhiteSpace(posterPath)
+            ? $"https://image.tmdb.org/t/p/w500{posterPath}"
+            : null;
+    }
+
+    private int? GetRuntime(int movieId)
+    {
+        return _runtimeByMovieId.TryGetValue(movieId, out var runtime) ? runtime : null;
+    }
+
+    private List<string> GetGenreNames(int movieId)
+    {
+        return _genreNamesByMovieId.TryGetValue(movieId, out var genres) ? genres : [];
+    }
+
+    private void NavigateToShowingDetail(int movieId, int showingId)
+    {
+        Navigation.NavigateTo($"/showingdetail/{movieId}/{showingId}");
+    }
+
     private async Task LoadDataAsync()
     {
         _loading = true;
@@ -198,7 +390,6 @@ else
 
         try
         {
-            // Oorspronkelijke database-ophaalcode teruggezet:
             var allShowings = await ShowingApi.GetShowingDisplayAsync();
 
             var startDay = _daysInWeek.First().Date;
@@ -212,6 +403,29 @@ else
                 })
                 .OrderBy(s => s.StartsAt)
                 .ToList();
+
+            var movieIds = _showings.Select(s => s.MovieId).Distinct().ToList();
+
+            foreach (var movieId in movieIds)
+            {
+                var movie = await MovieApi.GetMovieByIdAsync(movieId);
+                _posterUrlsByMovieId[movieId] = movie?.PosterPath;
+                _runtimeByMovieId[movieId] = movie?.Runtime;
+
+                var genreNames = new List<string>();
+
+                if (movie?.GenresIds != null)
+                {
+                    foreach (var genreId in movie.GenresIds)
+                    {
+                        var genre = await MovieApi.GetGenreByIdAsync(genreId, "nl");
+                        if (genre != null)
+                            genreNames.Add(genre.Name);
+                    }
+                }
+
+                _genreNamesByMovieId[movieId] = genreNames;
+            }
         }
         catch (Exception ex)
         {
