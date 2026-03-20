@@ -56,14 +56,13 @@ public class OrderService : IOrderService
         var persistedTickets = new List<Ticket>();
         foreach (var reqTicket in request.Tickets)
         {
-            var ticket = new Ticket(
-                reqTicket.ShowingId,
-                reqTicket.ShowDateTime,
-                reqTicket.SeatNumber,
-                reqTicket.Price,
-                reqTicket.TicketType
-            )
+            var ticket = new Ticket
             {
+                ShowingId = reqTicket.ShowingId,
+                ShowDateTimeUtc = reqTicket.ShowDateTimeUtc.ToString("O"),
+                SeatNumber = reqTicket.SeatNumber,
+                Price = reqTicket.Price,
+                TicketType = reqTicket.TicketType,
                 PaymentStatus = paymentStatus
             };
 
@@ -111,7 +110,7 @@ public class OrderService : IOrderService
 
         return ResultOf<CreateOrderResponse>.Success(response);
     }
-    
+
     public async Task<ResultOf<CreateOrderResponse>> ConfirmPaymentAsync(int orderId)
     {
         if (orderId <= 0)
