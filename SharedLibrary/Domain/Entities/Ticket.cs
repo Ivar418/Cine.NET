@@ -9,7 +9,11 @@ public class Ticket
 
     [Column("shown_date_time_utc")]
     public string ShowDateTimeUtc
-    { get => _showDateTimeUtcUtc; init { if (!IsValidUtcTimestamp(value))
+    {
+        get => _showDateTimeUtcUtc;
+        init
+        {
+            if (!IsValidUtcTimestamp(value))
                 throw new ArgumentException("ShowDateTimeUtc must be a valid UTC timestamp with +00:00 offset.");
             _showDateTimeUtcUtc = value;
         }

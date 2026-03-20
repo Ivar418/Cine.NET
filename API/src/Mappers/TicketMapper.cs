@@ -17,7 +17,7 @@ public class TicketMapper
             Id = ticket.Id,
             ShowingId = ticket.ShowingId,
             MovieTitle = ticket.Showing?.Movie?.Title ?? "",
-            ShowDateTime = showDateTimeParse,
+            ShowDateTimeUtc = showDateTimeParse,
             SeatNumber = ticket.SeatNumber,
             TicketType = ticket.TicketType,
             Status = ticket.Status,
@@ -25,7 +25,7 @@ public class TicketMapper
             QrCodeGuid = ticket.QrCodeGuid,
             QrIsActive = ticket.QrIsActive,
             Price = ticket.Price,
-            PurchaseDate = ticket.PurchaseDate
+            PurchaseDateUtc = ticket.PurchaseDate
         };
     }
 
