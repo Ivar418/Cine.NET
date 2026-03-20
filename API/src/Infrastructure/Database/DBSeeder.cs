@@ -18,8 +18,7 @@ namespace API.Infrastructure.Database
 
     public static class DbSeeder
     {
-        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService, IShowingService showingService,
-            ITicketService ticketService, IPricingService pricingService, IAuditoriumRepository auditoriumRepository)
+        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService,IShowingService showingService, ITicketService ticketService,IPricingService pricingService, IAuditoriumService auditoriumService)
         {
             var movieEntities = new List<Movie>();
             if (!await db.Users.AnyAsync())
@@ -133,15 +132,15 @@ namespace API.Infrastructure.Database
                 };
                 foreach (var request in auditoriumsRequest)
                 {
-                    await auditoriumRepository.AddAuditoriumAsync(request);
+                    await auditoriumService.AddAuditoriumAsync(request);
                 }
             }
 
 
             if (!await db.Showings.AnyAsync())
             {
-                var movies = movieService.GetMoviesAsync("nl").Result.Value?.ToList();
-                var auditoriums = auditoriumRepository.GetAuditoriumsAsync().Result.Value?.ToList();
+                var movies =  movieService.GetMoviesAsync("nl").Result.Value?.ToList();
+                var auditoriums =  auditoriumService.GetAuditoriumsAsync().Result.Value?.ToList();
 
                 var showings = new List<Showing>();
                 var start = DateTimeOffset.UtcNow.Date.AddHours(18); // 18:00 start
