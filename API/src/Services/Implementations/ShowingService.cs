@@ -178,4 +178,15 @@ public class ShowingService : IShowingService
 
         return ResultOf<IReadOnlyList<ShowingResponse>>.Success(result.Value!.ToList());
     }
+
+    public async Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id)
+    {
+        var showing = _showingRepository.GetShowingAsync(id).Result.Value;
+
+        if (showing == null)
+            return ResultOf<ShowingStateDto>.Failure("Showing not found");
+
+        ShowingStateDto showingState = ShowingMapper.ToStateDto(showing, _reservationrepository);
+        return showingState == null ? ResultOf<ShowingStateDto>.Failure("ShowingState not found") : ResultOf<ShowingStateDto>.Success(showingState);
+    }
 }
