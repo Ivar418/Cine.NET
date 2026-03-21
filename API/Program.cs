@@ -44,6 +44,7 @@ builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
 builder.Services.AddScoped<IPricingConfigRepository, PricingConfigRepository>();
+builder.Services.AddScoped<IAuditoriumService, AuditoriumService>();
 builder.Services.AddScoped<ITicketRuleService, TicketRuleService>();
 
 // Monitoring: health check endpoint
@@ -172,13 +173,13 @@ using (var scope = app.Services.CreateScope())
     var showingService = services.GetRequiredService<IShowingService>();
     var ticketService = services.GetRequiredService<ITicketService>();
     var pricingService = services.GetRequiredService<IPricingService>();
-    var auditoriumRepository = services.GetRequiredService<IAuditoriumRepository>();
+    var auditoriumService = services.GetRequiredService<IAuditoriumService>();
 
 
     // Seed data
     try
     {
-        await DbSeeder.SeedAsync(db, movieService,showingService, ticketService,pricingService, auditoriumRepository);
+        await DbSeeder.SeedAsync(db, movieService,showingService, ticketService,pricingService, auditoriumService);
     }
     catch (Exception ex)
     {
