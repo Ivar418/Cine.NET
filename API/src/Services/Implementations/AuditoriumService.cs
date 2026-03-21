@@ -4,7 +4,7 @@ using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 
-namespace API.Repositories.Implementations;
+namespace API.Services.Implementations;
 
 /// <summary>
 /// Provides services for managing auditoriums, including operations such as retrieval, creation, updating,

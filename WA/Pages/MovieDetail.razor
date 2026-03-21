@@ -1,0 +1,167 @@
+﻿@page "/moviedetail/{MovieId:int}"
+@inject IMovieApiClient MovieApi
+@inject IShowingApi ShowingApi
+@inject NavigationManager Nav
+@using WA.Services.Http.Interfaces
+<link href="css/movie-detail.css" rel="stylesheet" />
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_movie == null)
+    {
+        <MudAlert Severity="Severity.Error">Movie not found.</MudAlert>
+    }
+    else
+    {
+        <MudPaper Elevation="3" Class="pa-6">
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudImage
+                        Src="@PosterUrl"
+                        Alt="@_movie.Title"
+                        ObjectFit="ObjectFit.Cover"
+                        Style="width: 100%; border-radius: 8px;" />
+                </MudItem>
+                <MudItem xs="12" md="8">
+
+                    <MudText
+                        Typo="Typo.h4"
+                        Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                        Class="mb-4">
+                        @_movie.Title
+                    </MudText>
+                    <div class="white-text">
+                        <MudText><strong>Runtime:</strong> @_movie.Runtime min</MudText>
+                        <MudText><strong>Release date:</strong> @_movie.ReleaseDate</MudText>
+                        <MudText><strong>Age indication:</strong> @(_movie.AgeIndication ?? "Unknown")</MudText>
+                        <MudText><strong>Language:</strong> @(_movie.SpokenLanguageName ?? "Unknown")</MudText>
+                        <MudText><strong>Genres:</strong> @(_genreNames.Any() ? string.Join(", ", _genreNames) : "Unknown")</MudText>
+                    </div>
+                    <MudText
+                        Typo="Typo.h5"
+                        Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                        Class="mb-3 mt-10">
+                        Description
+                    </MudText>
+                    <MudText class="white-text">@(_movie.About ?? "No description available.")</MudText>
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-6" />
+            
+            @if (!string.IsNullOrWhiteSpace(TrailerUrl))
+            {
+                <MudText Typo="Typo.h4" Style="color: var(--mud-palette-text-secondary); font-weight: 700;" Class="mb-3 mt-6">
+                    Trailer
+                </MudText>
+                <div class="trailer-wrapper mb-6">
+                    @if (_trailerPlaying)
+                    {
+                        <iframe
+                            src="@(TrailerUrl + "&autoplay=1")"
+                            title="YouTube trailer"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen>
+                        </iframe>
+                    }
+                    else
+                    {
+                        <div class="trailer-thumbnail" @onclick="PlayTrailer">
+                            <img src="@ThumbnailUrl" alt="Trailer thumbnail" />
+                            <div class="play-button">
+                                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Circle background -->
+                                    <circle cx="50" cy="50" r="48" fill="#4F4B4B" fill-opacity="0.85"/>
+                                    <!-- Triangle -->
+                                    <polygon points="40,30 40,70 70,50" fill="white"/>
+                                </svg>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </MudPaper>
+        
+        <MudPaper Elevation="3" Class="pa-6 mt-6">
+            <MudText Typo="Typo.h4"
+                     Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                     Class="mb-4">
+                Upcoming Showings
+            </MudText>
+
+            @if (!_showings.Any())
+            {
+                <MudText Class="white-text">No upcoming showings scheduled.</MudText>
+            }
+            else
+            {
+                @foreach (var day in _showings.GroupBy(s => s.StartsAt.LocalDateTime.Date).OrderBy(g => g.Key))
+                {
+                    <MudText Typo="Typo.h6"
+                             Class="mb-2 mt-4 white-text">
+                        @day.Key.ToString("dddd d MMMM", new System.Globalization.CultureInfo("nl-NL"))
+                    </MudText>
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;" class="mb-2">
+                        @foreach (var showing in day.OrderBy(s => s.StartsAt))
+                        {
+                            <MudButton Class="nav-button"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="@(() => Nav.NavigateTo($"/showingdetail/{showing.MovieId}/{showing.Id}"))">
+                                @showing.StartsAt.ToString("HH:mm")
+                            </MudButton>
+                        }
+                    </div>
+                }
+            }
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public int MovieId { get; set; }
+
+    private MovieResponse? _movie;
+    
+    private IReadOnlyList<ShowingResponse> _showings = [];
+    
+    private bool _loading = true;
+    
+    private bool _trailerPlaying = false;
+    
+    private void PlayTrailer() => _trailerPlaying = true;
+
+    private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterPath}";
+    
+    private string? TrailerUrl => string.IsNullOrWhiteSpace(_movie?.YoutubeTrailerKey)
+        ? null
+        : $"https://www.youtube.com/embed/{_movie.YoutubeTrailerKey}?modestbranding=1&rel=0";
+    
+    private string ThumbnailUrl => $"https://img.youtube.com/vi/{_movie?.YoutubeTrailerKey}/maxresdefault.jpg";
+    
+    private List<string> _genreNames = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _movie = await MovieApi.GetMovieByIdAsync(MovieId);
+
+        _showings = await ShowingApi.GetUpcomingShowingsByMovieIdAsync(MovieId);
+
+        if (_movie?.GenresIds != null)
+        {
+            foreach (var genreId in _movie.GenresIds)
+            {
+                var genre = await MovieApi.GetGenreByIdAsync(genreId, "nl");
+                if (genre != null)
+                    _genreNames.Add(genre.Name);
+            }
+        }
+
+        _loading = false;
+    }
+}
