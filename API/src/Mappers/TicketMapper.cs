@@ -12,10 +12,14 @@ public class TicketMapper
         {
             Id = ticket.Id,
             ShowingId = ticket.ShowingId,
-            MovieTitle = ticket.Showing.Movie.Title,
+            MovieTitle = ticket.Showing?.Movie?.Title ?? "",
             ShowDateTime = ticket.ShowDateTime,
             SeatNumber = ticket.SeatNumber,
+            TicketType = ticket.TicketType,
             Status = ticket.Status,
+            PaymentStatus = ticket.PaymentStatus,
+            QrCodeGuid = ticket.QrCodeGuid,
+            QrIsActive = ticket.QrIsActive,
             Price = ticket.Price,
             PurchaseDate = ticket.PurchaseDate
         };
@@ -28,6 +32,6 @@ public class TicketMapper
 
     public static Ticket ToEntity(TicketRequest request)
     {
-        return new Ticket(request.ShowingId, request.ShowDateTime, request.SeatNumber, request.Price);
+        return new Ticket(request.ShowingId, request.ShowDateTime, request.SeatNumber, request.Price, request.TicketType);
     }
 }

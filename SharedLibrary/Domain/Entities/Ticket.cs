@@ -8,10 +8,14 @@ public class Ticket
     public int ShowingId { get; set; }
     public DateTime ShowDateTime { get; set; }
     public string SeatNumber { get; set; } = string.Empty;
+    public string TicketType { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public string Status { get; set; } = "Active"; // Active, Used, Cancelled, Expired
+    public string PaymentStatus { get; set; } = "Pending"; // Pending, Paid, Failed, Cancelled
+    public string? QrCodeGuid { get; set; }
+    public bool QrIsActive { get; set; } = false;
     public DateTime PurchaseDate { get; set; }
-    
+
 
     // Navigation
     public Showing? Showing { get; set; }
@@ -59,13 +63,17 @@ public class Ticket
     }
 
     // --- Public constructor ---
-    public Ticket(int showingId, DateTime showDateTime, string seatNumber, decimal price)
+    public Ticket(int showingId, DateTime showDateTime, string seatNumber, decimal price, string ticketType)
     {
         ShowingId = showingId;
         ShowDateTime = showDateTime;
         SeatNumber = seatNumber;
         Price = price;
+        TicketType = ticketType;
         Status = "Active";
+        PaymentStatus = "Pending";
+        QrCodeGuid = Guid.NewGuid().ToString();
+        QrIsActive = false;
         PurchaseDate = DateTime.UtcNow;
         RowCreatedTimestampUtc = CurrentUtcTimestamp();
     }

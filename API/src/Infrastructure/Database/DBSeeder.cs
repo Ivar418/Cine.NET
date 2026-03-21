@@ -47,6 +47,16 @@ namespace API.Infrastructure.Database
                 await movieService.FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb();
             }
 
+            if (!await db.PaymentMethods.AnyAsync())
+            {
+                db.PaymentMethods.AddRange(
+                    new PaymentMethod { Code = "PIN", DisplayName = "PIN" },
+                    new PaymentMethod { Code = "IDEAL", DisplayName = "iDEAL" },
+                    new PaymentMethod { Code = "CREDITCARD", DisplayName = "Credit Card" }
+                );
+                await db.SaveChangesAsync(); 
+            }
+
             if (!await db.TicketTypes.AnyAsync())
             {
                 db.TicketTypes.AddRange(
@@ -148,6 +158,48 @@ namespace API.Infrastructure.Database
                 }
 
                 db.Showings.AddRange(showings);
+                await db.SaveChangesAsync(); // commit showings first so dummy order can reference one
+            }
+            
+            // Dummy order for API testing when no orders exist
+            if (!await db.Orders.AnyAsync())
+            {
+                var showing = await db.Showings.OrderBy(s => s.Id).FirstOrDefaultAsync();
+                if (showing != null)
+                {
+                    var ticket = new Ticket(
+                        showingId: showing.Id,
+                        showDateTime: showing.StartsAt.UtcDateTime,
+                        seatNumber: "A1",
+                        price: 9.50m,
+                        ticketType: "Adult"
+                    )
+                    {
+                        PaymentStatus = "Pending",
+                        QrIsActive = false
+                    };
+
+                    await db.Tickets.AddAsync(ticket);
+                    await db.SaveChangesAsync();
+
+                    var order = new Order
+                    {
+                        OrderCode = "DUMMYORDER001",
+                        CreatedAtUtc = DateTime.UtcNow,
+                        TotalAmount = ticket.Price,
+                        OrderType = "Reservation",
+                        PaymentStatus = "Pending",
+                        PaymentMethod = "IDEAL",
+                        IsPrinted = false,
+                        OrderTickets = new List<OrderTicket>
+                        {
+                            new OrderTicket { TicketId = ticket.Id, Ticket = ticket }
+                        }
+                    };
+
+                    await db.Orders.AddAsync(order);
+                    await db.SaveChangesAsync();
+                }
             }
 
             await db.SaveChangesAsync();
