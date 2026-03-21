@@ -41,6 +41,8 @@ public class ShowingService : IShowingService
             return ResultOf<ShowingsWithPricesResponse>.Failure(ticketTypesResult.Error!);
 
         var (adult, child, student, senior) = ticketTypesResult.Value;
+        
+
 
         return await BuildShowingResponseAsync(showing, adult, child, student, senior);
     }
