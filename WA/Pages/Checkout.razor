@@ -33,6 +33,8 @@
                             <MudText>
                                 Rij @seat.Row Stoel @seat.SeatNumber
                             </MudText>
+                            
+                            <MudSelect T="string" @bind-Value="seat.TicketType" Dense="true">
 
                             <MudSelectItem Value=@("Adult") Disabled="@(!showing.Prices.Adult.IsAvailable)">
                                 Adult €@showing.Prices.Adult.Price
@@ -49,6 +51,8 @@
                             <MudSelectItem Value=@("Senior") Disabled="@(!showing.Prices.Senior.IsAvailable)">
                                 Senior €@showing.Prices.Senior.Price
                             </MudSelectItem>
+                            
+                            </MudSelect>
 
                         </MudStack>
 
@@ -60,7 +64,59 @@
                 </MudButton>
 
             }
+            
+            
 
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2 d-block">
+
+                <MudList T="object" Dense="true">
+
+                    <MudListItem T="object">
+                        <MudText>
+                            Standaardprijs: €8,50
+                        </MudText>
+                        <MudText Typo="Typo.caption"  Style="font-style: italic;" Class="text-muted">
+                            (+ €0,50 bij films >120 min)
+                        </MudText>
+                    </MudListItem>
+
+                    <MudListItem T="object">
+                        <MudText>
+                            Kinderkorting: €1,50
+                        </MudText>
+                        <MudText Typo="Typo.caption"  Style="font-style: italic;" Class="text-muted">
+                            (t/m 11 jaar, alleen Nederlands gesproken kinderfilms vóór 18:00)
+                        </MudText>
+                    </MudListItem>
+
+                    <MudListItem T="object">
+                        <MudText>
+                            Studentenkorting: €1,50)
+                        </MudText>
+                        <MudText Typo="Typo.caption"  Style="font-style: italic;" Class="text-muted">
+                            (van ma t/m do op vertoon van studentenkaart)
+                        </MudText>
+                    </MudListItem>
+
+                    <MudListItem T="object">
+                        <MudText>
+                        65+ korting: €1,50
+                        </MudText>
+                        <MudText Typo="Typo.caption" Style="font-style: italic;" Class="text-muted">
+                            (van ma t/m do, exclusief vakanties/feestdagen)
+                        </MudText>
+                    </MudListItem>
+
+                    <MudListItem T="object">
+                        <MudText>
+                        3D toeslag: €2,50
+                        </MudText>
+                    </MudListItem>
+
+                </MudList>
+
+            </MudAlert>
+            
         </MudStep>
 
         <MudStep Label="Overzicht">
