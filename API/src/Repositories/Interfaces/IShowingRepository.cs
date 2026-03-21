@@ -13,5 +13,6 @@ namespace API.Repositories.Interfaces
         Task<Showing> UpdateShowingAsync(Showing Showing);
         Task<ResultOf<Showing>> DeleteShowingByIdAsync(int ShowingId);
         Task<ResultOf<ShowingDisplayResponse>> GetShowingDisplayByIdAsync(int id);
+        Task<ResultOf<ICollection<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId, DateTimeOffset cutoff);
     }
 }
