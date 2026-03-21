@@ -11,15 +11,18 @@ public class ShowingService : IShowingService
     private readonly IShowingRepository _showingRepository;
     private readonly IPricingService _pricingService;
     private readonly ITicketTypeService _ticketTypeService;
+    private readonly ITicketRuleService _ticketRuleService;
 
     public ShowingService(
         IShowingRepository repository,
         IPricingService pricingService,
-        ITicketTypeService ticketTypeService)
+        ITicketTypeService ticketTypeService,
+        ITicketRuleService ticketRuleService)
     {
         _showingRepository = repository;
         _pricingService = pricingService;
         _ticketTypeService = ticketTypeService;
+        _ticketRuleService = ticketRuleService;
     }
 
     // /{id}/prices 
@@ -110,35 +113,47 @@ public class ShowingService : IShowingService
         TicketType student,
         TicketType senior)
     {
-        var adultPrice = await _pricingService.CalculatePriceAsync(showing.Movie, showing.IsThreeD, adult);
-        if (adultPrice.IsFailure)
-            return ResultOf<ShowingsWithPricesResponse>.Failure(adultPrice.Error!);
+        var now = DateTime.Now;
 
-        var childPrice = await _pricingService.CalculatePriceAsync(showing.Movie, showing.IsThreeD, child);
-        if (childPrice.IsFailure)
-            return ResultOf<ShowingsWithPricesResponse>.Failure(childPrice.Error!);
-
-        var studentPrice = await _pricingService.CalculatePriceAsync(showing.Movie, showing.IsThreeD, student);
-        if (studentPrice.IsFailure)
-            return ResultOf<ShowingsWithPricesResponse>.Failure(studentPrice.Error!);
-
-        var seniorPrice = await _pricingService.CalculatePriceAsync(showing.Movie, showing.IsThreeD, senior);
-        if (seniorPrice.IsFailure)
-            return ResultOf<ShowingsWithPricesResponse>.Failure(seniorPrice.Error!);
-
-        return ResultOf<ShowingsWithPricesResponse>.Success(new ShowingsWithPricesResponse
+        async Task<TicketPriceResponse> Build(TicketType type)
         {
-            ShowingId = showing.Id,
-            MovieTitle = showing.Movie.Title,
-            StartsAt = showing.StartsAt,
-            Prices = new ShowingPricesResponse
+            var priceResult = await _pricingService.CalculatePriceAsync(
+                showing.Movie,
+                showing.IsThreeD,
+                type);
+
+            if (priceResult.IsFailure)
+                throw new Exception(priceResult.Error);
+
+            var isAvailable = _ticketRuleService.IsTicketTypeAvailable(type, showing, now);
+
+            return new TicketPriceResponse
             {
-                Adult = adultPrice.Value!,
-                Child = childPrice.Value!,
-                Student = studentPrice.Value!,
-                Senior = seniorPrice.Value!
-            }
-        });
+                Price = priceResult.Value!,
+                IsAvailable = isAvailable
+            };
+        }
+
+        try
+        {
+            return ResultOf<ShowingsWithPricesResponse>.Success(new ShowingsWithPricesResponse
+            {
+                ShowingId = showing.Id,
+                MovieTitle = showing.Movie.Title,
+                StartsAt = showing.StartsAt,
+                Prices = new ShowingPricesResponse
+                {
+                    Adult = await Build(adult),
+                    Child = await Build(child),
+                    Student = await Build(student),
+                    Senior = await Build(senior)
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            return ResultOf<ShowingsWithPricesResponse>.Failure(ex.Message);
+        }
     }
     
     /// <summary>
