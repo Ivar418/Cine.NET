@@ -8,4 +8,6 @@ public interface IShowingService
     Task<ResultOf<List<ShowingsWithPricesResponse>>> GetShowingsAsync();
 
     Task<ResultOf<ShowingsWithPricesResponse>> GetShowingAsync(int id);
+    
+    Task<ResultOf<IReadOnlyList<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId);
 }
