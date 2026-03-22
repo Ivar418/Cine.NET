@@ -17,16 +17,24 @@
 
         <MudStep Label="Tickets">
 
-            @if (showing == null)
+            @if (isLoading)
             {
                 <MudProgressCircular Indeterminate="true"/>
             }
+            else if (errorMessage != null)
+            {
+                <MudAlert Severity="Severity.Warning">
+                    Er zijn geen films gevonden
+                </MudAlert>
+            }
+            else if (showing == null)
+            {
+                <MudAlert Severity="Severity.Info">
+                    Er zijn geen films beschikbaar
+                </MudAlert>
+            }
             else
             {
-                <MudPaper Class="pa-4 mb-4">
-                    <MudText Typo="Typo.h6">@Summary.MovieTitle</MudText>
-                    <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
-                </MudPaper>
 
                 @foreach (var seat in seats)
                 {
@@ -37,81 +45,100 @@
                             <MudText>
                                 Rij @seat.Row Stoel @seat.SeatNumber
                             </MudText>
+                            
+                            <MudSelect T="string" @bind-Value="seat.TicketType" Dense="true">
 
-                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                <MudSelect T="string" @bind-Value="seat.TicketType">
+                            <MudSelectItem Value=@("Adult") Disabled="@(!showing.Prices.Adult.IsAvailable)">
+                                Adult €@showing.Prices.Adult.Price
+                            </MudSelectItem>
 
-                                    <MudSelectItem Value='@("Adult")'>
-                                        Adult €@(showing?.Prices.Adult ?? 0)
-                                    </MudSelectItem>
+                            <MudSelectItem Value=@("Student") Disabled="@(!showing.Prices.Student.IsAvailable)">
+                                Student €@showing.Prices.Student.Price
+                            </MudSelectItem>
 
-                                    <MudSelectItem Value='@("Student")'>
-                                        Student €@(showing?.Prices.Student ?? 0)
-                                    </MudSelectItem>
+                            <MudSelectItem Value=@("Child") Disabled="@(!showing.Prices.Child.IsAvailable)">
+                                Child €@showing.Prices.Child.Price
+                            </MudSelectItem>
 
-                                    <MudSelectItem Value='@("Child")'>
-                                        Child €@(showing?.Prices.Child ?? 0)
-                                    </MudSelectItem>
-
-                                    <MudSelectItem Value='@("Senior")'>
-                                        Senior €@(showing?.Prices.Senior ?? 0)
-                                    </MudSelectItem>
-
-                                </MudSelect>
-
-                                <MudText Typo="Typo.body1">
-                                    €@GetSeatPrice(seat)
-                                </MudText>
-                            </MudStack>
+                            <MudSelectItem Value=@("Senior") Disabled="@(!showing.Prices.Senior.IsAvailable)">
+                                Senior €@showing.Prices.Senior.Price
+                            </MudSelectItem>
+                            
+                            </MudSelect>
 
                         </MudStack>
 
                     </MudPaper>
                 }
 
-                <MudPaper Class="pa-4 mb-4">
-                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h6">Totaal</MudText>
-                        <MudText Typo="Typo.h6">€@Summary.TotalPrice</MudText>
-                    </MudStack>
-                </MudPaper>
-
-                <MudButton OnClick="@(()=>step++)" Disabled="@(!CanContinueToOverview)">
+                <MudButton OnClick="NextStep">
                     Volgende
                 </MudButton>
 
             }
+            
+            
 
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2 d-block">
+
+                <MudList T="object" Dense="true">
+
+                    <MudListItem T="object">
+                        <MudText>
+                            Standaardprijs: €8,50
+                        </MudText>
+                        <MudText Typo="Typo.caption"  Style="font-style: italic;" Class="text-muted">
+                            (+ €0,50 bij films >120 min)
+                        </MudText>
+                    </MudListItem>
+
+                    <MudListItem T="object">
+                        <MudText>
+                            Kinderkorting: €1,50
+                        </MudText>
+                        <MudText Typo="Typo.caption"  Style="font-style: italic;" Class="text-muted">
+                            (t/m 11 jaar, alleen Nederlands gesproken kinderfilms vóór 18:00)
+                        </MudText>
+                    </MudListItem>
+
+                    <MudListItem T="object">
+                        <MudText>
+                            Studentenkorting: €1,50)
+                        </MudText>
+                        <MudText Typo="Typo.caption"  Style="font-style: italic;" Class="text-muted">
+                            (van ma t/m do op vertoon van studentenkaart)
+                        </MudText>
+                    </MudListItem>
+
+                    <MudListItem T="object">
+                        <MudText>
+                        65+ korting: €1,50
+                        </MudText>
+                        <MudText Typo="Typo.caption" Style="font-style: italic;" Class="text-muted">
+                            (van ma t/m do, exclusief vakanties/feestdagen)
+                        </MudText>
+                    </MudListItem>
+
+                    <MudListItem T="object">
+                        <MudText>
+                        3D toeslag: €2,50
+                        </MudText>
+                    </MudListItem>
+
+                </MudList>
+
+            </MudAlert>
+            
         </MudStep>
 
-        <MudStep Label="Overzicht">
+        <MudStep Label="Overzicht" Disabled="@(!IsTicketSelectionValid())">
 
-            <MudPaper Class="pa-4 mb-4">
-                <MudText Typo="Typo.h6">Boekingsoverzicht</MudText>
-                <MudText Typo="Typo.body2">@Summary.MovieTitle</MudText>
-                <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
-            </MudPaper>
-
-            @foreach (var seat in Summary.Lines)
+            @foreach (var seat in seats)
             {
-                <MudPaper Class="pa-3 mb-2">
-                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudText>
-                            Rij @seat.Row Stoel @seat.SeatNumber - @seat.TicketType
-                        </MudText>
-                        <MudText>
-                            €@GetSeatPrice(seat)
-                        </MudText>
-                    </MudStack>
-                </MudPaper>
+                <MudText>
+                    Rij @seat.Row Stoel @seat.SeatNumber - @seat.TicketType
+                </MudText>
             }
-
-            <MudPaper Class="pa-4 mt-4">
-                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                    <MudText Typo="Typo.h6">Totaal</MudText>
-                    <MudText Typo="Typo.h6">€@Summary.TotalPrice</MudText>
-                </MudStack>
-            </MudPaper>
 
         </MudStep>
 
