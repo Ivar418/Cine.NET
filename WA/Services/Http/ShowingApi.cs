@@ -54,6 +54,15 @@ public class ShowingApi : IShowingApi
             return null;
         }
     }
+    
+    public async Task<IReadOnlyList<ShowingDisplayResponse>> GetShowingDisplayAsync()
+    {
+        var result = await _http.GetFromJsonAsync<List<ShowingDisplayResponse>>(
+            $"{BasePath}/details"
+        );
+ 
+        return result ?? [];
+    }
 
     public async Task<ShowingsWithPricesResponse?> GetShowingPricesAsync(int showingId)
     {

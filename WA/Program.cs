@@ -37,6 +37,7 @@ builder.Services.AddScoped<IUserApi, UserApi>();
 builder.Services.AddScoped<LayoutStateService>();
 builder.Services.AddScoped<IMovieApiClient, MovieApiClient>();
 builder.Services.AddScoped<IShowingApi, ShowingApi>();
+builder.Services.AddScoped<IAuditoriumApi, AuditoriumApi>();
 builder.Services.AddScoped<ISeatFinderApiClient, SeatFinderApiService>();
 
 await builder.Build().RunAsync();

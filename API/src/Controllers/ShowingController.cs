@@ -228,5 +228,24 @@ namespace API.Controllers
                 _ => StatusCode(500, new { error = "Unexpected result" })
             };
         }
+        
+        [HttpGet("details")]
+        public async Task<IActionResult> GetShowingDisplay()
+        {
+            try
+            {
+                var result = await _ShowingRepository.GetShowingDisplayAsync();
+                return result switch
+                {
+                    { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                    { IsSuccess: true } => Ok(result.Value),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
+        }
     }
 }

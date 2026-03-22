@@ -124,7 +124,7 @@
                     </MudText>
                 </MudStack>
 
-                <SeatGrid Auditorium="@(new AuditoriumDto(_state.Showing.Auditorium.Id, _state.Showing.Auditorium.Name, _state.Showing.Auditorium.Rows))"
+                <SeatGrid Auditorium="@(new AuditoriumDto(_state.Showing.Auditorium.Id, _state.Showing.Auditorium.Name, _state.Showing.GetLayoutSnapshot()))"
                           AllSeats="@_state.AllSeats"
                           OccupiedKeys="@_state.OccupiedKeys"
                           SuggestedKeys="@_suggestedKeys"

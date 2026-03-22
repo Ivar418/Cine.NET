@@ -18,22 +18,22 @@ namespace API.Repositories.Implementations
         {
             _db = db;
         }
-        public async Task<Showing> AddShowingAsync(CreateShowingRequest Showing)
+        async Task<Showing> IShowingRepository.AddShowingAsync(CreateShowingRequest showingRequest)
         {
-            Console.WriteLine($"Adding Showing of movie: {Showing.MovieId}");
+            Console.WriteLine($"Adding Showing of movie: {showingRequest.MovieId}");
             Showing newShowing = new Showing
             {
-                MovieId = Showing.MovieId,
-                AuditoriumId = Showing.AuditoriumId,
-                StartsAt = Showing.StartsAt
+                MovieId = showingRequest.MovieId,
+                AuditoriumId = showingRequest.AuditoriumId,
+                StartsAt = showingRequest.StartsAt,
+                IsThreeD = showingRequest.Is3D,
             };
-            Auditorium auditorium = _db.Auditoriums.FirstOrDefault(a => a.Id == Showing.AuditoriumId);
-
+            Auditorium auditorium = _db.Auditoriums.FirstOrDefault(a => a.Id == showingRequest.AuditoriumId);
+            Movie movie = _db.Movies.FirstOrDefault(m => m.Id == showingRequest.MovieId);
             if (auditorium == null)
             {
-                throw new Exception($"Auditorium with id {Showing.AuditoriumId} not found.");
+                throw new Exception($"Auditorium with id {showingRequest.AuditoriumId} not found.");
             }
-            //auditorium.Showings.Add(newShowing);
             newShowing.SetLayoutSnapshot(auditorium.GetRows());
 
             var result = await _db.Showings.AddAsync(newShowing);
@@ -160,6 +160,31 @@ namespace API.Repositories.Implementations
             catch (Exception e)
             {
                 return ResultOf<ICollection<ShowingResponse>>.Failure(e.Message);
+            }
+        }
+        
+        async Task<ResultOf<ICollection<ShowingDisplayResponse>>> IShowingRepository.GetShowingDisplayAsync()
+        {
+            try
+            {
+                var showings = await _db.Showings
+                    .Select(s => new ShowingDisplayResponse
+                    {
+                        Id = s.Id,
+                        MovieId = s.MovieId,
+                        AuditoriumId = s.AuditoriumId,
+                        MovieTitle = s.Movie.Title,
+                        // AuditoriumName = s.Auditorium.Name,
+                        Is3D = s.IsThreeD,
+                        StartsAt = s.StartsAt
+                    })
+                    .ToListAsync();
+ 
+                return ResultOf<ICollection<ShowingDisplayResponse>>.Success(showings);
+            }
+            catch (Exception e)
+            {
+                return ResultOf<ICollection<ShowingDisplayResponse>>.Failure(e.Message);
             }
         }
     }

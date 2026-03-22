@@ -1,0 +1,211 @@
+@page "/today"
+@using SharedLibrary.DTOs.Responses
+@using WA.Services.Http.Interfaces
+@inject IShowingApi ShowingApi
+@inject IMovieApiClient MovieApi
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@using WA.Layout
+@layout MainLayout
+
+<PageTitle>Movies Today</PageTitle>
+
+<HeadContent>
+    <link rel="stylesheet" href="css/moviestoday.css" />
+</HeadContent>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
+    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">Movies Today</MudText>
+    <MudText Typo="Typo.h6" Style="color: #03DAC6;">@DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm")</MudText>
+</MudStack>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+else if (_loadError)
+{
+    <MudAlert Severity="Severity.Error">Failed to load data. Please try again.</MudAlert>
+}
+else if (_showings.Count == 0)
+{
+    <MudAlert Severity="Severity.Info">No showings found for today.</MudAlert>
+}
+else
+{
+    <div class="today-showings-list">
+        @foreach (var showing in _showings.OrderBy(s => s.StartsAt))
+        {
+            var localStart = showing.StartsAt.ToLocalTime();
+            var posterUrl = GetPosterUrl(showing.MovieId);
+            var runtime = GetRuntime(showing.MovieId);
+            var genres = GetGenreNames(showing.MovieId);
+
+            <MudCard Elevation="4" Class="movie-card-today">
+                <div class="movie-card-inner">
+                    <div class="movie-poster-panel">
+                        @if (!string.IsNullOrWhiteSpace(posterUrl))
+                        {
+                            <MudImage Src="@posterUrl"
+                                      Alt="@showing.MovieTitle"
+                                      Class="movie-poster" />
+                        }
+                        else
+                        {
+                            <div class="movie-poster-placeholder">
+                                <MudText Typo="Typo.caption" Align="Align.Center" Style="color: #666;">
+                                    No poster
+                                </MudText>
+                            </div>
+                        }
+                    </div>
+
+                    <MudCardContent Class="movie-details-panel">
+                        <div class="movie-title-bar">
+                            <MudText Typo="Typo.subtitle1" Class="movie-title">
+                                @showing.MovieTitle
+                            </MudText>
+                        </div>
+
+                        <div class="movie-meta">
+                            <MudText Typo="Typo.body2" Style="color: #1b6aa5;">
+                                Engels/ Nederlandse ondertiteling
+                            </MudText>
+
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mt-2">
+                                <MudText Typo="Typo.body2" Style="color: #1b6aa5;">
+                                    Zaal @showing.AuditoriumId
+                                </MudText>
+                                <MudText Typo="Typo.body2" Style="color: #1b6aa5;">•</MudText>
+                                <MudText Typo="Typo.body2" Style="color: #1b6aa5;">
+                                    @localStart.ToString("HH:mm")
+                                </MudText>
+                            </MudStack>
+
+                            @if (runtime.HasValue)
+                            {
+                                <MudText Typo="Typo.body2" Class="mt-2" Style="color: #1b6aa5;">
+                                    Duur: @runtime min
+                                </MudText>
+                            }
+
+                            @if (genres.Any())
+                            {
+                                <MudText Typo="Typo.body2" Class="mt-2" Style="color: #1b6aa5;">
+                                    Genres: @string.Join(", ", genres)
+                                </MudText>
+                            }
+                        </div>
+
+                        <div class="movie-footer">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="w-100">
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Color="Color.Primary"
+                                         Variant="Variant.Filled">
+                                    @(showing.Is3D ? "3D" : "2D")
+                                </MudChip>
+
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => NavigateToShowingDetail(showing.MovieId, showing.Id))">
+                                    Details
+                                </MudButton>
+                            </MudStack>
+                        </div>
+                    </MudCardContent>
+                </div>
+            </MudCard>
+        }
+    </div>
+}
+
+@code {
+    private List<ShowingDisplayResponse> _showings = new();
+    private readonly Dictionary<int, string?> _posterUrlsByMovieId = new();
+    private readonly Dictionary<int, int?> _runtimeByMovieId = new();
+    private readonly Dictionary<int, List<string>> _genreNamesByMovieId = new();
+    private bool _loading = true;
+    private bool _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private string? GetPosterUrl(int movieId)
+    {
+        return _posterUrlsByMovieId.TryGetValue(movieId, out var posterPath) && !string.IsNullOrWhiteSpace(posterPath)
+            ? $"https://image.tmdb.org/t/p/w500{posterPath}"
+            : null;
+    }
+
+    private int? GetRuntime(int movieId)
+    {
+        return _runtimeByMovieId.TryGetValue(movieId, out var runtime) ? runtime : null;
+    }
+
+    private List<string> GetGenreNames(int movieId)
+    {
+        return _genreNamesByMovieId.TryGetValue(movieId, out var genres) ? genres : [];
+    }
+
+    private void NavigateToShowingDetail(int movieId, int showingId)
+    {
+        Navigation.NavigateTo($"/showingdetail/{movieId}/{showingId}");
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        _loadError = false;
+
+        try
+        {
+            var allShowings = await ShowingApi.GetShowingDisplayAsync();
+
+            var today = DateTime.Today;
+            _showings = allShowings
+                .Where(s => s.StartsAt.ToLocalTime().Date == today)
+                .OrderBy(s => s.StartsAt)
+                .ToList();
+
+            var movieIds = _showings
+                .Select(s => s.MovieId)
+                .Distinct()
+                .ToList();
+
+            foreach (var movieId in movieIds)
+            {
+                var movie = await MovieApi.GetMovieByIdAsync(movieId);
+                _posterUrlsByMovieId[movieId] = movie?.PosterPath;
+                _runtimeByMovieId[movieId] = movie?.Runtime;
+
+                var genreNames = new List<string>();
+
+                if (movie?.GenresIds != null)
+                {
+                    foreach (var genreId in movie.GenresIds)
+                    {
+                        var genre = await MovieApi.GetGenreByIdAsync(genreId, "nl");
+                        if (genre != null)
+                            genreNames.Add(genre.Name);
+                    }
+                }
+
+                _genreNamesByMovieId[movieId] = genreNames;
+            }
+        }
+        catch (Exception ex)
+        {
+            _loadError = true;
+            Console.WriteLine($"Error loading data: {ex.Message}");
+            Snackbar.Add($"Failed to load data: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

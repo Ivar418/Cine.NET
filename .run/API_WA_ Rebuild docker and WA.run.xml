@@ -12,7 +12,8 @@
     <option name="AUTO_ATTACH_CHILDREN" value="0" />
     <option name="MIXED_MODE_DEBUG" value="0" />
     <method v="2">
-      <option name="Build" />
+      <option name="Build Solution" enabled="true" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="API: Rebuild docker" run_configuration_type="ShConfigurationType" />
     </method>
   </configuration>
 </component>

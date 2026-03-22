@@ -20,25 +20,13 @@ namespace API.Mappers
         // Async implementation that properly awaits the repository call
         public static async Task<ShowingStateDto> ToStateDtoAsync(this Showing showing, IReservationRepository reservationRepository)
         {
-            // 1. ShowingDto
-            var showingDto = new ShowingDto(
-                showing.Id,
-                showing.Movie,
-                new AuditoriumDto(
-                    showing.Auditorium.Id,
-                    showing.Auditorium.Name,
-                    showing.Auditorium.GetRows()
-                ),
-                showing.StartsAt
-            );
-
             var rows = showing.GetLayoutSnapshot();
             var allSeats = ZoneCalculator.BuildSeatMap(rows);
             var occupied = await reservationRepository.GetOccupiedKeysAsync(showing.Id) ?? new HashSet<string>();
 
 
             return new ShowingStateDto(
-                showingDto,
+                showing,
                 allSeats,
                 occupied
             );
