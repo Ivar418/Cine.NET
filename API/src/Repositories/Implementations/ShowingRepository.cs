@@ -25,7 +25,7 @@ namespace API.Repositories.Implementations
                 AuditoriumId = Showing.AuditoriumId,
                 StartsAt = Showing.StartsAt
             };
-            Auditorium auditorium = _db.Auditoriums.FirstOrDefault(a => a.Id == Showing.AuditoriumId);
+            var auditorium = _db.Auditoriums.FirstOrDefault(a => a.Id == Showing.AuditoriumId);
 
             if (auditorium == null)
             {

@@ -87,7 +87,7 @@ public class MoviesController : ControllerBase
             return result switch
             {
                 { IsFailure: true, Error: "Movie not found" } => NotFound($"Movie with TmdbId {tmdbId} not found"),
-                { IsSuccess: true } => Ok($"Movie with tmdbId {tmdbId} and title {result.Value.Title} deleted"),
+                { IsSuccess: true } => Ok($"Movie with tmdbId {tmdbId} and title {result.Value?.Title ?? "Unknown"} deleted"),
                 _ => StatusCode(500, new { error = "Unexpected result" })
             };
         }

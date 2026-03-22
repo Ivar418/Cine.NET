@@ -176,7 +176,7 @@ namespace API.Controllers
                 var result = await _ShowingRepository.AddShowingAsync(new CreateShowingRequest(movieId, auditoriumId, startsAt));
                 return Ok(result);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode(500, new { error = "An error occurred" });
             }

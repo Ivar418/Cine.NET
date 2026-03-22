@@ -4,7 +4,7 @@ public class ResultOf<T>
 {
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
-    
+
     public T? Value { get; }
     public string? Error { get; }
     public IReadOnlyDictionary<string, string[]>? ValidationErrors { get; }
@@ -23,7 +23,12 @@ public class ResultOf<T>
 
     // Successful result with a value
     public static ResultOf<T> Success(T value)
-        => new ResultOf<T>(isSuccess: true, value: value, error: null);
+    {
+        if (value is null)
+            throw new ArgumentNullException(nameof(value), "Success value cannot be null");
+
+        return new ResultOf<T>(isSuccess: true, value: value, error: null);
+    }
 
     // Failure due to error
     public static ResultOf<T> Failure(string error)

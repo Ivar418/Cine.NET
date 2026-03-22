@@ -28,7 +28,8 @@ public class MovieService : IMovieService
                 var movie = await AddMovieFromTmdbAsync(tmdbId, informationLanguage);
                 if (movie.IsSuccess)
                 {
-                    listOfAddedMovies.Add(movie.Value);
+                    //Can be ! because the result off class already checks for null
+                    listOfAddedMovies.Add(movie.Value!);
                 }
             }
             catch (Exception ex)

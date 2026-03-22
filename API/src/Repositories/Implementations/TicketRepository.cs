@@ -27,8 +27,8 @@ public class TicketRepository: ITicketRepository
 
     public async Task<IReadOnlyList<Ticket>> GetTicketsByShowingIdAsync(int showingId)
         => await _db.Tickets.AsNoTracking()
-            .Where(t => t.ShowingId == showingId)
-            .Include(t => t.Showing.Movie)
+            .Where(ticket => ticket.ShowingId == showingId)
+            .Include(ticket => ticket.Showing.Movie)
             .ToListAsync();
 
     public async Task AddAsync(Ticket ticket)

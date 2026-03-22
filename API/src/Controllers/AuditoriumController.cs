@@ -125,7 +125,7 @@ namespace API.Controllers
                 var result = await _AuditoriumService.AddAuditoriumAsync(new CreateAuditoriumRequest(name, rows));
                 return Ok(result);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode(500, new { error = "An error occurred" });
             }

@@ -150,7 +150,7 @@ namespace API.Infrastructure.Database
                     showings.Add(new Showing
                     {
                         MovieId = movies[i].Id,
-                        AuditoriumId = auditoriums[i % auditoriums.Count].Id,
+                        AuditoriumId = auditoriums![i % auditoriums.Count].Id,
                         StartsAt = start.AddHours(i * 2), // elke 2 uur
                         IsThreeD = (i % 2 == 0), // om en om 3D
                         AuditoriumLayoutSnapshot = auditoriums[i].RowConfigJson // Sla de auditorium layout op als JSON string in de showing
