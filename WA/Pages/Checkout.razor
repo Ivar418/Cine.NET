@@ -17,9 +17,21 @@
 
         <MudStep Label="Tickets">
 
-            @if (showing == null)
+            @if (isLoading)
             {
                 <MudProgressCircular Indeterminate="true"/>
+            }
+            else if (errorMessage != null)
+            {
+                <MudAlert Severity="Severity.Warning">
+                    Er zijn geen films gevonden
+                </MudAlert>
+            }
+            else if (showing == null)
+            {
+                <MudAlert Severity="Severity.Info">
+                    Er zijn geen films beschikbaar
+                </MudAlert>
             }
             else
             {
@@ -59,7 +71,7 @@
                     </MudPaper>
                 }
 
-                <MudButton OnClick="@(()=>step++)">
+                <MudButton OnClick="NextStep">
                     Volgende
                 </MudButton>
 
@@ -119,7 +131,7 @@
             
         </MudStep>
 
-        <MudStep Label="Overzicht">
+        <MudStep Label="Overzicht" Disabled="@(!IsTicketSelectionValid())">
 
             @foreach (var seat in seats)
             {

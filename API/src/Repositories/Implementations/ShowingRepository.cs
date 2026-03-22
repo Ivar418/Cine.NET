@@ -50,7 +50,7 @@ namespace API.Repositories.Implementations
                 .FirstOrDefaultAsync(s => s.Id == id);
             
             return showing == null
-                ? ResultOf<Showing>.Failure("Showing not found")
+                ? ResultOf<Showing>.Failure("NotFound")
                 : ResultOf<Showing>.Success(showing);
         }
 
