@@ -26,6 +26,15 @@ public partial class Checkout
 
     protected ShowingsWithPricesResponse? showing;
 
+    protected BookingSummary Summary => new()
+    {
+        MovieTitle = showing?.MovieTitle ?? string.Empty,
+        StartsAt = showing?.StartsAt ?? default,
+        Lines = seats,
+        TotalPrice = seats.Sum(GetSeatPrice)
+    };
+    
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -59,4 +68,21 @@ public partial class Checkout
 
         step++;
     }
+
+    protected decimal GetSeatPrice(TicketSelection seat)
+    {
+        if (showing is null || string.IsNullOrWhiteSpace(seat.TicketType))
+            return 0m;
+
+        return seat.TicketType switch
+        {
+            "Adult" => showing.Prices.Adult,
+            "Student" => showing.Prices.Student,
+            "Child" => showing.Prices.Child,
+            "Senior" => showing.Prices.Senior,
+            _ => 0m
+        };
+    }
+
+    protected bool CanContinueToOverview => seats.All(seat => !string.IsNullOrWhiteSpace(seat.TicketType));
 }

@@ -40,10 +40,13 @@ builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
 builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IShowingService, ShowingService>();
 builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<IPricingConfigRepository, PricingConfigRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
-builder.Services.AddScoped<IPricingConfigRepository, PricingConfigRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderPdfService, OrderPdfService>();
 builder.Services.AddScoped<IAuditoriumService, AuditoriumService>();
 builder.Services.AddScoped<ITicketRuleService, TicketRuleService>();
 
