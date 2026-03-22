@@ -1,10 +1,11 @@
 ﻿@page "/seat-finder"
 @using SharedLibrary.DTOs.Models
+@using WA.Components
 @using WA.Services.Http
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @implements IDisposable
-@inject SeatFinderApiService Api
+@inject ISeatFinderApiClient Api
 
 <PageTitle>Cinema Reservering</PageTitle>
 
@@ -28,8 +29,14 @@
                                    Placeholder="Kies een voorstelling…">
                             @foreach (var s in _Showings)
                             {
+                                if (s is null)
+                                    continue;
+
                                 <MudSelectItem Value="(int?)s.Id">
-                                    @s.Movie.Title — @s.StartsAt.LocalDateTime.ToString("dd MMM HH:mm") (@s.Auditorium.Name)
+                                    @(s.Movie?.Title ?? "Onbekende film")
+                                    —
+                                    @(s.StartsAt.LocalDateTime.ToString("dd MMM HH:mm"))
+                                    (@(s.Auditorium?.Name ?? "Onbekende zaal"))
                                 </MudSelectItem>
                             }
                         </MudSelect>

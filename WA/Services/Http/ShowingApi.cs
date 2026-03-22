@@ -66,8 +66,25 @@ public class ShowingApi : IShowingApi
 
     public async Task<ShowingsWithPricesResponse?> GetShowingPricesAsync(int showingId)
     {
-        return await _http.GetFromJsonAsync<ShowingsWithPricesResponse>(
-            $"api/showings/{showingId}/prices"
-        );
+        var result = await _http.GetFromJsonAsync<ShowingsWithPricesResponse>(
+            $"api/showings/{showingId}/prices");
+
+        return result;
+    }
+    
+    public async Task<IReadOnlyList<ShowingResponse>> GetUpcomingShowingsByMovieIdAsync(int movieId)
+    {
+        try
+        {
+            var result = await _http.GetFromJsonAsync<List<ShowingResponse>>(
+                $"{BasePath}/movie/{movieId}/upcoming"
+            );
+            return result ?? [];
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[ShowingApi] GetUpcomingShowingsByMovieId({movieId}) failed: {ex.Message}");
+            return [];
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace API.Infrastructure.Database
 
     public static class DbSeeder
     {
-        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService,IShowingService showingService, ITicketService ticketService,IPricingService pricingService, IAuditoriumRepository auditoriumRepository)
+        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService,IShowingService showingService, ITicketService ticketService,IPricingService pricingService, IAuditoriumService auditoriumService)
         {
             var movieEntities = new List<Movie>();
             if (!await db.Users.AnyAsync())
@@ -45,6 +45,16 @@ namespace API.Infrastructure.Database
 
                 // Fill the genres table with all genres from TMDB for all specified languages (en, nl)
                 await movieService.FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb();
+            }
+
+            if (!await db.PaymentMethods.AnyAsync())
+            {
+                db.PaymentMethods.AddRange(
+                    new PaymentMethod { Code = "PIN", DisplayName = "PIN" },
+                    new PaymentMethod { Code = "IDEAL", DisplayName = "iDEAL" },
+                    new PaymentMethod { Code = "CREDITCARD", DisplayName = "Credit Card" }
+                );
+                await db.SaveChangesAsync();
             }
 
             if (!await db.TicketTypes.AnyAsync())
@@ -122,7 +132,7 @@ namespace API.Infrastructure.Database
                 };
                 foreach (var request in auditoriumsRequest)
                 {
-                    await auditoriumRepository.AddAuditoriumAsync(request);
+                    await auditoriumService.AddAuditoriumAsync(request);
                 }
             }
 
@@ -130,7 +140,7 @@ namespace API.Infrastructure.Database
             if (!await db.Showings.AnyAsync())
             {
                 var movies =  movieService.GetMoviesAsync("nl").Result.Value?.ToList();
-                var auditoriums =  auditoriumRepository.GetAuditoriumsAsync().Result.Value?.ToList();
+                var auditoriums =  auditoriumService.GetAuditoriumsAsync().Result.Value?.ToList();
 
                 var showings = new List<Showing>();
                 var start = DateTimeOffset.UtcNow.Date.AddHours(18); // 18:00 start
@@ -143,11 +153,64 @@ namespace API.Infrastructure.Database
                         AuditoriumId = auditoriums[i % auditoriums.Count].Id,
                         StartsAt = start.AddHours(i * 2), // elke 2 uur
                         IsThreeD = (i % 2 == 0), // om en om 3D
-                        AuditoriumLayoutSnapshot = auditoriums[i].RowConfigJson // Sla de auditorium layout op als JSON string in de showing
+                        AuditoriumLayoutSnapshot =
+                            auditoriums[i].RowConfigJson // Sla de auditorium layout op als JSON string in de showing
                     });
                 }
 
                 db.Showings.AddRange(showings);
+                await db.SaveChangesAsync(); // commit showings first so dummy order can reference one
+            }
+
+            // Dummy order for API testing when no orders exist
+            if (!await db.Orders.AnyAsync())
+            {
+                var showing = await db.Showings.OrderBy(s => s.Id).FirstOrDefaultAsync();
+                if (showing != null)
+                {
+                    var ticket = new Ticket
+                    {
+                        ShowingId = showing.Id,
+                        ShowDateTimeUtc = showing.StartsAt.UtcDateTime.ToString("O"),
+                        SeatNumber = "A1",
+                        Price = 9.50m,
+                        TicketType = "Adult",
+                        PaymentStatus = "Pending",
+                        QrIsActive = false
+                    };
+                    await db.Tickets.AddAsync(ticket);
+                    await db.SaveChangesAsync();
+
+                    var order = new Order
+                    {
+                        OrderCode = "DUMMYORDER001",
+                        CreatedAtUtc = DateTime.UtcNow,
+                        TotalAmount = ticket.Price,
+                        OrderType = "Reservation",
+                        PaymentStatus = "Pending",
+                        PaymentMethod = "IDEAL",
+                        IsPrinted = false,
+                        OrderTickets = new List<OrderTicket>
+                        {
+                            new OrderTicket { TicketId = ticket.Id, Ticket = ticket }
+                        }
+                    };
+
+                    await db.Orders.AddAsync(order);
+                    await db.SaveChangesAsync();
+                }
+            }
+
+            if (!await db.Tickets.AnyAsync())
+            {
+                await ticketService.CreateTicketAsync(new Ticket
+                {
+                    ShowingId = 1,
+                    ShowDateTimeUtc = DateTimeOffset.UtcNow.Date.AddHours(18).ToString("O"),
+                    SeatNumber = "A1",
+                    TicketType = "Adult",
+                    Price = 8.50m
+                });
             }
 
             await db.SaveChangesAsync();

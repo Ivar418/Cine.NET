@@ -1,4 +1,5 @@
-﻿using API.Repositories.Interfaces;
+using API.Services;
+using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.DTOs.Models;
@@ -57,41 +58,52 @@ namespace API.Controllers
         [HttpGet("with-prices")]
         public async Task<IActionResult> GetShowingsWithPrices()
         {
-            var showings = await _showingService.GetShowingsAsync();
-            return Ok(showings);
+            var result = await _showingService.GetShowingsAsync();
+
+            return result switch
+            {
+                { IsFailure: true } => StatusCode(500, "An error occurred"),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500)
+            };
         }
         
-        [HttpGet("{id:int}/prices")]
+        [HttpGet("{id}/prices")]
         public async Task<IActionResult> GetShowingWithPrices(int id)
         {
-            var showing = await _showingService.GetShowingAsync(id);
+            var result = await _showingService.GetShowingAsync(id);
 
-            if (showing == null)
-                return NotFound();
-
-            return Ok(showing);
+            return result switch
+            {
+                { IsFailure: true, Error: "NotFound" } => NotFound("Not found"),
+                { IsFailure: true } => StatusCode(500, "An error occurred"),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500)
+            };
         }
 
-        // [HttpGet]
-        // [Route("{ShowingId:int}/state")]
-        // public async Task<IActionResult> GetShowingStateById(int ShowingId)
-        // {
-        //     try
-        //     {
-        //         var result = await _ShowingRepository.GetShowingStateByIdAsync(ShowingId);
-        //         return result switch
-        //         {
-        //             { IsFailure: true, Error: "Showing not found" } => NotFound(new { error = "Showing not found" }),
-        //             { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-        //             { IsSuccess: true } => Ok(result.Value),
-        //             _ => StatusCode(500, new { error = "Unexpected result" })
-        //         };
-        //     }
-        //     catch (Exception)
-        //     {
-        //         return StatusCode(500, new { error = "An error occurred" });
-        //     }
-        // }
+
+        [HttpGet]
+        [Route("{ShowingId:int}/state")]
+        public async Task<IActionResult> GetShowingStateById(int ShowingId)
+        {
+            try
+            {
+                var result = await _showingService.GetShowingStateAsync(ShowingId);
+                return result switch
+                {
+                    { IsFailure: true } => StatusCode(500, new { error = result.Error }),
+                    { IsSuccess: true } => Ok(result.Value),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Server error");
+                Console.WriteLine(ex);
+                return StatusCode(500, new { error = "An error occurred" });
+            }
+        }
 
         /// <summary>
         /// Deletes a Showing from the system based on its TmdbId.
@@ -191,6 +203,30 @@ namespace API.Controllers
             {
                 return StatusCode(500, new { error = "An error occurred" });
             }
+        }
+        
+        /// <summary>
+        /// Retrieves all upcoming showings for a specific movie, ordered by start time ascending.
+        /// A showing is considered upcoming if it starts no more than 15 minutes before the current time,
+        /// allowing users to still book tickets shortly after a showing has started.
+        /// </summary>
+        /// <param name="movieId">The internal ID of the movie to retrieve upcoming showings for.</param>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing a list of <see cref="ShowingResponse"/> on success.
+        /// Returns an empty list if no upcoming showings are scheduled — this is not treated as a 404.
+        /// Returns <c>500 Internal Server Error</c> if an unexpected error occurs.
+        /// </returns>
+        [HttpGet("movie/{movieId:int}/upcoming")]
+        public async Task<IActionResult> GetUpcomingShowingsByMovieId(int movieId)
+        {
+            var result = await _showingService.GetUpcomingShowingsByMovieIdAsync(movieId);
+
+            return result switch
+            {
+                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500, new { error = "Unexpected result" })
+            };
         }
         
         [HttpGet("details")]

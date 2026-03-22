@@ -1,14 +1,15 @@
 using API.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
+using API.src.Repositories.Implementations;
 using API.Storage;
 using API.Storage.Implementations;
 using API.Storage.Interfaces;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 
 Env.Load();
 // App setup: create builder + dependency container
@@ -30,17 +31,38 @@ builder.Services.AddSwaggerGen();
  * Scoped: A single instance is provided per request.
  * Singleton: A single instance is created and shared throughout the application's lifetime.
  */
+
+//Users
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+//Movies
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<IMovieService, MovieService>();
+//Tickets
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
+builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
+//Photos
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
+
+//Seat reservations
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
+//Showings
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
-builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
 builder.Services.AddScoped<IShowingService, ShowingService>();
+//Auditoriums
+builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
+builder.Services.AddScoped<IAuditoriumService, AuditoriumService>();
+//Pricings
+builder.Services.AddScoped<IPricingConfigRepository, PricingConfigRepository>();
 builder.Services.AddScoped<IPricingService, PricingService>();
-builder.Services.AddScoped<IMovieService, MovieService>();
+//Orders
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderPdfService, OrderPdfService>();
+
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();
@@ -162,19 +184,19 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var db = services.GetRequiredService<ApiDbContext>();
     db.Database.EnsureCreated();
-    
+
     //Get other required services for seeding
     var movieService = services.GetRequiredService<IMovieService>();
     var showingService = services.GetRequiredService<IShowingService>();
     var ticketService = services.GetRequiredService<ITicketService>();
     var pricingService = services.GetRequiredService<IPricingService>();
-    var auditoriumRepository = services.GetRequiredService<IAuditoriumRepository>();
+    var auditoriumService = services.GetRequiredService<IAuditoriumService>();
 
 
     // Seed data
     try
     {
-        await DbSeeder.SeedAsync(db, movieService,showingService, ticketService,pricingService, auditoriumRepository);
+        await DbSeeder.SeedAsync(db, movieService, showingService, ticketService, pricingService, auditoriumService);
     }
     catch (Exception ex)
     {

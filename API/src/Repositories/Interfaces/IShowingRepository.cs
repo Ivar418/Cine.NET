@@ -12,8 +12,8 @@ namespace API.Repositories.Interfaces
         Task<Showing> AddShowingAsync(CreateShowingRequest Showing);
         Task<Showing> UpdateShowingAsync(Showing Showing);
         Task<ResultOf<Showing>> DeleteShowingByIdAsync(int ShowingId);
-        Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id);
         Task<ResultOf<ShowingDisplayResponse>> GetShowingDisplayByIdAsync(int id);
+        Task<ResultOf<ICollection<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId, DateTimeOffset cutoff);
         Task<ResultOf<ICollection<ShowingDisplayResponse>>> GetShowingDisplayAsync();
     }
 }

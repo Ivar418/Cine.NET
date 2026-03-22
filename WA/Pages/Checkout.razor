@@ -23,6 +23,10 @@
             }
             else
             {
+                <MudPaper Class="pa-4 mb-4">
+                    <MudText Typo="Typo.h6">@Summary.MovieTitle</MudText>
+                    <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
+                </MudPaper>
 
                 @foreach (var seat in seats)
                 {
@@ -34,32 +38,45 @@
                                 Rij @seat.Row Stoel @seat.SeatNumber
                             </MudText>
 
-                            <MudSelect T="string" @bind-Value="seat.TicketType">
+                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                <MudSelect T="string" @bind-Value="seat.TicketType">
 
-                                <MudSelectItem Value="@("Adult")">
-                                    Adult €@(showing?.Prices.Adult ?? 0)
-                                </MudSelectItem>
+                                    <MudSelectItem Value='@("Adult")'>
+                                        Adult €@(showing?.Prices.Adult ?? 0)
+                                    </MudSelectItem>
 
-                                <MudSelectItem Value="@("Student")">
-                                    Student €@(showing?.Prices.Student ?? 0)
-                                </MudSelectItem>
+                                    <MudSelectItem Value='@("Student")'>
+                                        Student €@(showing?.Prices.Student ?? 0)
+                                    </MudSelectItem>
 
-                                <MudSelectItem Value="@("Child")">
-                                    Child €@(showing?.Prices.Child ?? 0)
-                                </MudSelectItem>
+                                    <MudSelectItem Value='@("Child")'>
+                                        Child €@(showing?.Prices.Child ?? 0)
+                                    </MudSelectItem>
 
-                                <MudSelectItem Value="@("Senior")">
-                                    Senior €@(showing?.Prices.Senior ?? 0)
-                                </MudSelectItem>
+                                    <MudSelectItem Value='@("Senior")'>
+                                        Senior €@(showing?.Prices.Senior ?? 0)
+                                    </MudSelectItem>
 
-                            </MudSelect>
+                                </MudSelect>
+
+                                <MudText Typo="Typo.body1">
+                                    €@GetSeatPrice(seat)
+                                </MudText>
+                            </MudStack>
 
                         </MudStack>
 
                     </MudPaper>
                 }
 
-                <MudButton OnClick="@(()=>step++)">
+                <MudPaper Class="pa-4 mb-4">
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">Totaal</MudText>
+                        <MudText Typo="Typo.h6">€@Summary.TotalPrice</MudText>
+                    </MudStack>
+                </MudPaper>
+
+                <MudButton OnClick="@(()=>step++)" Disabled="@(!CanContinueToOverview)">
                     Volgende
                 </MudButton>
 
@@ -69,12 +86,32 @@
 
         <MudStep Label="Overzicht">
 
-            @foreach (var seat in seats)
+            <MudPaper Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6">Boekingsoverzicht</MudText>
+                <MudText Typo="Typo.body2">@Summary.MovieTitle</MudText>
+                <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
+            </MudPaper>
+
+            @foreach (var seat in Summary.Lines)
             {
-                <MudText>
-                    Rij @seat.Row Stoel @seat.SeatNumber - @seat.TicketType
-                </MudText>
+                <MudPaper Class="pa-3 mb-2">
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText>
+                            Rij @seat.Row Stoel @seat.SeatNumber - @seat.TicketType
+                        </MudText>
+                        <MudText>
+                            €@GetSeatPrice(seat)
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
             }
+
+            <MudPaper Class="pa-4 mt-4">
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h6">Totaal</MudText>
+                    <MudText Typo="Typo.h6">€@Summary.TotalPrice</MudText>
+                </MudStack>
+            </MudPaper>
 
         </MudStep>
 

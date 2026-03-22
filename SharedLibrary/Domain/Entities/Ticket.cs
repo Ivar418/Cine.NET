@@ -4,23 +4,40 @@ namespace SharedLibrary.Domain.Entities;
 
 public class Ticket
 {
-    public int Id { get; set; }
-    public int ShowingId { get; set; }
-    public DateTime ShowDateTime { get; set; }
-    public string SeatNumber { get; set; } = string.Empty;
-    public decimal Price { get; set; }
-    public string Status { get; set; } = "Active"; // Active, Used, Cancelled, Expired
-    public DateTime PurchaseDate { get; set; }
-    
+    [Column("id")] public int Id { get; set; }
+    [Column("showing_id")] public int ShowingId { get; set; }
 
-    // Navigation
+    [Column("shown_date_time_utc")]
+    public string ShowDateTimeUtc
+    {
+        get => _showDateTimeUtcUtc;
+        init
+        {
+            if (!IsValidUtcTimestamp(value))
+                throw new ArgumentException("ShowDateTimeUtc must be a valid UTC timestamp with +00:00 offset.");
+            _showDateTimeUtcUtc = value;
+        }
+    }
+
+    [Column("seat_number")] public string SeatNumber { get; set; } = string.Empty;
+    [Column("ticket_type")] public string TicketType { get; set; } = string.Empty;
+    [Column("price")] public decimal Price { get; set; }
+    [Column("status")] public string Status { get; set; } = "Active"; // Active, Used, Cancelled, Expired
+
+    [Column("payment_status")]
+    public string PaymentStatus { get; set; } = "Pending"; // Pending, Paid, Failed, Cancelled
+
+    [Column("qr_code_guid")] public string? QrCodeGuid { get; set; } = string.Empty;
+    [Column("qr_is_active")] public bool QrIsActive { get; set; } = false;
+    [Column("purchase_date")] public DateTimeOffset PurchaseDate { get; set; }
     public Showing? Showing { get; set; }
-
 
     // --- Row Timestamps ---
     private string _rowCreatedTimestampUtc = string.Empty;
     private string? _rowUpdatedTimestampUtc;
     private string? _rowDeletedTimestampUtc;
+
+    private string _showDateTimeUtcUtc = string.Empty;
 
     [Column("row_created_timestamp_utc")]
     public string RowCreatedTimestampUtc
@@ -58,17 +75,6 @@ public class Ticket
         }
     }
 
-    // --- Public constructor ---
-    public Ticket(int showingId, DateTime showDateTime, string seatNumber, decimal price)
-    {
-        ShowingId = showingId;
-        ShowDateTime = showDateTime;
-        SeatNumber = seatNumber;
-        Price = price;
-        Status = "Active";
-        PurchaseDate = DateTime.UtcNow;
-        RowCreatedTimestampUtc = CurrentUtcTimestamp();
-    }
 
     // --- Business logic ---
     public void MarkAsUsed()

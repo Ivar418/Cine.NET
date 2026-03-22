@@ -91,28 +91,26 @@ public class MovieApiClient : IMovieApiClient
         }
     }
 
-    public async Task<(bool Success, string? ErrorMessage, MovieResponse? Movie)> AddMovieFromTmdbAsync(
-        int tmdbId,
-        string language = "nl")
+    public async Task<(bool Success, string? ErrorMessage, MovieResponse? Movie)> AddMovieFromTmdbAsync(int tmdbId)
     {
         try
         {
             var response = await _http.PostAsync(
-                $"{BasePath}?tmdbId={tmdbId}&language={language}",
+                $"{BasePath}?tmdbId={tmdbId}",
                 content: null);
 
             if (response.IsSuccessStatusCode)
             {
-                var movie = await response.Content.ReadFromJsonAsync<MovieResponse>();
-                return (true, null, movie);
+                var movies = await response.Content.ReadFromJsonAsync<List<MovieResponse>>();
+                return (true, null, movies?.FirstOrDefault());
             }
 
             var errorMessage = response.StatusCode switch
             {
-                HttpStatusCode.Conflict  => "This movie is already in the system.",
-                HttpStatusCode.NotFound  => "Movie not found on TMDB.",
+                HttpStatusCode.Conflict   => "This movie is already in the system.",
+                HttpStatusCode.NotFound   => "Movie not found on TMDB.",
                 HttpStatusCode.BadRequest => "Invalid TMDB ID.",
-                _ => "An unexpected error occurred. Please try again."
+                _                         => "An unexpected error occurred. Please try again."
             };
 
             return (false, errorMessage, null);
