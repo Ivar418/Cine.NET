@@ -1,4 +1,5 @@
-﻿using SharedLibrary.DTOs.Responses;
+﻿using MudBlazor;
+using SharedLibrary.DTOs.Responses;
 
 namespace WA.Pages;
 
@@ -8,19 +9,20 @@ using WA.Services.Http.Interfaces;
 
 public partial class Checkout
 {
-    [Inject]
-    public IShowingApi ShowingApi { get; set; } = default!;
+    protected bool isLoading = true;
+    protected string? errorMessage = null;
+
+    [Inject] public IShowingApi ShowingApi { get; set; } = default!;
 
     protected int step = 0;
 
     protected List<TicketSelection> seats = new()
     {
-        new TicketSelection{ Row = 3, SeatNumber = 6 },
-        new TicketSelection{ Row = 3, SeatNumber = 7 }
+        new TicketSelection { Row = 3, SeatNumber = 6 },
+        new TicketSelection { Row = 3, SeatNumber = 7 }
     };
 
-    [Parameter]
-    public int ShowingId { get; set; }
+    [Parameter] public int ShowingId { get; set; }
 
     protected ShowingsWithPricesResponse? showing;
 
@@ -31,10 +33,40 @@ public partial class Checkout
         Lines = seats,
         TotalPrice = seats.Sum(GetSeatPrice)
     };
+    
 
     protected override async Task OnInitializedAsync()
     {
-        showing = await ShowingApi.GetShowingPricesAsync(ShowingId);
+        try
+        {
+            showing = await ShowingApi.GetShowingPricesAsync(ShowingId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    protected bool IsTicketSelectionValid()
+    {
+        return seats.All(s => !string.IsNullOrEmpty(s.TicketType));
+    }
+
+    [Inject] public ISnackbar Snackbar { get; set; } = default!;
+
+    private void NextStep()
+    {
+        if (step == 1 && !IsTicketSelectionValid())
+        {
+            Snackbar.Add("Selecteer voor elke stoel een tickettype", Severity.Warning);
+            return;
+        }
+
+        step++;
     }
 
     protected decimal GetSeatPrice(TicketSelection seat)
@@ -44,10 +76,10 @@ public partial class Checkout
 
         return seat.TicketType switch
         {
-            "Adult" => showing.Prices.Adult,
-            "Student" => showing.Prices.Student,
-            "Child" => showing.Prices.Child,
-            "Senior" => showing.Prices.Senior,
+            "Adult" => showing.Prices.Adult.Price,
+            "Student" => showing.Prices.Student.Price,
+            "Child" => showing.Prices.Child.Price,
+            "Senior" => showing.Prices.Senior.Price,
             _ => 0m
         };
     }

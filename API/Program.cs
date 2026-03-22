@@ -63,6 +63,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderPdfService, OrderPdfService>();
 
+builder.Services.AddScoped<ITicketRuleService, TicketRuleService>();
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();

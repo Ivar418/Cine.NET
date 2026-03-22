@@ -21,10 +21,22 @@
     <RowTemplate>
         <MudTd>@context.ShowingId</MudTd>
         <MudTd>@context.MovieTitle</MudTd>
-        <MudTd>@context.Prices.Adult</MudTd>
-        <MudTd>@context.Prices.Child</MudTd>
-        <MudTd>@context.Prices.Student</MudTd>
-        <MudTd>@context.Prices.Senior</MudTd>
+
+        <MudTd Class="@(context.Prices.Adult.IsAvailable ? "" : "0.4")">
+            @context.Prices.Adult.Price.ToString("C")
+        </MudTd>
+
+        <MudTd Class="@(context.Prices.Child.IsAvailable ? "" : "0.4")">
+            @context.Prices.Child.Price.ToString("C")
+        </MudTd>
+
+        <MudTd Class="@(context.Prices.Student.IsAvailable ? "" : "0.4")">
+            @context.Prices.Student.Price.ToString("C")
+        </MudTd>
+
+        <MudTd Class="@(context.Prices.Senior.IsAvailable ? "" : "0.4")">
+            @context.Prices.Senior.Price.ToString("C")
+        </MudTd>
     </RowTemplate>
 </MudTable>
 
