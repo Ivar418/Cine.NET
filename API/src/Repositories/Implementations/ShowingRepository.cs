@@ -4,7 +4,9 @@ using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
+using API.Mappers;
 using SharedLibrary.DTOs.Responses;
+using API.src.Repositories.Implementations;
 
 namespace API.Repositories.Implementations
 {
@@ -16,7 +18,7 @@ namespace API.Repositories.Implementations
         {
             _db = db;
         }
-        async Task<Showing> IShowingRepository.AddShowingAsync(CreateShowingRequest Showing)
+        public async Task<Showing> AddShowingAsync(CreateShowingRequest Showing)
         {
             Console.WriteLine($"Adding Showing of movie: {Showing.MovieId}");
             Showing newShowing = new Showing
@@ -31,6 +33,7 @@ namespace API.Repositories.Implementations
             {
                 throw new Exception($"Auditorium with id {Showing.AuditoriumId} not found.");
             }
+            //auditorium.Showings.Add(newShowing);
             newShowing.SetLayoutSnapshot(auditorium.GetRows());
 
             var result = await _db.Showings.AddAsync(newShowing);
@@ -38,15 +41,16 @@ namespace API.Repositories.Implementations
             return result.Entity;
         }
 
-        async Task<ResultOf<Showing>> IShowingRepository.DeleteShowingByIdAsync(int ShowingId)
+        public async Task<ResultOf<Showing>> DeleteShowingByIdAsync(int ShowingId)
         {
             throw new NotImplementedException();
         }
 
-        async Task<ResultOf<Showing>> IShowingRepository.GetShowingAsync(int id)
+        public async Task<ResultOf<Showing>> GetShowingAsync(int id)
         {
             var showing = await _db.Showings
                 .Include(s => s.Movie)
+                .Include(s => s.Auditorium)
                 .FirstOrDefaultAsync(s => s.Id == id);
             
             return showing == null
@@ -54,12 +58,13 @@ namespace API.Repositories.Implementations
                 : ResultOf<Showing>.Success(showing);
         }
 
-        async Task<ResultOf<ICollection<Showing>>> IShowingRepository.GetShowingsAsync()
+        public async Task<ResultOf<ICollection<Showing>>> GetShowingsAsync()
         {
             try
             {
                 var showings = await _db.Showings
                     .Include(s => s.Movie)
+                    .Include(s => s.Auditorium)
                     .ToListAsync();
 
                 return ResultOf<ICollection<Showing>>.Success(showings);
@@ -83,17 +88,14 @@ namespace API.Repositories.Implementations
          - Return a successful ResultOf<ShowingStateDto> with the constructed DTO.
         */
 
-        Task<ResultOf<ShowingStateDto>> IShowingRepository.GetShowingStateAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
+        
 
-        async Task<Showing> IShowingRepository.UpdateShowingAsync(Showing Showing)
+        public async Task<Showing> UpdateShowingAsync(Showing Showing)
         {
             throw new NotImplementedException();
         }
         
-        async Task<ResultOf<ShowingDisplayResponse>> IShowingRepository.GetShowingDisplayByIdAsync(int id)
+        public async Task<ResultOf<ShowingDisplayResponse>> GetShowingDisplayByIdAsync(int id)
         {
             try
             {

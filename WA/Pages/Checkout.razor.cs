@@ -76,10 +76,10 @@ public partial class Checkout
 
         return seat.TicketType switch
         {
-            "Adult" => showing.Prices.Adult,
-            "Student" => showing.Prices.Student,
-            "Child" => showing.Prices.Child,
-            "Senior" => showing.Prices.Senior,
+            "Adult" => showing.Prices.Adult.Price,
+            "Student" => showing.Prices.Student.Price,
+            "Child" => showing.Prices.Child.Price,
+            "Senior" => showing.Prices.Senior.Price,
             _ => 0m
         };
     }

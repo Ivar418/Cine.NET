@@ -28,14 +28,15 @@ builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 
 // HTTP
 builder.Services.AddScoped(sp =>
-    // new HttpClient { BaseAddress = new Uri("https://p3api-prod.gielvangaal.dev/") });
+    //new HttpClient { BaseAddress = new Uri("https://p3api-prod.gielvangaal.dev/") });
     // new HttpClient { BaseAddress = new Uri("https://p3api-acc.gielvangaal.dev/") });
-    new HttpClient { BaseAddress = new Uri("http://localhost:8080/") });
+     new HttpClient { BaseAddress = new Uri("http://localhost:8080/") });
 
 // WA API/SERVICES
 builder.Services.AddScoped<IUserApi, UserApi>();
 builder.Services.AddScoped<LayoutStateService>();
 builder.Services.AddScoped<IMovieApiClient, MovieApiClient>();
 builder.Services.AddScoped<IShowingApi, ShowingApi>();
+builder.Services.AddScoped<ISeatFinderApiClient, SeatFinderApiService>();
 
 await builder.Build().RunAsync();
