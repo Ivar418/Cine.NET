@@ -1,14 +1,15 @@
 using API.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
+using API.src.Repositories.Implementations;
 using API.Storage;
 using API.Storage.Implementations;
 using API.Storage.Interfaces;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 
 Env.Load();
 // App setup: create builder + dependency container
@@ -44,6 +45,10 @@ builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
 builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 //Photos
 builder.Services.AddScoped<IPhotoStorage, LocalPhotoStorage>();
+
+//Seat reservations
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
 //Showings
 builder.Services.AddScoped<IShowingRepository, ShowingRepository>();
 builder.Services.AddScoped<IShowingService, ShowingService>();

@@ -5,5 +5,3 @@ ansible
 docker-compose*
 README*
 wwwroot/uploads
-**/bin/
-**/obj/

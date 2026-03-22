@@ -15,8 +15,7 @@ namespace SharedLibrary.DTOs.Models
     int Id,
     Movie Movie,
     AuditoriumDto Auditorium,
-    DateTimeOffset StartsAt,
-    DateTimeOffset EndsAt        // = StartsAt + Film.DurationMinutes
+    DateTimeOffset StartsAt
     );
 
     public record CreateShowingRequest(int MovieId, int AuditoriumId, DateTimeOffset StartsAt);
