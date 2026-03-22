@@ -142,4 +142,27 @@ public class ShowingService : IShowingService
             }
         });
     }
+    
+    /// <summary>
+    /// Retrieves all upcoming showings for a specific movie by calculating a cutoff time
+    /// and delegating the query to the repository. A showing is considered upcoming if it
+    /// starts no more than 15 minutes before the current UTC time, allowing users to still
+    /// book tickets shortly after a showing has started.
+    /// </summary>
+    /// <param name="movieId">The internal ID of the movie to retrieve upcoming showings for.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing a read-only list of <see cref="ShowingResponse"/> on success,
+    /// or a failure with an error message if the repository query fails.
+    /// </returns>
+    public async Task<ResultOf<IReadOnlyList<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId)
+    {
+        var cutoff = DateTimeOffset.UtcNow.AddMinutes(-15);
+
+        var result = await _showingRepository.GetUpcomingShowingsByMovieIdAsync(movieId, cutoff);
+
+        if (result.IsFailure)
+            return ResultOf<IReadOnlyList<ShowingResponse>>.Failure(result.Error!);
+
+        return ResultOf<IReadOnlyList<ShowingResponse>>.Success(result.Value!.ToList());
+    }
 }

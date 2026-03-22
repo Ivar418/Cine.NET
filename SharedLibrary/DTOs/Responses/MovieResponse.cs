@@ -1,12 +1,15 @@
-﻿namespace SharedLibrary.DTOs.Responses;
+﻿// SharedLibrary/DTOs/Responses/MovieResponse.cs
 
 public class MovieResponse
 {
     public int Id { get; init; }
     public string Title { get; init; } = string.Empty;
     public int TmdbId { get; init; }
+    public string InformationLanguage { get; init; } = "und";
     public string? Language { get; init; }
     public string? PosterPath { get; init; }
+    public string? BackdropPath { get; init; }
+    public string? YoutubeTrailerKey { get; init; }
     public int? Runtime { get; init; }
     public string? ImdbId { get; init; }
     public string? ReleaseDate { get; init; }
@@ -16,5 +19,6 @@ public class MovieResponse
     public string? SpokenLanguageCodeIso6391 { get; init; }
     public List<int>? GenresIds { get; init; }
     public string RowCreatedTimestampUtc { get; init; } = string.Empty;
-    public string? RowUpdatedTimestampUtc { get; init; } 
+    public string? RowUpdatedTimestampUtc { get; init; }
+    public string? RowDeletedTimestampUtc { get; init; }
 }
