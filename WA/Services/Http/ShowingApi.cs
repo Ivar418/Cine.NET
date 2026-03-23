@@ -55,12 +55,17 @@ public class ShowingApi : IShowingApi
         }
     }
     
-    public async Task<IReadOnlyList<ShowingDisplayResponse>> GetShowingDisplayAsync()
+    public async Task<IReadOnlyList<ShowingDisplayResponse>> GetShowingDisplayAsync(DateOnly? date = null)
     {
-        var result = await _http.GetFromJsonAsync<List<ShowingDisplayResponse>>(
-            $"{BasePath}/details"
-        );
- 
+        var url = $"{BasePath}/details";
+
+        if (date is not null)
+        {
+            url += $"?date={date:yyyy-MM-dd}";
+        }
+
+        var result = await _http.GetFromJsonAsync<List<ShowingDisplayResponse>>(url);
+
         return result ?? [];
     }
 
