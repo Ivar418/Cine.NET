@@ -19,4 +19,16 @@ public class AuditoriumApi : IAuditoriumApi
         var result = await _http.GetFromJsonAsync<List<Auditorium>>(BasePath);
         return result ?? new List<Auditorium>();
     }
+    
+    public async Task<Auditorium?> GetAuditoriumByIdAsync(int id)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<Auditorium>($"api/auditoriums/{id}");
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 }

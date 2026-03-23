@@ -92,4 +92,13 @@ public class ShowingApi : IShowingApi
             return [];
         }
     }
+    
+    public async Task<bool> AddShowingAsync(int movieId, int auditoriumId, DateTimeOffset startsAt)
+    {
+        var encodedStartsAt = Uri.EscapeDataString(startsAt.ToString("o"));
+        var url = $"api/showings?movieId={movieId}&auditoriumId={auditoriumId}&startsAt={encodedStartsAt}";
+ 
+        var response = await _http.PostAsync(url, null);
+        return response.IsSuccessStatusCode;
+    }
 }

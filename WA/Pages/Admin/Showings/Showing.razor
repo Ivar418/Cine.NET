@@ -37,7 +37,7 @@ else if (_loadError)
 }
 else
 {
-    <MudStack Spacing="6">
+    <MudStack Spacing="6" Style="margin-bottom: 60px;">
         @foreach (var auditorium in _auditoriums)
         {
             var showingsForAuditorium = GetShowingsForAuditorium(auditorium.Id);
@@ -101,6 +101,8 @@ else
             </div>
         }
     </MudStack>
+    
+    <div style="height: 25px;"></div>
 }
 
 @code {
@@ -139,8 +141,7 @@ else
     {
         _loading = true;
         _loadError = false;
-
-        // Fetch auditoriums and showings in parallel
+        
         var auditoriumTask = AuditoriumApi.GetAllAuditoriumsAsync();
         var showingsTask   = ShowingApi.GetShowingDisplayAsync(DateOnly.FromDateTime(_selectedDate ?? DateTime.Today));
 

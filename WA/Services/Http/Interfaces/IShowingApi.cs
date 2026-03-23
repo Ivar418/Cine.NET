@@ -10,4 +10,5 @@ public interface IShowingApi
     Task<ShowingsWithPricesResponse?> GetShowingPricesAsync(int showingId);
     Task<IReadOnlyList<ShowingDisplayResponse>> GetShowingDisplayAsync(DateOnly? date = null);
     Task<IReadOnlyList<ShowingResponse>> GetUpcomingShowingsByMovieIdAsync(int movieId);
+    Task<bool> AddShowingAsync(int movieId, int auditoriumId, DateTimeOffset startsAt);
 }
