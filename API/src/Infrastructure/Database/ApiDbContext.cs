@@ -89,7 +89,7 @@ public class ApiDbContext : DbContext
             .HasPrecision(10, 2);
         modelBuilder.Entity<Genre>().ToTable("genres");
 
-        modelBuilder.Entity<Showing>().Property(e => e.StartsAt).HasConversion(v => v.ToString(), v =>
+        modelBuilder.Entity<Showing>().Property(e => e.StartsAt).HasConversion(v => v.ToString("O"), v =>
             (DateTimeOffset)System.DateTimeOffset.ParseExact(
                 v,
                 "O", // Exact ISO 8601 round-trip format
