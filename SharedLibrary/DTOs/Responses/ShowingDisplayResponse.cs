@@ -8,6 +8,7 @@ public class ShowingDisplayResponse
     public int AuditoriumId { get; set; }
     public string MovieTitle { get; set; }
     public string AuditoriumName { get; set; }
+    public int? Runtime { get; set; }
     public bool Is3D { get; set; }
     public DateTimeOffset StartsAt { get; set; }
 }

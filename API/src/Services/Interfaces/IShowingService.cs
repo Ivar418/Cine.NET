@@ -12,6 +12,6 @@ public interface IShowingService
     Task<ResultOf<ShowingsWithPricesResponse>> GetShowingAsync(int id);
     Task<ResultOf<Showing>> GetFullShowingByIdAsync(int id);
     Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id);
-    
     Task<ResultOf<IReadOnlyList<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId);
+    Task<ResultOf<ICollection<ShowingDisplayResponse>>> GetShowingDisplayAsync(DateOnly? date = null);
 }
