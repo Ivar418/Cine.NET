@@ -35,6 +35,10 @@
             }
             else
             {
+                <MudPaper Class="pa-4 mb-4">
+                    <MudText Typo="Typo.h6">@Summary.MovieTitle</MudText>
+                    <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
+                </MudPaper>
 
                 @foreach (var seat in seats)
                 {
@@ -48,23 +52,27 @@
                             
                             <MudSelect T="string" @bind-Value="seat.TicketType" Dense="true">
 
-                            <MudSelectItem Value=@("Adult") Disabled="@(!showing.Prices.Adult.IsAvailable)">
-                                Adult €@showing.Prices.Adult.Price
-                            </MudSelectItem>
+                                <MudSelectItem Value=@("Adult") Disabled="@(!showing.Prices.Adult.IsAvailable)">
+                                    Adult €@showing.Prices.Adult.Price
+                                </MudSelectItem>
 
-                            <MudSelectItem Value=@("Student") Disabled="@(!showing.Prices.Student.IsAvailable)">
-                                Student €@showing.Prices.Student.Price
-                            </MudSelectItem>
+                                <MudSelectItem Value=@("Student") Disabled="@(!showing.Prices.Student.IsAvailable)">
+                                    Student €@showing.Prices.Student.Price
+                                </MudSelectItem>
 
-                            <MudSelectItem Value=@("Child") Disabled="@(!showing.Prices.Child.IsAvailable)">
-                                Child €@showing.Prices.Child.Price
-                            </MudSelectItem>
+                                <MudSelectItem Value=@("Child") Disabled="@(!showing.Prices.Child.IsAvailable)">
+                                    Child €@showing.Prices.Child.Price
+                                </MudSelectItem>
 
-                            <MudSelectItem Value=@("Senior") Disabled="@(!showing.Prices.Senior.IsAvailable)">
-                                Senior €@showing.Prices.Senior.Price
-                            </MudSelectItem>
+                                <MudSelectItem Value=@("Senior") Disabled="@(!showing.Prices.Senior.IsAvailable)">
+                                    Senior €@showing.Prices.Senior.Price
+                                </MudSelectItem>
                             
                             </MudSelect>
+                            
+                            <MudText Typo="Typo.body1">
+                                €@GetSeatPrice(seat)
+                            </MudText>
 
                         </MudStack>
 
@@ -132,13 +140,26 @@
         </MudStep>
 
         <MudStep Label="Overzicht" Disabled="@(!IsTicketSelectionValid())">
-
+            
+            <MudPaper Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6">Boekingsoverzicht</MudText>
+                <MudText Typo="Typo.body2">@Summary.MovieTitle</MudText>
+                <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
+            </MudPaper>
+            
             @foreach (var seat in seats)
             {
                 <MudText>
                     Rij @seat.Row Stoel @seat.SeatNumber - @seat.TicketType
                 </MudText>
             }
+            
+            <MudPaper Class="pa-4 mt-4">
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h6">Totaal</MudText>
+                    <MudText Typo="Typo.h6">€@Summary.TotalPrice</MudText>
+                </MudStack>
+            </MudPaper>
 
         </MudStep>
 
