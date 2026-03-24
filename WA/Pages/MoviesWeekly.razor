@@ -33,15 +33,21 @@
                       Class="mb-4"
                       Style="max-width: 320px;"
                       Clearable="true" />
-
         @* 3D / 2D *@
         <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Format</MudText>
-        <MudChipSet @bind-SelectedValues="_selected3DValues"
-                    SelectionMode="SelectionMode.SingleSelection"
-                    Class="mb-3">
-            <MudChip T="string" Value="@((string?)null)" Variant="Variant.Outlined" Color="Color.Default">All</MudChip>
-            <MudChip T="string" Value="@("3D")"           Variant="Variant.Outlined" Color="Color.Secondary">3D</MudChip>
-            <MudChip T="string" Value="@("2D")"           Variant="Variant.Outlined" Color="Color.Secondary">2D</MudChip>
+        <MudChipSet T="string" SelectionMode="SelectionMode.SingleSelection" Class="mb-3">
+            <MudChip T="string" 
+                     Variant="@(_formatFilter == null ? Variant.Filled : Variant.Outlined)"
+                     Color="Color.Secondary"
+                     OnClick="@(() => _formatFilter = null)">All</MudChip>
+            <MudChip T="string"
+                     Variant="@(_formatFilter == "3D" ? Variant.Filled : Variant.Outlined)"
+                     Color="Color.Secondary"
+                     OnClick="@(() => _formatFilter = "3D")">3D</MudChip>
+            <MudChip T="string"
+                     Variant="@(_formatFilter == "2D" ? Variant.Filled : Variant.Outlined)"
+                     Color="Color.Secondary"
+                     OnClick="@(() => _formatFilter = "2D")">2D</MudChip>
         </MudChipSet>
 
         @* Genre *@
@@ -258,7 +264,7 @@ else
     private string _titleSearch = string.Empty;
 
     // Single-selection chip set for 3D/2D — null means "All"
-    private IReadOnlyCollection<string?> _selected3DValues = new List<string?> { null };
+    private string? _formatFilter = null;
 
     // Multi-selection chip sets
     private IReadOnlyCollection<string> _selectedGenres      = new HashSet<string>();
@@ -287,7 +293,7 @@ else
     // ── Is any filter currently active? ─────────────────────────────────────
     private bool IsFilterActive =>
         !string.IsNullOrWhiteSpace(_titleSearch)
-        || _selected3DValues.Any(v => v != null)
+        || _formatFilter != null
         || _selectedGenres.Any()
         || _selectedAgeRatings.Any()
         || _selectedLanguages.Any();
@@ -304,9 +310,8 @@ else
                 s.MovieTitle.Contains(_titleSearch, StringComparison.OrdinalIgnoreCase));
 
         // 3D / 2D  (null selection = show all)
-        var formatSelection = _selected3DValues.FirstOrDefault(v => v != null);
-        if (formatSelection != null)
-            result = result.Where(s => s.Is3D == (formatSelection == "3D"));
+        if (_formatFilter != null)
+            result = result.Where(s => s.Is3D == (_formatFilter == "3D"));
 
         // Genre — match ANY selected genre
         if (_selectedGenres.Any())
@@ -335,7 +340,7 @@ else
     private void ClearAllFilters()
     {
         _titleSearch        = string.Empty;
-        _selected3DValues   = new List<string?> { null };
+        _formatFilter = null;
         _selectedGenres     = new HashSet<string>();
         _selectedAgeRatings = new HashSet<string>();
         _selectedLanguages  = new HashSet<string>();
