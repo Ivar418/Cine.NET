@@ -21,96 +21,113 @@
 
 @if (!_loading && !_loadError)
 {
-    <MudPaper Elevation="2" Class="pa-4 mb-6" Style="border-radius: 12px;">
+    <MudExpansionPanels Elevation="2" Class="mb-6" Style="border-radius: 12px;">
+        <MudExpansionPanel>
+            <TitleContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.FilterList" Color="Color.Primary" />
+                    <MudText Typo="Typo.subtitle1">Filters</MudText>
+                    @if (IsFilterActive)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                            Active
+                        </MudChip>
+                    }
+                </MudStack>
+            </TitleContent>
+            <ChildContent>
 
-        @* Title search *@
-        <MudTextField @bind-Value="_titleSearch"
-                      Placeholder="Search by title..."
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search"
-                      Variant="Variant.Outlined"
-                      Margin="Margin.Dense"
-                      Class="mb-4"
-                      Style="max-width: 320px;"
-                      Clearable="true" />
-        @* 3D / 2D *@
-        <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Format</MudText>
-        <MudChipSet T="string" SelectionMode="SelectionMode.SingleSelection" Class="mb-3">
-            <MudChip T="string" 
-                     Variant="@(_formatFilter == null ? Variant.Filled : Variant.Outlined)"
-                     Color="Color.Secondary"
-                     OnClick="@(() => _formatFilter = null)">All</MudChip>
-            <MudChip T="string"
-                     Variant="@(_formatFilter == "3D" ? Variant.Filled : Variant.Outlined)"
-                     Color="Color.Secondary"
-                     OnClick="@(() => _formatFilter = "3D")">3D</MudChip>
-            <MudChip T="string"
-                     Variant="@(_formatFilter == "2D" ? Variant.Filled : Variant.Outlined)"
-                     Color="Color.Secondary"
-                     OnClick="@(() => _formatFilter = "2D")">2D</MudChip>
-        </MudChipSet>
+                @* Title search *@
+                <MudTextField @bind-Value="_titleSearch"
+                              Placeholder="Search by title..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Class="mb-4"
+                              Style="max-width: 320px;"
+                              Clearable="true" />
 
-        @* Genre *@
-        @if (AvailableGenres.Any())
-        {
-            <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Genre</MudText>
-            <MudChipSet @bind-SelectedValues="_selectedGenres"
-                        SelectionMode="SelectionMode.MultiSelection"
-                        Class="mb-3">
-                @foreach (var genre in AvailableGenres)
+                @* 3D / 2D *@
+                <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Format</MudText>
+                <MudStack Row="true" Spacing="1" Class="mb-3">
+                    <MudButton Variant="@(_formatFilter == null ? Variant.Filled : Variant.Outlined)"
+                               Color="Color.Secondary"
+                               Size="Size.Small"
+                               OnClick="@(() => _formatFilter = null)">All</MudButton>
+                    <MudButton Variant="@(_formatFilter == "3D" ? Variant.Filled : Variant.Outlined)"
+                               Color="Color.Secondary"
+                               Size="Size.Small"
+                               OnClick="@(() => _formatFilter = "3D")">3D</MudButton>
+                    <MudButton Variant="@(_formatFilter == "2D" ? Variant.Filled : Variant.Outlined)"
+                               Color="Color.Secondary"
+                               Size="Size.Small"
+                               OnClick="@(() => _formatFilter = "2D")">2D</MudButton>
+                </MudStack>
+
+                @* Genre *@
+                @if (AvailableGenres.Any())
                 {
-                    <MudChip T="string" Value="@genre" Variant="Variant.Outlined" Color="Color.Primary">
-                        @genre
-                    </MudChip>
+                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Genre</MudText>
+                    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+                        @foreach (var genre in AvailableGenres)
+                        {
+                            var g = genre;
+                            <MudButton Variant="@(_selectedGenres.Contains(g) ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => ToggleSelection(_selectedGenres, g))">@g</MudButton>
+                        }
+                    </MudStack>
                 }
-            </MudChipSet>
-        }
 
-        @* Age rating *@
-        @if (AvailableAgeRatings.Any())
-        {
-            <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Age Rating</MudText>
-            <MudChipSet @bind-SelectedValues="_selectedAgeRatings"
-                        SelectionMode="SelectionMode.MultiSelection"
-                        Class="mb-3">
-                @foreach (var age in AvailableAgeRatings)
+                @* Age rating *@
+                @if (AvailableAgeRatings.Any())
                 {
-                    <MudChip T="string" Value="@age" Variant="Variant.Outlined" Color="Color.Warning">
-                        @age
-                    </MudChip>
+                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Age Rating</MudText>
+                    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+                        @foreach (var age in AvailableAgeRatings)
+                        {
+                            var a = age;
+                            <MudButton Variant="@(_selectedAgeRatings.Contains(a) ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       OnClick="@(() => ToggleSelection(_selectedAgeRatings, a))">@a</MudButton>
+                        }
+                    </MudStack>
                 }
-            </MudChipSet>
-        }
 
-        @* Language *@
-        @if (AvailableLanguages.Any())
-        {
-            <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Language</MudText>
-            <MudChipSet @bind-SelectedValues="_selectedLanguages"
-                        SelectionMode="SelectionMode.MultiSelection"
-                        Class="mb-3">
-                @foreach (var lang in AvailableLanguages)
+                @* Language *@
+                @if (AvailableLanguages.Any())
                 {
-                    <MudChip T="string" Value="@lang" Variant="Variant.Outlined" Color="Color.Info">
-                        @lang
-                    </MudChip>
+                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Language</MudText>
+                    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+                        @foreach (var lang in AvailableLanguages)
+                        {
+                            var l = lang;
+                            <MudButton Variant="@(_selectedLanguages.Contains(l) ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Info"
+                                       Size="Size.Small"
+                                       OnClick="@(() => ToggleSelection(_selectedLanguages, l))">@l</MudButton>
+                        }
+                    </MudStack>
                 }
-            </MudChipSet>
-        }
 
-        @* Clear all — only visible when any filter is active *@
-        @if (IsFilterActive)
-        {
-            <MudButton Variant="Variant.Text"
-                       Color="Color.Error"
-                       StartIcon="@Icons.Material.Filled.FilterAltOff"
-                       OnClick="ClearAllFilters"
-                       Size="Size.Small">
-                Clear filters
-            </MudButton>
-        }
+                @* Clear all — only visible when any filter is active *@
+                @if (IsFilterActive)
+                {
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.FilterAltOff"
+                               OnClick="ClearAllFilters"
+                               Size="Size.Small">
+                        Clear filters
+                    </MudButton>
+                }
 
-    </MudPaper>
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
 }
 
 @if (_loading)
@@ -267,9 +284,9 @@ else
     private string? _formatFilter = null;
 
     // Multi-selection chip sets
-    private IReadOnlyCollection<string> _selectedGenres      = new HashSet<string>();
-    private IReadOnlyCollection<string> _selectedAgeRatings  = new HashSet<string>();
-    private IReadOnlyCollection<string> _selectedLanguages   = new HashSet<string>();
+    private HashSet<string> _selectedGenres     = new();
+    private HashSet<string> _selectedAgeRatings = new();
+    private HashSet<string> _selectedLanguages  = new();
 
     // ── Derived filter options (built from loaded data) ──────────────────────
     private IEnumerable<string> AvailableGenres =>
@@ -388,11 +405,17 @@ else
         Navigation.NavigateTo($"/showingdetail/{movieId}/{showingId}");
     }
     
-    private string? GetAgeIndication(int movieId) =>   // NEW
+    private string? GetAgeIndication(int movieId) =>
         _ageByMovieId.TryGetValue(movieId, out var age) ? age : null;
 
-    private string? GetLanguage(int movieId) =>         // NEW
+    private string? GetLanguage(int movieId) =>
         _languageByMovieId.TryGetValue(movieId, out var lang) ? lang : null;
+    
+    private void ToggleSelection(HashSet<string> set, string value)
+    {
+        if (!set.Add(value))
+            set.Remove(value);
+    }
 
     private async Task LoadDataAsync()
     {
