@@ -1,4 +1,5 @@
 ﻿using MudBlazor;
+using SharedLibrary.DTOs.Models;
 using SharedLibrary.DTOs.Responses;
 
 namespace WA.Pages;
@@ -16,12 +17,13 @@ public partial class Checkout
 
     protected int step = 0;
 
-    protected List<TicketSelection> seats = new()
+    protected List<SeatInfo> seatInfos = new List<SeatInfo>()
     {
-        new TicketSelection { Row = 3, SeatNumber = 6 },
-        new TicketSelection { Row = 3, SeatNumber = 7 }
+        new SeatInfo( 2, 6, 0, 0, 0 ),
+        new SeatInfo( 2, 7, 0, 0, 0 )
     };
 
+    protected List<TicketSelection> seats = new();
     [Parameter] public int ShowingId { get; set; }
 
     protected ShowingsWithPricesResponse? showing;
@@ -48,6 +50,10 @@ public partial class Checkout
         finally
         {
             isLoading = false;
+            foreach (var seatInfo in seatInfos)
+            {
+                seats.Add(new TicketSelection() { Row = seatInfo.Row, SeatNumber = seatInfo.Col });
+            }
         }
     }
 
