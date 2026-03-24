@@ -275,20 +275,14 @@ else
     private bool _loading = true;
     private bool _loadError;
 
-        // ── Filter state ────────────────────────────────────────────────────────
-    // MudChipSet works best with IReadOnlyCollection<T> bound values.
-
     private string _titleSearch = string.Empty;
-
-    // Single-selection chip set for 3D/2D — null means "All"
+    
     private string? _formatFilter = null;
-
-    // Multi-selection chip sets
+    
     private HashSet<string> _selectedGenres     = new();
     private HashSet<string> _selectedAgeRatings = new();
     private HashSet<string> _selectedLanguages  = new();
-
-    // ── Derived filter options (built from loaded data) ──────────────────────
+    
     private IEnumerable<string> AvailableGenres =>
         _genreNamesByMovieId.Values
             .SelectMany(g => g)
@@ -306,44 +300,37 @@ else
             .Where(l => !string.IsNullOrWhiteSpace(l))
             .Distinct()
             .Order()!;
-
-    // ── Is any filter currently active? ─────────────────────────────────────
+    
     private bool IsFilterActive =>
         !string.IsNullOrWhiteSpace(_titleSearch)
         || _formatFilter != null
         || _selectedGenres.Any()
         || _selectedAgeRatings.Any()
         || _selectedLanguages.Any();
-
-    // ── Core filter logic ────────────────────────────────────────────────────
+    
     private IEnumerable<ShowingDisplayResponse> ApplyFilters(
         IEnumerable<ShowingDisplayResponse> showings)
     {
         var result = showings;
-
-        // Title search
+        
         if (!string.IsNullOrWhiteSpace(_titleSearch))
             result = result.Where(s =>
                 s.MovieTitle.Contains(_titleSearch, StringComparison.OrdinalIgnoreCase));
-
-        // 3D / 2D  (null selection = show all)
+        
         if (_formatFilter != null)
             result = result.Where(s => s.Is3D == (_formatFilter == "3D"));
-
-        // Genre — match ANY selected genre
+        
         if (_selectedGenres.Any())
             result = result.Where(s =>
                 GetGenreNames(s.MovieId).Intersect(_selectedGenres).Any());
-
-        // Age rating — match ANY selected rating
+        
         if (_selectedAgeRatings.Any())
             result = result.Where(s =>
             {
                 var age = GetAgeIndication(s.MovieId);
                 return age != null && _selectedAgeRatings.Contains(age);
             });
-
-        // Language — match ANY selected language
+        
         if (_selectedLanguages.Any())
             result = result.Where(s =>
             {
