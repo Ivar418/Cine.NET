@@ -230,22 +230,16 @@ namespace API.Controllers
         }
         
         [HttpGet("details")]
-        public async Task<IActionResult> GetShowingDisplay()
+        public async Task<IActionResult> GetShowingDisplay([FromQuery] DateOnly? date = null)
         {
-            try
+            var result = await _showingService.GetShowingDisplayAsync(date);
+
+            return result switch
             {
-                var result = await _ShowingRepository.GetShowingDisplayAsync();
-                return result switch
-                {
-                    { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                    { IsSuccess: true } => Ok(result.Value),
-                    _ => StatusCode(500, new { error = "Unexpected result" })
-                };
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { error = "An error occurred" });
-            }
+                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500, new { error = "Unexpected result" })
+            };
         }
     }
 }

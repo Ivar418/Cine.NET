@@ -108,6 +108,7 @@ namespace API.Repositories.Implementations
                         AuditoriumId = s.AuditoriumId,
                         MovieTitle = s.Movie.Title,
                         AuditoriumName = s.Auditorium.Name,
+                        Runtime = s.Movie.Runtime,
                         Is3D = s.IsThreeD,
                         StartsAt = s.StartsAt
                     })
@@ -162,24 +163,30 @@ namespace API.Repositories.Implementations
                 return ResultOf<ICollection<ShowingResponse>>.Failure(e.Message);
             }
         }
-        
-        async Task<ResultOf<ICollection<ShowingDisplayResponse>>> IShowingRepository.GetShowingDisplayAsync()
+
+        async Task<ResultOf<ICollection<ShowingDisplayResponse>>> IShowingRepository.GetShowingDisplayAsync(DateOnly? date)
         {
             try
             {
-                var showings = await _db.Showings
+                var query = _db.Showings.AsQueryable();
+
+                if (date.HasValue)
+                    query = query.Where(s => s.StartsAt.Date == date.Value.ToDateTime(TimeOnly.MinValue).Date);
+
+                var showings = await query
                     .Select(s => new ShowingDisplayResponse
                     {
                         Id = s.Id,
                         MovieId = s.MovieId,
                         AuditoriumId = s.AuditoriumId,
                         MovieTitle = s.Movie.Title,
-                        // AuditoriumName = s.Auditorium.Name,
+                        AuditoriumName = s.Auditorium.Name,
+                        Runtime = s.Movie.Runtime,
                         Is3D = s.IsThreeD,
                         StartsAt = s.StartsAt
                     })
                     .ToListAsync();
- 
+
                 return ResultOf<ICollection<ShowingDisplayResponse>>.Success(showings);
             }
             catch (Exception e)
