@@ -55,12 +55,17 @@ public class ShowingApi : IShowingApi
         }
     }
     
-    public async Task<IReadOnlyList<ShowingDisplayResponse>> GetShowingDisplayAsync()
+    public async Task<IReadOnlyList<ShowingDisplayResponse>> GetShowingDisplayAsync(DateOnly? date = null)
     {
-        var result = await _http.GetFromJsonAsync<List<ShowingDisplayResponse>>(
-            $"{BasePath}/details"
-        );
- 
+        var url = $"{BasePath}/details";
+
+        if (date is not null)
+        {
+            url += $"?date={date:yyyy-MM-dd}";
+        }
+
+        var result = await _http.GetFromJsonAsync<List<ShowingDisplayResponse>>(url);
+
         return result ?? [];
     }
 
@@ -86,5 +91,14 @@ public class ShowingApi : IShowingApi
             Console.Error.WriteLine($"[ShowingApi] GetUpcomingShowingsByMovieId({movieId}) failed: {ex.Message}");
             return [];
         }
+    }
+    
+    public async Task<bool> AddShowingAsync(int movieId, int auditoriumId, DateTimeOffset startsAt)
+    {
+        var encodedStartsAt = Uri.EscapeDataString(startsAt.ToString("o"));
+        var url = $"api/showings?movieId={movieId}&auditoriumId={auditoriumId}&startsAt={encodedStartsAt}";
+ 
+        var response = await _http.PostAsync(url, null);
+        return response.IsSuccessStatusCode;
     }
 }

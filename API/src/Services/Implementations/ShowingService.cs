@@ -206,4 +206,9 @@ public class ShowingService : IShowingService
         ShowingStateDto showingState = ShowingMapper.ToStateDto(showing, _reservationrepository);
         return showingState == null ? ResultOf<ShowingStateDto>.Failure("ShowingState not found") : ResultOf<ShowingStateDto>.Success(showingState);
     }
+    
+    public async Task<ResultOf<ICollection<ShowingDisplayResponse>>> GetShowingDisplayAsync(DateOnly? date = null)
+    {
+        return await _showingRepository.GetShowingDisplayAsync(date);
+    }
 }
