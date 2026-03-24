@@ -61,7 +61,7 @@ namespace API.src.Controllers
         /// <param reservationId="id">The unique identifier of the Reservation to retrieve.</param>
         /// <returns>An IActionResult containing the Reservation details if found, a 404 Not Found response if the Reservation is not found, or a 500 Internal Server Error response if an unexpected error occurs.</returns>
         [HttpGet]
-        [Route("showtime/{showingId:guid}")]
+        [Route("showtime/{showingId:int}")]
         public async Task<IActionResult> GetReservationByShowingIdAsync(int showingId)
         {
             try
@@ -104,11 +104,11 @@ namespace API.src.Controllers
         [HttpPost]
         [Route("confirm")]
         public async Task<IActionResult> ConfirmReservationById(
-            [FromQuery] Guid reservationId)
+            [FromBody] ConfirmRequest reservationId)
         {
             try
             {
-                var result = await _ReservationRepository.UpdateReservationStatusAsync(reservationId, "Confirmed");
+                var result = await _ReservationRepository.UpdateReservationStatusAsync(reservationId.SuggestionId, "Confirmed");
                 return result is null ? NotFound(new { error = "Reservation not found" }) : Ok(result);
             }
             catch (Exception e)
@@ -120,11 +120,11 @@ namespace API.src.Controllers
         [HttpPost]
         [Route("cancel")]
         public async Task<IActionResult> CancelReservationById(
-            [FromQuery] Guid reservationId)
+            [FromBody] CancelRequest reservationId)
         {
             try
             {
-                var result = await _ReservationRepository.UpdateReservationStatusAsync(reservationId, "Cancelled");
+                var result = await _ReservationRepository.UpdateReservationStatusAsync(reservationId.ReservationId, "Cancelled");
                 return result is null ? NotFound(new { error = "Reservation not found" }) : Ok(result);
             }
             catch (Exception e)

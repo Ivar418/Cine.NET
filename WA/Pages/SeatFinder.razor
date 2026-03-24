@@ -173,6 +173,7 @@
     private int                 _wcCount     = 0;
     private HashSet<string>     _suggestedKeys = [];
     private Guid?               _pendingId;
+    private Reservation? _confirmedReservation = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -235,6 +236,7 @@
 
         _pendingId     = null;
         _suggestedKeys = [];
+        _confirmedReservation = res;
         // Refresh state from server to get accurate picture
         if (_ShowingId.HasValue)
             _state = await Api.GetShowingStateAsync(_ShowingId.Value);
