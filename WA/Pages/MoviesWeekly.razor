@@ -19,6 +19,94 @@
     <MudText Typo="Typo.h6" Style="color: #03DAC6;">Overview</MudText>
 </MudStack>
 
+@if (!_loading && !_loadError)
+{
+    <MudPaper Elevation="2" Class="pa-4 mb-6" Style="border-radius: 12px;">
+
+        @* Title search *@
+        <MudTextField @bind-Value="_titleSearch"
+                      Placeholder="Search by title..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="mb-4"
+                      Style="max-width: 320px;"
+                      Clearable="true" />
+
+        @* 3D / 2D *@
+        <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Format</MudText>
+        <MudChipSet @bind-SelectedValues="_selected3DValues"
+                    SelectionMode="SelectionMode.SingleSelection"
+                    Class="mb-3">
+            <MudChip T="string" Value="@((string?)null)" Variant="Variant.Outlined" Color="Color.Default">All</MudChip>
+            <MudChip T="string" Value="@("3D")"           Variant="Variant.Outlined" Color="Color.Secondary">3D</MudChip>
+            <MudChip T="string" Value="@("2D")"           Variant="Variant.Outlined" Color="Color.Secondary">2D</MudChip>
+        </MudChipSet>
+
+        @* Genre *@
+        @if (AvailableGenres.Any())
+        {
+            <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Genre</MudText>
+            <MudChipSet @bind-SelectedValues="_selectedGenres"
+                        SelectionMode="SelectionMode.MultiSelection"
+                        Class="mb-3">
+                @foreach (var genre in AvailableGenres)
+                {
+                    <MudChip T="string" Value="@genre" Variant="Variant.Outlined" Color="Color.Primary">
+                        @genre
+                    </MudChip>
+                }
+            </MudChipSet>
+        }
+
+        @* Age rating *@
+        @if (AvailableAgeRatings.Any())
+        {
+            <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Age Rating</MudText>
+            <MudChipSet @bind-SelectedValues="_selectedAgeRatings"
+                        SelectionMode="SelectionMode.MultiSelection"
+                        Class="mb-3">
+                @foreach (var age in AvailableAgeRatings)
+                {
+                    <MudChip T="string" Value="@age" Variant="Variant.Outlined" Color="Color.Warning">
+                        @age
+                    </MudChip>
+                }
+            </MudChipSet>
+        }
+
+        @* Language *@
+        @if (AvailableLanguages.Any())
+        {
+            <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Language</MudText>
+            <MudChipSet @bind-SelectedValues="_selectedLanguages"
+                        SelectionMode="SelectionMode.MultiSelection"
+                        Class="mb-3">
+                @foreach (var lang in AvailableLanguages)
+                {
+                    <MudChip T="string" Value="@lang" Variant="Variant.Outlined" Color="Color.Info">
+                        @lang
+                    </MudChip>
+                }
+            </MudChipSet>
+        }
+
+        @* Clear all — only visible when any filter is active *@
+        @if (IsFilterActive)
+        {
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Error"
+                       StartIcon="@Icons.Material.Filled.FilterAltOff"
+                       OnClick="ClearAllFilters"
+                       Size="Size.Small">
+                Clear filters
+            </MudButton>
+        }
+
+    </MudPaper>
+}
+
 @if (_loading)
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
@@ -52,9 +140,11 @@ else
                     .Where(s => s.StartsAt.ToLocalTime().Date == day.Date)
                     .OrderBy(s => s.StartsAt)
                     .ToList();
+                
+                var filteredDayShowings = ApplyFilters(dayShowings).ToList();
 
                 <div class="day-column">
-                    @foreach (var showing in dayShowings)
+                    @foreach (var showing in filteredDayShowings)
                     {
                         var localStart = showing.StartsAt.ToLocalTime();
                         var posterUrl = GetPosterUrl(showing.MovieId);
@@ -128,8 +218,20 @@ else
 
                     @if (dayShowings.Count == 0)
                     {
+                        @* No showings scheduled at all for this day *@
                         <div class="no-showings pa-4 d-flex align-center justify-center">
-                            <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">Geen vertoningen</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">
+                                Geen vertoningen
+                            </MudText>
+                        </div>
+                    }
+                    else if (filteredDayShowings.Count == 0)
+                    {
+                        @* Showings exist but all filtered out *@
+                        <div class="no-showings pa-4 d-flex align-center justify-center">
+                            <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">
+                                Geen resultaten voor deze filters
+                            </MudText>
                         </div>
                     }
                 </div>
@@ -144,9 +246,101 @@ else
     private readonly Dictionary<int, string?> _posterUrlsByMovieId = new();
     private readonly Dictionary<int, int?> _runtimeByMovieId = new();
     private readonly Dictionary<int, List<string>> _genreNamesByMovieId = new();
+    private readonly Dictionary<int, string?> _ageByMovieId         = new();
+    private readonly Dictionary<int, string?> _languageByMovieId    = new();
+    
     private bool _loading = true;
     private bool _loadError;
 
+        // ── Filter state ────────────────────────────────────────────────────────
+    // MudChipSet works best with IReadOnlyCollection<T> bound values.
+
+    private string _titleSearch = string.Empty;
+
+    // Single-selection chip set for 3D/2D — null means "All"
+    private IReadOnlyCollection<string?> _selected3DValues = new List<string?> { null };
+
+    // Multi-selection chip sets
+    private IReadOnlyCollection<string> _selectedGenres      = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedAgeRatings  = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedLanguages   = new HashSet<string>();
+
+    // ── Derived filter options (built from loaded data) ──────────────────────
+    private IEnumerable<string> AvailableGenres =>
+        _genreNamesByMovieId.Values
+            .SelectMany(g => g)
+            .Distinct()
+            .Order();
+
+    private IEnumerable<string> AvailableAgeRatings =>
+        _ageByMovieId.Values
+            .Where(a => !string.IsNullOrWhiteSpace(a))
+            .Distinct()
+            .Order()!;
+
+    private IEnumerable<string> AvailableLanguages =>
+        _languageByMovieId.Values
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .Distinct()
+            .Order()!;
+
+    // ── Is any filter currently active? ─────────────────────────────────────
+    private bool IsFilterActive =>
+        !string.IsNullOrWhiteSpace(_titleSearch)
+        || _selected3DValues.Any(v => v != null)
+        || _selectedGenres.Any()
+        || _selectedAgeRatings.Any()
+        || _selectedLanguages.Any();
+
+    // ── Core filter logic ────────────────────────────────────────────────────
+    private IEnumerable<ShowingDisplayResponse> ApplyFilters(
+        IEnumerable<ShowingDisplayResponse> showings)
+    {
+        var result = showings;
+
+        // Title search
+        if (!string.IsNullOrWhiteSpace(_titleSearch))
+            result = result.Where(s =>
+                s.MovieTitle.Contains(_titleSearch, StringComparison.OrdinalIgnoreCase));
+
+        // 3D / 2D  (null selection = show all)
+        var formatSelection = _selected3DValues.FirstOrDefault(v => v != null);
+        if (formatSelection != null)
+            result = result.Where(s => s.Is3D == (formatSelection == "3D"));
+
+        // Genre — match ANY selected genre
+        if (_selectedGenres.Any())
+            result = result.Where(s =>
+                GetGenreNames(s.MovieId).Intersect(_selectedGenres).Any());
+
+        // Age rating — match ANY selected rating
+        if (_selectedAgeRatings.Any())
+            result = result.Where(s =>
+            {
+                var age = GetAgeIndication(s.MovieId);
+                return age != null && _selectedAgeRatings.Contains(age);
+            });
+
+        // Language — match ANY selected language
+        if (_selectedLanguages.Any())
+            result = result.Where(s =>
+            {
+                var lang = GetLanguage(s.MovieId);
+                return lang != null && _selectedLanguages.Contains(lang);
+            });
+
+        return result;
+    }
+
+    private void ClearAllFilters()
+    {
+        _titleSearch        = string.Empty;
+        _selected3DValues   = new List<string?> { null };
+        _selectedGenres     = new HashSet<string>();
+        _selectedAgeRatings = new HashSet<string>();
+        _selectedLanguages  = new HashSet<string>();
+    }
+    
     protected override async Task OnInitializedAsync()
     {
         InitializeWeekDays();
@@ -188,10 +382,16 @@ else
     {
         Navigation.NavigateTo($"/showingdetail/{movieId}/{showingId}");
     }
+    
+    private string? GetAgeIndication(int movieId) =>   // NEW
+        _ageByMovieId.TryGetValue(movieId, out var age) ? age : null;
+
+    private string? GetLanguage(int movieId) =>         // NEW
+        _languageByMovieId.TryGetValue(movieId, out var lang) ? lang : null;
 
     private async Task LoadDataAsync()
     {
-        _loading = true;
+        _loading   = true;
         _loadError = false;
 
         try
@@ -199,7 +399,7 @@ else
             var allShowings = await ShowingApi.GetShowingDisplayAsync();
 
             var startDay = _daysInWeek.First().Date;
-            var endDay = _daysInWeek.Last().Date.AddDays(1);
+            var endDay   = _daysInWeek.Last().Date.AddDays(1);
 
             _showings = allShowings
                 .Where(s =>
@@ -212,26 +412,33 @@ else
 
             var movieIds = _showings.Select(s => s.MovieId).Distinct().ToList();
 
-            foreach (var movieId in movieIds)
+            // ── Fetch movie metadata in parallel (fixes sequential await issue) ──
+            await Task.WhenAll(movieIds.Select(async movieId =>
             {
                 var movie = await MovieApi.GetMovieByIdAsync(movieId);
                 _posterUrlsByMovieId[movieId] = movie?.PosterPath;
-                _runtimeByMovieId[movieId] = movie?.Runtime;
+                _runtimeByMovieId[movieId]    = movie?.Runtime;
+                _ageByMovieId[movieId]        = movie?.AgeIndication;
+                _languageByMovieId[movieId]   = movie?.InformationLanguage;
 
+                // ── Genre names also fetched in parallel per movie ──
                 var genreNames = new List<string>();
-
-                if (movie?.GenresIds != null)
+                if (movie?.GenresIds != null && movie.GenresIds.Any())
                 {
-                    foreach (var genreId in movie.GenresIds)
-                    {
-                        var genre = await MovieApi.GetGenreByIdAsync(genreId, "nl");
-                        if (genre != null)
-                            genreNames.Add(genre.Name);
-                    }
-                }
+                    var genreResults = await Task.WhenAll(
+                        movie.GenresIds.Select(gid =>
+                            MovieApi.GetGenreByIdAsync(gid, "nl")));
 
+                    genreNames.AddRange(
+                        genreResults
+                            .Where(g => g != null)
+                            .Select(g => g!.Name));
+                }
                 _genreNamesByMovieId[movieId] = genreNames;
-            }
+                
+                _languageByMovieId[movieId] = movie?.InformationLanguage;
+                Console.WriteLine($"Movie {movieId} language: {movie?.InformationLanguage}");
+            }));
         }
         catch (Exception ex)
         {
