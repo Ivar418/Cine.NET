@@ -8,6 +8,7 @@ using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using SharedLibrary.DTOs.Responses.TMDB;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using SharedLibrary.DTOs.Models;
 
 
@@ -18,7 +19,9 @@ namespace API.Infrastructure.Database
 
     public static class DbSeeder
     {
-        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService,IShowingService showingService, ITicketService ticketService,IPricingService pricingService, IAuditoriumService auditoriumService)
+        public static async Task SeedAsync(ApiDbContext db, IMovieService movieService, IShowingService showingService,
+            ITicketService ticketService, IPricingService pricingService, IAuditoriumService auditoriumService,
+            ILocalMailService localMailService)
         {
             var movieEntities = new List<Movie>();
             if (!await db.Users.AnyAsync())
@@ -139,8 +142,8 @@ namespace API.Infrastructure.Database
 
             if (!await db.Showings.AnyAsync())
             {
-                var movies =  movieService.GetMoviesAsync("nl").Result.Value?.ToList();
-                var auditoriums =  auditoriumService.GetAuditoriumsAsync().Result.Value?.ToList();
+                var movies = movieService.GetMoviesAsync("nl").Result.Value?.ToList();
+                var auditoriums = auditoriumService.GetAuditoriumsAsync().Result.Value?.ToList();
 
                 var showings = new List<Showing>();
                 var start = DateTimeOffset.UtcNow.Date.AddHours(18); // 18:00 start
@@ -211,6 +214,32 @@ namespace API.Infrastructure.Database
                     TicketType = "Adult",
                     Price = 8.50m
                 });
+            }
+
+            new TextPart("plain")
+            {
+                Text = @"Hey Chandler,
+
+I just wanted to let you know that Monica and I were going to go play some paintball, you in?
+
+-- Joey"
+            };
+            if (!await db.EmailSubscriptions.AnyAsync())
+            {
+                await localMailService.AddAsync("TheBeeKeerIsAmazing@Badazz.yow");
+                await localMailService.AddAsync("Batman@adjlaskjd.nl");
+                var textPart = new TextPart("plain")
+                {
+                    Text = @" Hello subscribers!,
+                    
+This is a test email to confirm that the subscription system is working correctly. Thank you for subscribing to our newsletter!
+
+Groetjessssss,
+
+CineNet.
+"
+                };
+                await localMailService.SendEmailToSubscribersAsync(textPart, "CineNet", "Kom nu kijken!!");
             }
 
             await db.SaveChangesAsync();

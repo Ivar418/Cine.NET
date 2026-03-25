@@ -9,6 +9,7 @@ using API.Storage;
 using API.Storage.Implementations;
 using API.Storage.Interfaces;
 using DotNetEnv;
+using MailKit;
 using Microsoft.EntityFrameworkCore;
 
 Env.Load();
@@ -64,6 +65,10 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderPdfService, OrderPdfService>();
 
 builder.Services.AddScoped<ITicketRuleService, TicketRuleService>();
+
+// Emails
+builder.Services.AddScoped<IMailSubscriptionRepository, MailSubscriptionRepository>();
+builder.Services.AddScoped<ILocalMailService, LocalMailService>();
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();
@@ -192,16 +197,17 @@ using (var scope = app.Services.CreateScope())
     var ticketService = services.GetRequiredService<ITicketService>();
     var pricingService = services.GetRequiredService<IPricingService>();
     var auditoriumService = services.GetRequiredService<IAuditoriumService>();
+    var mailService = services.GetRequiredService<ILocalMailService>();
 
 
     // Seed data
     try
     {
-        await DbSeeder.SeedAsync(db, movieService, showingService, ticketService, pricingService, auditoriumService);
+        await DbSeeder.SeedAsync(db, movieService, showingService, ticketService, pricingService, auditoriumService, mailService);
     }
     catch (Exception ex)
     {
-        Console.WriteLine("Seeding failed: " + ex.Message);
+        Console.WriteLine("Seeding produced an error: " + ex.Message);
     }
 }
 
