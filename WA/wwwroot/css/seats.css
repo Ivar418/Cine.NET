@@ -23,6 +23,7 @@
 
 .seat-grid-wrap {
     overflow-x: auto;
+    align-content: center;
 }
 
 .seat-row {
