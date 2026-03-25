@@ -45,17 +45,15 @@ public class MailSubscriptionController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(email))
             return BadRequest("Email is required.");
+
         try
         {
-            if (!await _mailService.ExistsAsync(email))
-            {
-                return BadRequest("Email is not subscribed.");
-            }
+            var removed = await _mailService.RemoveAsync(email);
+            if (!removed) return BadRequest("Email is not subscribed.");
 
-            await _mailService.RemoveAsync(email);
             return Ok("Unsubscription successful.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, "An error occurred while processing your request.");
         }

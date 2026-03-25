@@ -23,7 +23,10 @@ public class MailSubscriptionRepository : IMailSubscriptionRepository
 
     public async Task<bool> RemoveAsync(string email)
     {
-        _db.EmailSubscriptions.Remove(new EmailSubscription { Email = email });
+        var emailEntity = await _db.EmailSubscriptions.Where(e => e.Email == email).FirstOrDefaultAsync();
+        if (emailEntity == null)
+            return false;
+        _db.EmailSubscriptions.Remove(emailEntity);
         await _db.SaveChangesAsync();
         return true;
     }
@@ -34,6 +37,7 @@ public class MailSubscriptionRepository : IMailSubscriptionRepository
         {
             return true;
         }
+
         return false;
     }
 
