@@ -215,15 +215,6 @@ namespace API.Infrastructure.Database
                     Price = 8.50m
                 });
             }
-
-            new TextPart("plain")
-            {
-                Text = @"Hey Chandler,
-
-I just wanted to let you know that Monica and I were going to go play some paintball, you in?
-
--- Joey"
-            };
             if (!await db.EmailSubscriptions.AnyAsync())
             {
                 await localMailService.AddAsync("TheBeeKeerIsAmazing@Badazz.yow");
@@ -236,8 +227,7 @@ This is a test email to confirm that the subscription system is working correctl
 
 Groetjessssss,
 
-CineNet.
-"
+CineNet."
                 };
                 await localMailService.SendEmailToSubscribersAsync(textPart, "CineNet", "Kom nu kijken!!");
             }
