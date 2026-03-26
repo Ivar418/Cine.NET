@@ -71,7 +71,7 @@
                         Color="Color.Primary"
                         Size="Size.Large"
                         Class="mt-6"
-                        OnClick="NavigateToOrder">
+                               OnClick="() => NavigateToOrder(ShowingId)">
                         Order Tickets
                     </MudButton>
                 </MudItem>
@@ -124,8 +124,8 @@
         _loading = false;
     }
 
-    private void NavigateToOrder()
+    private void NavigateToOrder(int ShowingId)
     {
-        Nav.NavigateTo($"/ideal-mock?reference=76328&amount=36.00&merchant=Cine.NET&description=Filmtickets");
+        Nav.NavigateTo($"/checkout/{ShowingId}");
     }
 }

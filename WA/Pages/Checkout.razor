@@ -1,13 +1,21 @@
 @page "/checkout/{ShowingId:int}"
 @namespace WA.Pages
+@using MudBlazor.Charts
 @using SharedLibrary.DTOs.Models
 @using WA.Components
 
 <MudContainer MaxWidth="MaxWidth.Large">
 
-    <MudStepper NonLinear="false" ActiveIndex="@step" >
+    @* ====== Step indicator (optioneel) ====== *@
+    <MudStack Row Justify="Justify.Center" Spacing="2" Class="mt-4">
+        <MudChip T="string" Color=@(step == 1 ? Color.Primary : Color.Default)>Seat choice</MudChip>
+        <MudChip T="string" Color=@(step == 2 ? Color.Primary : Color.Default)>Tickets</MudChip>
+        <MudChip T="string" Color=@(step == 3 ? Color.Primary : Color.Default)>Overview</MudChip>
+        <MudChip T="string" Color=@(step == 4 ? Color.Primary : Color.Default)>Choose payment type</MudChip>
+        <MudChip T="string" Color=@(step == 5 ? Color.Primary : Color.Default)>Payment</MudChip>
+    </MudStack>
 
-        <MudStep Label="Stoelen">
+    @if(step == 1){
 
             <MudStack Spacing="4">
 
@@ -43,7 +51,7 @@
                 {
                     @* Normal tickets *@
                     <MudStack Spacing="1">
-                        <MudText Typo="Typo.caption" Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">🪑 NORMAAL</MudText>
+                        <MudText Typo="Typo.caption" Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">🪑 NORMAL</MudText>
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
                             <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="() => _normalCount = Math.Max(0, _normalCount - 1)" />
                             <MudText Style="min-width:28px;text-align:center;font-weight:700;font-size:1.1rem">@_normalCount</MudText>
@@ -53,19 +61,13 @@
 
                     @* Wheelchair tickets *@
                     <MudStack Spacing="1">
-                        <MudText Typo="Typo.caption" Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">♿ ROLSTOEL</MudText>
+                        <MudText Typo="Typo.caption" Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">♿ WHEELCHAIR</MudText>
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
                             <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="() => _wcCount = Math.Max(0, _wcCount - 1)" />
                             <MudText Style="min-width:28px;text-align:center;font-weight:700;font-size:1.1rem;color:#93c5fd">@_wcCount</MudText>
                             <MudIconButton Icon="@Icons.Material.Filled.Add"    Size="Size.Small" OnClick="() => _wcCount++" />
                         </MudStack>
                     </MudStack>
-
-                    @* Zones
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.caption" Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">ZONES</MudText>
-                        <MudSwitch T="bool" @bind-Value="_showZones" Color="Color.Success" />
-                    </MudStack> *@
 
                     @* Actions *@
                     <MudStack Row="true" Spacing="1" Class="ml-auto" AlignItems="AlignItems.Center">
@@ -77,16 +79,16 @@
                         </MudButton>
                         @if (_pendingId.HasValue)
                         {
-                            <MudButton Variant="Variant.Filled" Color="Color.Success"
+                            @* <MudButton Variant="Variant.Filled" Color="Color.Success"
                                        StartIcon="@Icons.Material.Filled.Check"
-                                       OnClick="ConfirmAsync">Bevestig</MudButton>
-                            <MudButton Variant="Variant.Outlined"
+                                       OnClick="ConfirmAsync">Bevestig</MudButton> *@
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error"
                                        StartIcon="@Icons.Material.Filled.Close"
-                                       OnClick="CancelPendingAsync">Annuleer</MudButton>
+                                       OnClick="CancelPendingAsync">Cancel</MudButton>
                         }
-                        <MudButton Variant="Variant.Outlined" Color="Color.Error"
+                        @* <MudButton Variant="Variant.Outlined" Color="Color.Error"
                                    StartIcon="@Icons.Material.Filled.Refresh"
-                                   OnClick="ResetAsync">Reset</MudButton>
+                                   OnClick="ResetAsync">Reset</MudButton> *@
                     </MudStack>
                 }
             </MudStack>
@@ -124,7 +126,7 @@
                           AllSeats="@_state.AllSeats"
                           OccupiedKeys="@_state.OccupiedKeys"
                           SuggestedKeys="@_suggestedKeys"
-                          ShowZones="@_showZones" />
+                              ShowZones="@_showZones" />
             </MudPaper>
         }
         else if (_ShowingId.HasValue)
@@ -157,10 +159,11 @@
         }
 
     </MudStack>
+        <MudButton Style="float:right" Variant="Variant.Filled" Color="Color.Success" OnClick="(ConfirmAsync)" Disabled="@(_state == null || _pendingId == null)">Confirm</MudButton>
 
-        </MudStep>
+        }
+        @if(step == 2){
 
-        <MudStep Label="Tickets">
 
             @if (isLoading)
             {
@@ -180,10 +183,22 @@
             }
             else
             {
-                <MudPaper Class="pa-4 mb-4">
+
+            <MudPaper Class="pa-4 mb-4">
+                <MudStack Spacing="2">
                     <MudText Typo="Typo.h6">@Summary.MovieTitle</MudText>
                     <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
-                </MudPaper>
+
+                    <MudStack Row="true" Justify="Justify.FlexEnd">
+                        <MudButton Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Filled.Close"
+                                   Color="Color.Error"
+                                   OnClick="() => OnShowingChangedAsync(ShowingId)">
+                            Cancel
+                        </MudButton>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
 
                 @foreach (var seat in seats)
                 {
@@ -192,8 +207,8 @@
                         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 
                             <MudText>
-                                Rij @seat.Row Stoel @seat.SeatNumber
-                            </MudText>
+                            Rij @seat.Row Stoel @seat.SeatNumber
+                        </MudText>
                             
                             <MudSelect T="string" @bind-Value="seat.TicketType" Dense="true">
 
@@ -277,16 +292,33 @@
                 </MudList>
 
             </MudAlert>
-            
-        </MudStep>
 
-        <MudStep Label="Overzicht" Disabled="@(!IsTicketSelectionValid())">
+        <MudButton Style="float:right" Variant="Variant.Filled" Color="Color.Success" OnClick="() => step = 3" Disabled="@seats.Any(s => s.TicketType == null)">Next</MudButton>
+
+            }
             
-            <MudPaper Class="pa-4 mb-4">
+@if (step == 3)
+{
+            
+        <MudPaper Class="pa-4 mb-4">
+            <MudStack Spacing="2">
                 <MudText Typo="Typo.h6">Boekingsoverzicht</MudText>
                 <MudText Typo="Typo.body2">@Summary.MovieTitle</MudText>
                 <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
-            </MudPaper>
+
+                <MudStack Row="true" Justify="Justify.FlexEnd">
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Close"
+                               Color="Color.Error"
+                               OnClick="() => OnShowingChangedAsync(ShowingId)">
+                        Cancel
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+
+
+        
             
             @foreach (var seat in seats)
             {
@@ -302,8 +334,64 @@
                 </MudStack>
             </MudPaper>
 
-        </MudStep>
+        <MudButton Style="float:right" Variant="Variant.Filled" Color="Color.Primary" OnClick="() => step = 4">Confirm</MudButton>
 
-    </MudStepper>
+}
+
+@if(step == 4){
+    <MudPaper Class="pa-4 mb-4">
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.h6">Kies een betaalmethode</MudText>
+            <MudStack Row="true" Justify="Justify.FlexEnd">
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.Close"
+                           Color="Color.Error"
+                           OnClick="() => OnShowingChangedAsync(ShowingId)">
+                    Cancel
+                </MudButton>
+            </MudStack>
+        </MudStack>
+    </MudPaper>
+    <MudStack Row="true" Spacing="3">
+        <MudPaper Class="pa-4" Style="flex:1;cursor:pointer" OnClick="() => step = 5">
+            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Large" />
+                <MudText>Creditcard</MudText>
+            </MudStack>
+        </MudPaper>
+        <MudPaper Class="pa-4" Style="flex:1;cursor:pointer" OnClick="() => step = 5">
+            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" />
+                <MudText>iDeal</MudText>
+            </MudStack>
+        </MudPaper>
+        <MudPaper Class="pa-4" Style="flex:1;cursor:pointer" OnClick="() => step = 5">
+            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.MobileFriendly" Size="Size.Large" />
+                <MudText>MobilePay</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudStack>
+    }
+
+@if(step == 5){
+    <MudPaper Class="pa-4 mb-4">
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.h6">Voltooi de betaling</MudText>
+            <MudStack Row="true" Justify="Justify.FlexEnd">
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.Close"
+                           Color="Color.Error"
+                           OnClick="() => OnShowingChangedAsync(ShowingId)">
+                    Cancel
+                </MudButton>
+            </MudStack>
+        </MudStack>
+    </MudPaper>
+    @* Hier zou je een component kunnen plaatsen die de daadwerkelijke betalingsstroom afhandelt, afhankelijk van de gekozen methode *@
+    <MudAlert Severity="Severity.Info" Dense="true">
+        Betalingsverwerking is nog niet geïmplementeerd.
+        </MudAlert>
+    }
 
 </MudContainer>

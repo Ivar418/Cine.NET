@@ -19,11 +19,11 @@ public partial class Checkout
     [Inject] public IShowingApi ShowingApi { get; set; } = default!;
     [Inject] ISeatFinderApiClient Api { get; set; } = default!;
 
-    protected int step = 0;
+    protected int step = 1;
 
-    protected List<SeatInfo> seatInfos = new List<SeatInfo>();
+    protected List<SeatInfo> seatInfos = [];
 
-    protected List<TicketSelection> seats = new();
+    protected List<TicketSelection> seats = [];
     [Parameter] public int ShowingId { get; set; }
 
     protected ShowingsWithPricesResponse? showing;
@@ -36,7 +36,6 @@ public partial class Checkout
         TotalPrice = seats.Sum(GetSeatPrice)
     };
     
-
     protected override async Task OnInitializedAsync()
     {
         try
@@ -55,23 +54,7 @@ public partial class Checkout
         }
     }
 
-    protected bool IsTicketSelectionValid()
-    {
-        return seats.All(s => !string.IsNullOrEmpty(s.TicketType));
-    }
-
     [Inject] public ISnackbar Snackbar { get; set; } = default!;
-
-    private void NextStep()
-    {
-        if (step == 1 && !IsTicketSelectionValid())
-        {
-            Snackbar.Add("Selecteer voor elke stoel een tickettype", Severity.Warning);
-            return;
-        }
-
-        step++;
-    }
     protected decimal GetSeatPrice(TicketSelection seat)
     {
         if (showing is null || string.IsNullOrWhiteSpace(seat.TicketType))
@@ -107,6 +90,8 @@ public partial class Checkout
         _state = null;
         _suggestedKeys = [];
         _pendingId = null;
+        seatInfos = [];
+        seats = [];
 
         if (id != null)
         {
@@ -151,12 +136,11 @@ public partial class Checkout
         var res = await Api.ConfirmAsync(_pendingId.Value);
         if (res is null) { Snackbar.Add("Bevestiging mislukt.", Severity.Error); return; }
 
-        _pendingId = null;
         _suggestedKeys = [];
         _confirmedReservation = res;
         // Refresh state from server to get accurate picture
-        if (_ShowingId.HasValue)
-            _state = await Api.GetShowingStateAsync(_ShowingId.Value);
+        //if (_ShowingId.HasValue)
+        //    _state = await Api.GetShowingStateAsync(_ShowingId.Value);
 
         seatInfos = res.GetSeats();
 
@@ -164,10 +148,12 @@ public partial class Checkout
 
         foreach (var seatInfo in seatInfos)
         {
-            seats.Add(new TicketSelection() { Row = seatInfo.Row, SeatNumber = seatInfo.Col });
+            var row = seatInfo.Row + 1;
+            var col = seatInfo.Col + 1;
+            seats.Add(new TicketSelection() { Row = row, SeatNumber = col });
         }
 
-        NextStep();
+        step++;
 
     }
 
@@ -184,13 +170,9 @@ public partial class Checkout
 
         _pendingId = null;
         _suggestedKeys = [];
-    }
+        step = 1;
+        await InvokeAsync(StateHasChanged);
 
-    private async Task ResetAsync()
-    {
-        await CancelPendingAsync();
-        if (_ShowingId.HasValue)
-            _state = await Api.GetShowingStateAsync(_ShowingId.Value);
     }
 
     // ── Legend ────────────────────────────────────────────────────────────
