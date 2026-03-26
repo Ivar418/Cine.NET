@@ -1,4 +1,6 @@
-﻿namespace API.Infrastructure.Database;
+﻿using API.Domain.Model;
+
+namespace API.Infrastructure.Database;
 
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -28,7 +30,11 @@ public class ApiDbContext : DbContext
     // Pricing related entities
     public DbSet<TicketType> TicketTypes => Set<TicketType>();
     public DbSet<PricingConfig> PricingConfigs => Set<PricingConfig>();
+
     public DbSet<PricingOption> PricingOptions => Set<PricingOption>();
+
+    // Email related entities
+    public DbSet<EmailSubscription> EmailSubscriptions => Set<EmailSubscription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -97,5 +103,7 @@ public class ApiDbContext : DbContext
                 System.Globalization.DateTimeStyles.None
             )
         );
+        // Email related entities
+        modelBuilder.Entity<EmailSubscription>().ToTable("email_subscriptions");
     }
 }
