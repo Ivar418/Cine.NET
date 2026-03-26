@@ -98,59 +98,39 @@ namespace API.Infrastructure.Database
                 {
                     new CreateAuditoriumRequest("Zaal 1", new List<RowConfig>
                     {
-                        new RowConfig(15, 2),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 2),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 4)
+                        new RowConfig(10, 1),
+                        new RowConfig(11, 2),
+                        new RowConfig(12, 3)
                     }),
                     new CreateAuditoriumRequest("Zaal 2", new List<RowConfig>
                     {
-                        new RowConfig(15, 2),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 2),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 4)
+                        new RowConfig(13, 0),
+                        new RowConfig(14, 1),
+                        new RowConfig(15, 2)
                     }),
                     new CreateAuditoriumRequest("Zaal 3", new List<RowConfig>
                     {
-                        new RowConfig(15, 2),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 2),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 4)
+                        new RowConfig(16, 0),
+                        new RowConfig(17, 1),
+                        new RowConfig(18, 2)
                     }),
                     new CreateAuditoriumRequest("Zaal 4", new List<RowConfig>
                     {
-                        new RowConfig(10, 0),
-                        new RowConfig(10, 1),
-                        new RowConfig(10, 2),
-                        new RowConfig(10, 0),
-                        new RowConfig(10, 1),
-                        new RowConfig(10, 2)
+                        new RowConfig(19, 0),
+                        new RowConfig(20, 1),
+                        new RowConfig(21, 2)
                     }),
                     new CreateAuditoriumRequest("Zaal 5", new List<RowConfig>
                     {
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(10, 0),
-                        new RowConfig(10, 0)
+                        new RowConfig(22, 10),
+                        new RowConfig(23, 23),
+                        new RowConfig(24, 11)
                     }),
                     new CreateAuditoriumRequest("Zaal 6", new List<RowConfig>
                     {
-                        new RowConfig(15, 0),
-                        new RowConfig(15, 0),
-                        new RowConfig(10, 0),
-                        new RowConfig(10, 0)
+                        new RowConfig(25, 0),
+                        new RowConfig(30, 1),
+                        new RowConfig(40, 2)
                     }),
                 };
                 foreach (var request in auditoriumsRequest)
