@@ -130,25 +130,41 @@ public static class SeatFinder
 
         for (int startCat = 1; startCat <= 6; startCat++)
         {
-            var seeds = ctx.AllSeats
-                .Where(s => isAvail(s) && s.Category == startCat)
-                .ToList();
+            var seeds = ctx.AllSeats.Where(s => isAvail(s) && s.Category == startCat).ToList();
             if (seeds.Count == 0) continue;
 
-            // Grow blob of size ≥ count from all seeds simultaneously
             var blob = GrowBlob(ctx, seeds, count, isAvail);
             if (blob is null) continue;
 
-            // Select best 'count' from blob with isolation repair
             var chosen = SelectWithIsolationRepair(ctx, blob, count);
-            if (chosen is null || chosen.Count < count) continue;
-
-            // Side-by-side check
-            if (count > 1 && !HasAdjacentPair(chosen)) continue;
-
-            double sc = Score(ctx, chosen);
-            if (sc < bestSc) { bestSc = sc; best = chosen; }
+            if (chosen != null && chosen.Count >= count)
+            {
+                // VOEG DIT TOE: Stop direct als de gewenste zone resultaat geeft.
+                return chosen;
+            }
         }
+
+        //for (int startCat = 1; startCat <= 6; startCat++)
+        //{
+        //    var seeds = ctx.AllSeats
+        //        .Where(s => isAvail(s) && s.Category == startCat)
+        //        .ToList();
+        //    if (seeds.Count == 0) continue;
+
+        //    // Grow blob of size ≥ count from all seeds simultaneously
+        //    var blob = GrowBlob(ctx, seeds, count, isAvail);
+        //    if (blob is null) continue;
+
+        //    // Select best 'count' from blob with isolation repair
+        //    var chosen = SelectWithIsolationRepair(ctx, blob, count);
+        //    if (chosen is null || chosen.Count < count) continue;
+
+        //    // Side-by-side check
+        //    if (count > 1 && !HasAdjacentPair(chosen)) continue;
+
+        //    double sc = Score(ctx, chosen);
+        //    if (sc < bestSc) { bestSc = sc; best = chosen; }
+        //}
 
         return best;
     }
@@ -197,50 +213,47 @@ public static class SeatFinder
     private static List<SeatInfo>? SelectWithIsolationRepair(
         Ctx ctx, List<SeatInfo> blob, int count)
     {
-        var sorted = blob
-            .OrderBy(s => s.Category)
-            .ThenBy(ctx.Dist)
-            .ToList();
 
-        var chosen = sorted.Take(count).ToList();
-        var blobSet = blob.ToDictionary(Key);
+        double midCol = ctx.AllSeats.Max(s => s.VirtualCol) / 2.0;
 
-        // Iterative isolation repair
-        for (int pass = 0; pass < count; pass++)
+        // 1. Probeer de hele groep op één rij (Best Fit)
+        var singleRow = blob.GroupBy(s => s.Row)
+            .Where(g => g.Count() >= count)
+            .OrderBy(g => Math.Abs(g.Key - (ctx.AllSeats.Max(s => s.Row) / 2.0)))
+            .Select(g => g.OrderBy(s => Math.Abs(s.VirtualCol - midCol)).Take(count).ToList())
+            .FirstOrDefault();
+
+        if (singleRow != null) return singleRow;
+
+        // 2. Als 1 rij niet past: Verdeel over TWEE aangrenzende rijen (Split Fit)
+        // We zoeken naar twee rijen die samen genoeg plek hebben en verdelen de groep 50/50 of 60/40
+        var rows = blob.GroupBy(s => s.Row).OrderBy(g => g.Key).ToList();
+        for (int i = 0; i < rows.Count - 1; i++)
         {
-            bool repaired = false;
-            foreach (var seat in chosen.ToList())
+            var row1 = rows[i];
+            var row2 = rows[i + 1];
+
+            if (row1.Count() + row2.Count() >= count)
             {
-                // Is this seat alone in its row within the current selection?
-                bool isolated = !chosen.Any(s => s.Row == seat.Row && Key(s) != Key(seat));
-                if (!isolated) continue;
+                // Bereken een eerlijke verdeling (bijv. 6 wordt 3 om 3, 5 wordt 3 om 2)
+                int countRow1 = (int)Math.Ceiling(count / 2.0);
+                int countRow2 = count - countRow1;
 
-                // Find a direct row-neighbour in the blob that isn't chosen yet
-                var blobNeighbour = SameRowNeighbours(ctx, seat)
-                    .FirstOrDefault(n => blobSet.ContainsKey(Key(n))
-                                      && !chosen.Any(s => Key(s) == Key(n)));
-
-                if (blobNeighbour is null) continue; // unavoidable isolation
-
-                // Find the worst non-isolated seat to swap out
-                var removable = chosen
-                    .Where(s => chosen.Count(x => x.Row == s.Row) > 1)
-                    .OrderByDescending(s => s.Category)
-                    .ThenByDescending(ctx.Dist)
-                    .FirstOrDefault();
-
-                if (removable is not null)
+                // Check of deze verdeling past in deze twee specifieke rijen
+                if (row1.Count() >= countRow1 && row2.Count() >= countRow2)
                 {
-                    chosen.Remove(removable);
-                    chosen.Add(blobNeighbour);
-                    repaired = true;
-                    break;
+                    var part1 = row1.OrderBy(s => Math.Abs(s.VirtualCol - midCol)).Take(countRow1);
+                    var part2 = row2.OrderBy(s => Math.Abs(s.VirtualCol - midCol)).Take(countRow2);
+                    return part1.Concat(part2).ToList();
                 }
             }
-            if (!repaired) break;
         }
 
-        return chosen.Count == count ? chosen : null;
+        // 3. Absolute Fallback: Sorteer alles op 'compactheid' rondom het midden
+        return blob.OrderBy(s => Math.Abs(s.VirtualCol - midCol))
+                   .ThenBy(s => s.Row)
+                   .Take(count)
+                   .ToList();
     }
 
     // ── Group enumeration ─────────────────────────────────────────────────
