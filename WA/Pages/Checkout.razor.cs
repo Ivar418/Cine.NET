@@ -1,25 +1,33 @@
 ﻿using MudBlazor;
 using SharedLibrary.DTOs.Models;
+using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
 
 namespace WA.Pages;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using SharedLibrary.Domain.Entities;
-using System.ComponentModel;
 using WA.Models;
 using WA.Services.Http;
 using WA.Services.Http.Interfaces;
+
 
 public partial class Checkout
 {
     protected bool isLoading = true;
     protected string? errorMessage = null;
+    protected bool _orderBusy = false;
 
     [Inject] public IShowingApi ShowingApi { get; set; } = default!;
     [Inject] ISeatFinderApiClient Api { get; set; } = default!;
+    [Inject] IOrderApi OrderApi { get; set; } = default!;
+    [Inject] NavigationManager Nav { get; set; } = default!;
+    [Inject] IJSRuntime JS { get; set; } = default!;
 
     protected int step = 1;
+    protected string? selectedPaymentMethod = null;
+    protected CreateOrderResponse? createdOrder = null;
 
     protected List<SeatInfo> seatInfos = [];
 
@@ -183,4 +191,97 @@ public partial class Checkout
         ("Suggestie ★", "#fbbf24"), ("Bevestigd ✓", "#22c55e"),
         ("Bezet", "#3f3f46"),    ("Rolstoel ♿", "#1d4ed8"),
     ];
+
+    // ── Step 4: pick payment method and advance ───────────────────────────
+    protected void SelectPaymentMethod(string method)
+    {
+        selectedPaymentMethod = method;
+        step = 5;
+    }
+
+    // ── Step 5: build & submit order, then branch ─────────────────────────
+    protected async Task ProcessOrderAsync()
+    {
+        if (string.IsNullOrWhiteSpace(selectedPaymentMethod)) return;
+
+        _orderBusy = true;
+        StateHasChanged();
+
+        var ticketRequests = seats.Select(seat => new TicketRequest
+        {
+            ShowingId     = ShowingId,
+            ShowDateTimeUtc = showing?.StartsAt ?? DateTimeOffset.UtcNow,
+            SeatNumber    = $"{(char)('A' + seat.Row - 1)}{seat.SeatNumber}",
+            TicketType    = seat.TicketType ?? "Adult",
+            Price         = GetSeatPrice(seat)
+        }).ToList();
+
+        var apiPaymentMethod = selectedPaymentMethod switch
+        {
+            "IDEAL"      => "IDEAL",
+            "Creditcard" => "CREDITCARD",
+            _            => "PIN"
+        };
+
+        var orderType = selectedPaymentMethod == "Reservation" ? "Reservation" : "Payment";
+
+        var request = new CreateOrderRequest
+        {
+            OrderType     = orderType,
+            PaymentMethod = apiPaymentMethod,
+            Tickets       = ticketRequests
+        };
+
+        var order = await OrderApi.CreateOrderAsync(request);
+        _orderBusy = false;
+
+        if (order is null)
+        {
+            Snackbar.Add("Aanmaken van bestelling mislukt. Probeer opnieuw.", Severity.Error);
+            return;
+        }
+
+        createdOrder = order;
+
+        if (selectedPaymentMethod == "Reservation")
+        {
+            await HandleReservationAsync(order);
+        }
+        else
+        {
+            GoToIdealMock(order);
+        }
+    }
+
+    // ── Reservation: download reservation PDF ────────────────────────────
+    private async Task HandleReservationAsync(CreateOrderResponse order)
+    {
+        var pdf = await OrderApi.GetReservationPdfAsync(order.OrderId);
+        if (pdf is not null)
+            await DownloadPdfAsync(pdf, $"reservering-{order.OrderCode}.pdf");
+        else
+            Snackbar.Add("Reservering aangemaakt maar PDF kon niet worden gegenereerd.", Severity.Warning);
+
+        Snackbar.Add($"Reservering {order.OrderCode} aangemaakt!", Severity.Success);
+    }
+
+    // ── Payment: redirect to iDeal mock with all required params ─────────
+    private void GoToIdealMock(CreateOrderResponse order)
+    {
+        var returnUrl = Uri.EscapeDataString($"/checkout/payment-result?orderId={order.OrderId}&success=true");
+        var url = $"/ideal-mock" +
+                  $"?reference={Uri.EscapeDataString(order.OrderCode)}" +
+                  $"&amount={order.TotalAmount:F2}" +
+                  $"&merchant={Uri.EscapeDataString("CineNet B.V.")}" +
+                  $"&description={Uri.EscapeDataString("Bestelling " + order.OrderCode)}" +
+                  $"&returnUrl={returnUrl}";
+        Nav.NavigateTo(url);
+    }
+
+    // ── JS interop: trigger browser PDF download ──────────────────────────
+    private async Task DownloadPdfAsync(byte[] bytes, string fileName)
+    {
+        var base64 = Convert.ToBase64String(bytes);
+        await JS.InvokeVoidAsync("downloadBase64Pdf", base64, fileName);
+    }
 }

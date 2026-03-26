@@ -352,46 +352,99 @@
             </MudStack>
         </MudStack>
     </MudPaper>
-    <MudStack Row="true" Spacing="3">
-        <MudPaper Class="pa-4" Style="flex:1;cursor:pointer" OnClick="() => step = 5">
-            <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Large" />
-                <MudText>Creditcard</MudText>
-            </MudStack>
-        </MudPaper>
-        <MudPaper Class="pa-4" Style="flex:1;cursor:pointer" OnClick="() => step = 5">
-            <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" />
-                <MudText>iDeal</MudText>
-            </MudStack>
-        </MudPaper>
-        <MudPaper Class="pa-4" Style="flex:1;cursor:pointer" OnClick="() => step = 5">
-            <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                <MudIcon Icon="@Icons.Material.Filled.MobileFriendly" Size="Size.Large" />
-                <MudText>MobilePay</MudText>
-            </MudStack>
-        </MudPaper>
-    </MudStack>
-    }
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="4">
+            <MudButton FullWidth="true"
+                       Variant="@(selectedPaymentMethod == "IDEAL" ? Variant.Filled : Variant.Outlined)"
+                       Color="Color.Primary"
+                       Class="pa-6"
+                       Style="height:100%;min-height:140px"
+                       OnClick='() => SelectPaymentMethod("IDEAL")'>
+                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" />
+                    <MudText>iDeal</MudText>
+                </MudStack>
+            </MudButton>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudButton FullWidth="true"
+                       Variant="@(selectedPaymentMethod == "Creditcard" ? Variant.Filled : Variant.Outlined)"
+                       Color="Color.Secondary"
+                       Class="pa-6"
+                       Style="height:100%;min-height:140px"
+                       OnClick='() => SelectPaymentMethod("Creditcard")'>
+                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Large" />
+                    <MudText>Creditcard</MudText>
+                </MudStack>
+            </MudButton>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudButton FullWidth="true"
+                       Variant="@(selectedPaymentMethod == "Reservation" ? Variant.Filled : Variant.Outlined)"
+                       Color="Color.Success"
+                       Class="pa-6"
+                       Style="height:100%;min-height:140px"
+                       OnClick='() => SelectPaymentMethod("Reservation")'>
+                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.BookmarkAdd" Size="Size.Large" />
+                    <MudText>Reserveren</MudText>
+                </MudStack>
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+}
 
 @if(step == 5){
     <MudPaper Class="pa-4 mb-4">
         <MudStack Spacing="2">
-            <MudText Typo="Typo.h6">Voltooi de betaling</MudText>
-            <MudStack Row="true" Justify="Justify.FlexEnd">
-                <MudButton Variant="Variant.Outlined"
-                           StartIcon="@Icons.Material.Filled.Close"
-                           Color="Color.Error"
-                           OnClick="() => OnShowingChangedAsync(ShowingId)">
-                    Cancel
-                </MudButton>
-            </MudStack>
+            <MudText Typo="Typo.h6">Bevestig bestelling</MudText>
+            <MudText Typo="Typo.body2">Betaalmethode: <strong>@selectedPaymentMethod</strong></MudText>
         </MudStack>
     </MudPaper>
-    @* Hier zou je een component kunnen plaatsen die de daadwerkelijke betalingsstroom afhandelt, afhankelijk van de gekozen methode *@
-    <MudAlert Severity="Severity.Info" Dense="true">
-        Betalingsverwerking is nog niet geïmplementeerd.
-        </MudAlert>
-    }
+
+    @* Order summary *@
+    <MudPaper Class="pa-4 mb-4">
+        <MudText Typo="Typo.subtitle1" Class="mb-2">@Summary.MovieTitle</MudText>
+        <MudText Typo="Typo.body2" Class="mb-3">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
+        @foreach (var seat in seats)
+        {
+            <MudText Typo="Typo.body2">
+                Rij @seat.Row · Stoel @seat.SeatNumber · @seat.TicketType · €@GetSeatPrice(seat).ToString("F2")
+            </MudText>
+        }
+        <MudDivider Class="my-3" />
+        <MudStack Row Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.h6">Totaal</MudText>
+            <MudText Typo="Typo.h6">€@Summary.TotalPrice.ToString("F2")</MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudStack Row="true" Spacing="2" Justify="Justify.SpaceBetween">
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="() => step = 4"
+                   Disabled="@_orderBusy">
+            ← Terug
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="@(selectedPaymentMethod == "Reservation" ? Color.Success : Color.Primary)"
+                   OnClick="ProcessOrderAsync"
+                   Disabled="@_orderBusy"
+                   StartIcon="@(selectedPaymentMethod == "Reservation" ? Icons.Material.Filled.BookmarkAdd : Icons.Material.Filled.Payment)">
+            @if (_orderBusy)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <text>Bezig...</text>
+            }
+            else if (selectedPaymentMethod == "Reservation")
+            {
+                <text>Reservering bevestigen</text>
+            }
+            else
+            {
+                <text>Doorgaan naar betaling</text>
+            }
+        </MudButton>
+    </MudStack>
+}
 
 </MudContainer>
