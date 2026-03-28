@@ -7,15 +7,16 @@
 @inject ISnackbar Snackbar
 @using WA.Layout
 @layout MainLayout
+@inject IStringLocalizer<WA.Localization.SharedResources> L
 
-<PageTitle>Movies Today</PageTitle>
+<PageTitle>@L["Movies Today"]</PageTitle>
 
 <HeadContent>
     <link rel="stylesheet" href="css/moviestoday.css" />
 </HeadContent>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
-    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">Movies Today</MudText>
+    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">@L["Movies Today"]</MudText>
     <MudText Typo="Typo.h6" Style="color: #03DAC6;">@DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm")</MudText>
 </MudStack>
 
