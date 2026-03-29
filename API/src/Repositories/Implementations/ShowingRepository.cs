@@ -46,6 +46,15 @@ namespace API.Repositories.Implementations
             throw new NotImplementedException();
         }
 
+        /**
+        * Retrieves a Showing by its ID including Movie and Auditorium data.
+        *
+        * @param id The unique identifier of the Showing.
+        * @return A [ResultOf<Showing>] containing the Showing if found.
+        *
+        * @response Success Returns the Showing.
+        * @response Failure "NotFound" If the Showing does not exist.
+        */
         public async Task<ResultOf<Showing>> GetShowingAsync(int id)
         {
             var showing = await _db.Showings
