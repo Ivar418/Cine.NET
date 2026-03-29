@@ -34,17 +34,15 @@
 
 </MudLayout>
 
-@code {
-    private Action _handler = default!;
 
+@code {
     protected override void OnInitialized()
     {
-        _handler = () => InvokeAsync(StateHasChanged);
-        LayoutState.OnChange += _handler;
+        LayoutState.OnChange += () => InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        LayoutState.OnChange -= _handler;
+        LayoutState.OnChange -= StateHasChanged;
     }
 }
