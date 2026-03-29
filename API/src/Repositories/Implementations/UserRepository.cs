@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using API.Domain.Common;
+using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
@@ -14,10 +15,38 @@ public class UserRepository : IUserRepository
         _db = db;
     }
 
-    public async Task<IReadOnlyList<User>> GetAllAsync()
-        => await _db.Users.AsNoTracking().ToListAsync();
+    public async Task<ResultOf<IReadOnlyList<User>>> GetAllAsync()
+    {
+        try
+        {
+            var users = await _db.Users
+                .AsNoTracking()
+                .ToListAsync();
 
-    public async Task<User?> GetByIdAsync(int id)
-        => await _db.Users.AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == id);
+            return ResultOf<IReadOnlyList<User>>.Success(users);
+        }
+        catch (Exception ex)
+        {
+            return ResultOf<IReadOnlyList<User>>.Failure(ex.Message);
+        }
+    }
+
+    public async Task<ResultOf<User?>> GetByIdAsync(int id)
+    {
+        try
+        {
+            var user = await _db.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+                return ResultOf<User?>.Failure("User not found");
+
+            return ResultOf<User?>.Success(user);
+        }
+        catch (Exception ex)
+        {
+            return ResultOf<User?>.Failure(ex.Message);
+        }
+    }
 }

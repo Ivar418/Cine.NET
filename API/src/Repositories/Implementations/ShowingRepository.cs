@@ -1,12 +1,14 @@
-﻿using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using API.Domain.Common;
+﻿using API.Domain.Common;
 using API.Infrastructure.Database;
-using API.src.Repositories.Interfaces;
+using API.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
+using API.Mappers;
+using SharedLibrary.DTOs.Responses;
+using API.src.Repositories.Implementations;
 
-namespace API.src.Repositories.Implementations
+namespace API.Repositories.Implementations
 {
     public class ShowingRepository : IShowingRepository
     {
@@ -16,20 +18,21 @@ namespace API.src.Repositories.Implementations
         {
             _db = db;
         }
-        async Task<Showing> IShowingRepository.AddShowingAsync(CreateShowingRequest Showing)
+        async Task<Showing> IShowingRepository.AddShowingAsync(CreateShowingRequest showingRequest)
         {
-            Console.WriteLine($"Adding Showing of movie: {Showing.MovieId}");
+            Console.WriteLine($"Adding Showing of movie: {showingRequest.MovieId}");
             Showing newShowing = new Showing
             {
-                MovieId = Showing.MovieId,
-                AuditoriumId = Showing.AuditoriumId,
-                StartsAt = Showing.StartsAt
+                MovieId = showingRequest.MovieId,
+                AuditoriumId = showingRequest.AuditoriumId,
+                StartsAt = showingRequest.StartsAt,
+                IsThreeD = showingRequest.Is3D,
             };
-            Auditorium auditorium = _db.Auditoriums.FirstOrDefault(a => a.Id == Showing.AuditoriumId);
-
+            Auditorium auditorium = _db.Auditoriums.FirstOrDefault(a => a.Id == showingRequest.AuditoriumId);
+            Movie movie = _db.Movies.FirstOrDefault(m => m.Id == showingRequest.MovieId);
             if (auditorium == null)
             {
-                throw new Exception($"Auditorium with id {Showing.AuditoriumId} not found.");
+                throw new Exception($"Auditorium with id {showingRequest.AuditoriumId} not found.");
             }
             newShowing.SetLayoutSnapshot(auditorium.GetRows());
 
@@ -38,24 +41,33 @@ namespace API.src.Repositories.Implementations
             return result.Entity;
         }
 
-        async Task<ResultOf<Showing>> IShowingRepository.DeleteShowingByIdAsync(int ShowingId)
+        public async Task<ResultOf<Showing>> DeleteShowingByIdAsync(int ShowingId)
         {
             throw new NotImplementedException();
         }
 
-        async Task<ResultOf<Showing>> IShowingRepository.GetShowingAsync(int id)
+        public async Task<ResultOf<Showing>> GetShowingAsync(int id)
         {
-            var Showing = await _db.Showings.FindAsync(id);
-            return Showing == null ? ResultOf<Showing>.Failure("Auditorium not found") : ResultOf<Showing>.Success(Showing);
+            var showing = await _db.Showings
+                .Include(s => s.Movie)
+                .Include(s => s.Auditorium)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            
+            return showing == null
+                ? ResultOf<Showing>.Failure("NotFound")
+                : ResultOf<Showing>.Success(showing);
         }
 
-        async Task<ResultOf<ICollection<Showing>>> IShowingRepository.GetShowingsAsync()
+        public async Task<ResultOf<ICollection<Showing>>> GetShowingsAsync()
         {
             try
             {
-                var Showings = await _db.Showings.ToListAsync();
+                var showings = await _db.Showings
+                    .Include(s => s.Movie)
+                    .Include(s => s.Auditorium)
+                    .ToListAsync();
 
-                return ResultOf<ICollection<Showing>>.Success(Showings);
+                return ResultOf<ICollection<Showing>>.Success(showings);
             }
             catch (Exception e)
             {
@@ -76,14 +88,111 @@ namespace API.src.Repositories.Implementations
          - Return a successful ResultOf<ShowingStateDto> with the constructed DTO.
         */
 
-        Task<ResultOf<ShowingStateDto>> IShowingRepository.GetShowingStateAsync(int id)
+        
+
+        public async Task<Showing> UpdateShowingAsync(Showing Showing)
         {
             throw new NotImplementedException();
         }
-
-        async Task<Showing> IShowingRepository.UpdateShowingAsync(Showing Showing)
+        
+        public async Task<ResultOf<ShowingDisplayResponse>> GetShowingDisplayByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var showing = await _db.Showings
+                    .Where(s => s.Id == id)
+                    .Select(s => new ShowingDisplayResponse
+                    {
+                        Id = s.Id,
+                        MovieId = s.MovieId,
+                        AuditoriumId = s.AuditoriumId,
+                        MovieTitle = s.Movie.Title,
+                        AuditoriumName = s.Auditorium.Name,
+                        Runtime = s.Movie.Runtime,
+                        Is3D = s.IsThreeD,
+                        StartsAt = s.StartsAt
+                    })
+                    .FirstOrDefaultAsync();
+
+                return showing == null
+                    ? ResultOf<ShowingDisplayResponse>.Failure("Showing not found")
+                    : ResultOf<ShowingDisplayResponse>.Success(showing);
+            }
+            catch (Exception e)
+            {
+                return ResultOf<ShowingDisplayResponse>.Failure(e.Message);
+            }
+        }
+        
+        /// <summary>
+        /// Retrieves all upcoming showings for a specific movie from the database, projected directly
+        /// to <see cref="ShowingResponse"/>. Only showings with a start time greater than
+        /// <paramref name="cutoff"/> are included, ordered by start time ascending.
+        /// </summary>
+        /// <param name="movieId">The internal ID of the movie to retrieve showings for.</param>
+        /// <param name="cutoff">
+        /// The earliest allowed start time. Showings starting after this value will be included.
+        /// Passed in from the service layer to keep business rules out of the repository.
+        /// </param>
+        /// <returns>
+        /// A <see cref="ResultOf{T}"/> containing a collection of <see cref="ShowingResponse"/> on success,
+        /// or a failure with the exception message if the database query fails.
+        /// </returns>
+        async Task<ResultOf<ICollection<ShowingResponse>>> IShowingRepository.GetUpcomingShowingsByMovieIdAsync(int movieId, DateTimeOffset cutoff)
+        {
+            try
+            {
+                var showings = await _db.Showings
+                    .Where(s => s.MovieId == movieId && s.StartsAt > cutoff)
+                    .OrderBy(s => s.StartsAt)
+                    .Select(s => new ShowingResponse
+                    {
+                        Id                       = s.Id,
+                        MovieId                  = s.MovieId,
+                        AuditoriumId             = s.AuditoriumId,
+                        Is3D                     = s.IsThreeD,
+                        StartsAt                 = s.StartsAt,
+                        AuditoriumLayoutSnapshot = s.AuditoriumLayoutSnapshot
+                    })
+                    .ToListAsync();
+
+                return ResultOf<ICollection<ShowingResponse>>.Success(showings);
+            }
+            catch (Exception e)
+            {
+                return ResultOf<ICollection<ShowingResponse>>.Failure(e.Message);
+            }
+        }
+
+        async Task<ResultOf<ICollection<ShowingDisplayResponse>>> IShowingRepository.GetShowingDisplayAsync(DateOnly? date)
+        {
+            try
+            {
+                var query = _db.Showings.AsQueryable();
+
+                if (date.HasValue)
+                    query = query.Where(s => s.StartsAt.Date == date.Value.ToDateTime(TimeOnly.MinValue).Date);
+
+                var showings = await query
+                    .Select(s => new ShowingDisplayResponse
+                    {
+                        Id = s.Id,
+                        MovieId = s.MovieId,
+                        AuditoriumId = s.AuditoriumId,
+                        MovieTitle = s.Movie.Title,
+                        AuditoriumName = s.Auditorium.Name,
+                        Runtime = s.Movie.Runtime,
+                        Is3D = s.IsThreeD,
+                        StartsAt = s.StartsAt
+                    })
+                    .ToListAsync();
+
+                return ResultOf<ICollection<ShowingDisplayResponse>>.Success(showings);
+            }
+            catch (Exception e)
+            {
+                return ResultOf<ICollection<ShowingDisplayResponse>>.Failure(e.Message);
+            }
         }
     }
 }

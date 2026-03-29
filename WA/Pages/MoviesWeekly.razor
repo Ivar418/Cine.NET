@@ -1,0 +1,469 @@
+@page "/thisweek"
+@using SharedLibrary.DTOs.Responses
+@using WA.Services.Http.Interfaces
+@inject IShowingApi ShowingApi
+@inject IMovieApiClient MovieApi
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@using WA.Layout
+@layout MainLayout
+
+<PageTitle>Movies Weekly</PageTitle>
+
+<HeadContent>
+    <link rel="stylesheet" href="css/moviesweekly.css" />
+</HeadContent>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
+    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">This Week</MudText>
+    <MudText Typo="Typo.h6" Style="color: #03DAC6;">Overview</MudText>
+</MudStack>
+
+@if (!_loading && !_loadError)
+{
+    <MudExpansionPanels Elevation="2" Class="mb-6" Style="border-radius: 12px;">
+        <MudExpansionPanel>
+            <TitleContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.FilterList" Color="Color.Primary" />
+                    <MudText Typo="Typo.subtitle1">Filters</MudText>
+                    @if (IsFilterActive)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                            Active
+                        </MudChip>
+                    }
+                </MudStack>
+            </TitleContent>
+            <ChildContent>
+
+                @* Title search *@
+                <MudTextField @bind-Value="_titleSearch"
+                              Placeholder="Search by title..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Class="mb-4"
+                              Style="max-width: 320px;"
+                              Clearable="true" />
+
+                @* 3D / 2D *@
+                <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Format</MudText>
+                <MudStack Row="true" Spacing="1" Class="mb-3">
+                    <MudButton Variant="@(_formatFilter == null ? Variant.Filled : Variant.Outlined)"
+                               Color="Color.Secondary"
+                               Size="Size.Small"
+                               OnClick="@(() => _formatFilter = null)">All</MudButton>
+                    <MudButton Variant="@(_formatFilter == "3D" ? Variant.Filled : Variant.Outlined)"
+                               Color="Color.Secondary"
+                               Size="Size.Small"
+                               OnClick="@(() => _formatFilter = "3D")">3D</MudButton>
+                    <MudButton Variant="@(_formatFilter == "2D" ? Variant.Filled : Variant.Outlined)"
+                               Color="Color.Secondary"
+                               Size="Size.Small"
+                               OnClick="@(() => _formatFilter = "2D")">2D</MudButton>
+                </MudStack>
+
+                @* Genre *@
+                @if (AvailableGenres.Any())
+                {
+                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Genre</MudText>
+                    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+                        @foreach (var genre in AvailableGenres)
+                        {
+                            var g = genre;
+                            <MudButton Variant="@(_selectedGenres.Contains(g) ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => ToggleSelection(_selectedGenres, g))">@g</MudButton>
+                        }
+                    </MudStack>
+                }
+
+                @* Age rating *@
+                @if (AvailableAgeRatings.Any())
+                {
+                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Age Rating</MudText>
+                    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+                        @foreach (var age in AvailableAgeRatings)
+                        {
+                            var a = age;
+                            <MudButton Variant="@(_selectedAgeRatings.Contains(a) ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       OnClick="@(() => ToggleSelection(_selectedAgeRatings, a))">@a</MudButton>
+                        }
+                    </MudStack>
+                }
+
+                @* Language *@
+                @if (AvailableLanguages.Any())
+                {
+                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Language</MudText>
+                    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+                        @foreach (var lang in AvailableLanguages)
+                        {
+                            var l = lang;
+                            <MudButton Variant="@(_selectedLanguages.Contains(l) ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Info"
+                                       Size="Size.Small"
+                                       OnClick="@(() => ToggleSelection(_selectedLanguages, l))">@l</MudButton>
+                        }
+                    </MudStack>
+                }
+
+                @* Clear all — only visible when any filter is active *@
+                @if (IsFilterActive)
+                {
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.FilterAltOff"
+                               OnClick="ClearAllFilters"
+                               Size="Size.Small">
+                        Clear filters
+                    </MudButton>
+                }
+
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+}
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+else if (_loadError)
+{
+    <MudAlert Severity="Severity.Error">Failed to load data. Please try again.</MudAlert>
+}
+else
+{
+    <div class="weekly-schedule-container">
+        <div class="weekly-header">
+            @foreach (var day in _daysInWeek)
+            {
+                <div class="day-column-header">
+                    <MudText Typo="Typo.h6" Align="Align.Center" Style="color: #BB86FC; font-weight: bold;">
+                        @day.ToString("dddd")
+                    </MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Style="color: #888;">
+                        @day.ToString("dd MMM")
+                    </MudText>
+                    <div class="header-line"></div>
+                </div>
+            }
+        </div>
+
+        <div class="weekly-grid">
+            @foreach (var day in _daysInWeek)
+            {
+                var dayShowings = _showings
+                    .Where(s => s.StartsAt.ToLocalTime().Date == day.Date)
+                    .OrderBy(s => s.StartsAt)
+                    .ToList();
+                
+                var filteredDayShowings = ApplyFilters(dayShowings).ToList();
+
+                <div class="day-column">
+                    @foreach (var showing in filteredDayShowings)
+                    {
+                        var localStart = showing.StartsAt.ToLocalTime();
+                        var posterUrl = GetPosterUrl(showing.MovieId);
+                        var runtime = GetRuntime(showing.MovieId);
+                        var genres = GetGenreNames(showing.MovieId);
+
+                        <MudCard Elevation="4"
+                                 Class="movie-card-weekly mb-3 clickable-card"
+                                 @onclick="@(() => NavigateToShowingDetail(showing.MovieId, showing.Id))">
+                            <div class="weekly-poster-wrap">
+                                @if (!string.IsNullOrWhiteSpace(posterUrl))
+                                {
+                                    <MudImage Src="@posterUrl"
+                                              Alt="@showing.MovieTitle"
+                                              Class="weekly-poster" />
+                                }
+                                else
+                                {
+                                    <div class="weekly-poster-placeholder">
+                                        <MudIcon Icon="@Icons.Material.Filled.Movie" Color="Color.Default" Size="Size.Large" />
+                                        <MudText Typo="Typo.caption" Style="color: #666; margin-top: 4px;">
+                                            Geen poster
+                                        </MudText>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="weekly-title-bar">
+                                <MudText Typo="Typo.subtitle2" Class="weekly-title">
+                                    @showing.MovieTitle
+                                </MudText>
+                            </div>
+
+                            <MudCardContent Class="weekly-details-panel">
+                                <div class="weekly-meta-row">
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Color="Color.Primary"
+                                             Variant="Variant.Filled"
+                                             Class="weekly-time-chip">
+                                        @localStart.ToString("HH:mm")
+                                    </MudChip>
+
+                                    <MudText Typo="Typo.caption" Class="weekly-auditorium">
+                                        Zaal @showing.AuditoriumId
+                                    </MudText>
+                                </div>
+
+                                @if (genres.Any())
+                                {
+                                    <MudText Typo="Typo.caption" Class="weekly-info-text">
+                                        @string.Join(", ", genres.Take(2))
+                                    </MudText>
+                                }
+
+                                <div class="weekly-bottom-row">
+                                    @if (runtime.HasValue)
+                                    {
+                                        <MudText Typo="Typo.caption" Class="weekly-info-text">
+                                            @runtime min
+                                        </MudText>
+                                    }
+
+                                    <MudText Typo="Typo.caption" Class="weekly-info-text">
+                                        @(showing.Is3D ? "3D" : "2D")
+                                    </MudText>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+
+                    @if (dayShowings.Count == 0)
+                    {
+                        @* No showings scheduled at all for this day *@
+                        <div class="no-showings pa-4 d-flex align-center justify-center">
+                            <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">
+                                Geen vertoningen
+                            </MudText>
+                        </div>
+                    }
+                    else if (filteredDayShowings.Count == 0)
+                    {
+                        @* Showings exist but all filtered out *@
+                        <div class="no-showings pa-4 d-flex align-center justify-center">
+                            <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">
+                                Geen resultaten voor deze filters
+                            </MudText>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<ShowingDisplayResponse> _showings = new();
+    private List<DateTime> _daysInWeek = new();
+    private readonly Dictionary<int, string?> _posterUrlsByMovieId = new();
+    private readonly Dictionary<int, int?> _runtimeByMovieId = new();
+    private readonly Dictionary<int, List<string>> _genreNamesByMovieId = new();
+    private readonly Dictionary<int, string?> _ageByMovieId         = new();
+    private readonly Dictionary<int, string?> _languageByMovieId    = new();
+    
+    private bool _loading = true;
+    private bool _loadError;
+
+    private string _titleSearch = string.Empty;
+    
+    private string? _formatFilter = null;
+    
+    private HashSet<string> _selectedGenres     = new();
+    private HashSet<string> _selectedAgeRatings = new();
+    private HashSet<string> _selectedLanguages  = new();
+    
+    private IEnumerable<string> AvailableGenres =>
+        _genreNamesByMovieId.Values
+            .SelectMany(g => g)
+            .Distinct()
+            .Order();
+
+    private IEnumerable<string> AvailableAgeRatings =>
+        _ageByMovieId.Values
+            .Where(a => !string.IsNullOrWhiteSpace(a))
+            .Distinct()
+            .Order()!;
+
+    private IEnumerable<string> AvailableLanguages =>
+        _languageByMovieId.Values
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .Distinct()
+            .Order()!;
+    
+    private bool IsFilterActive =>
+        !string.IsNullOrWhiteSpace(_titleSearch)
+        || _formatFilter != null
+        || _selectedGenres.Any()
+        || _selectedAgeRatings.Any()
+        || _selectedLanguages.Any();
+    
+    private IEnumerable<ShowingDisplayResponse> ApplyFilters(
+        IEnumerable<ShowingDisplayResponse> showings)
+    {
+        var result = showings;
+        
+        if (!string.IsNullOrWhiteSpace(_titleSearch))
+            result = result.Where(s =>
+                s.MovieTitle.Contains(_titleSearch, StringComparison.OrdinalIgnoreCase));
+        
+        if (_formatFilter != null)
+            result = result.Where(s => s.Is3D == (_formatFilter == "3D"));
+        
+        if (_selectedGenres.Any())
+            result = result.Where(s =>
+                GetGenreNames(s.MovieId).Intersect(_selectedGenres).Any());
+        
+        if (_selectedAgeRatings.Any())
+            result = result.Where(s =>
+            {
+                var age = GetAgeIndication(s.MovieId);
+                return age != null && _selectedAgeRatings.Contains(age);
+            });
+        
+        if (_selectedLanguages.Any())
+            result = result.Where(s =>
+            {
+                var lang = GetLanguage(s.MovieId);
+                return lang != null && _selectedLanguages.Contains(lang);
+            });
+
+        return result;
+    }
+
+    private void ClearAllFilters()
+    {
+        _titleSearch        = string.Empty;
+        _formatFilter = null;
+        _selectedGenres     = new HashSet<string>();
+        _selectedAgeRatings = new HashSet<string>();
+        _selectedLanguages  = new HashSet<string>();
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        InitializeWeekDays();
+        await LoadDataAsync();
+    }
+
+    private void InitializeWeekDays()
+    {
+        _daysInWeek.Clear();
+
+        var today = DateTime.Today;
+        int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+        var startOfWeek = today.AddDays(-1 * diff);
+
+        for (int i = 0; i < 7; i++)
+        {
+            _daysInWeek.Add(startOfWeek.AddDays(i));
+        }
+    }
+
+    private string? GetPosterUrl(int movieId)
+    {
+        return _posterUrlsByMovieId.TryGetValue(movieId, out var posterPath) && !string.IsNullOrWhiteSpace(posterPath)
+            ? $"https://image.tmdb.org/t/p/w500{posterPath}"
+            : null;
+    }
+
+    private int? GetRuntime(int movieId)
+    {
+        return _runtimeByMovieId.TryGetValue(movieId, out var runtime) ? runtime : null;
+    }
+
+    private List<string> GetGenreNames(int movieId)
+    {
+        return _genreNamesByMovieId.TryGetValue(movieId, out var genres) ? genres : [];
+    }
+
+    private void NavigateToShowingDetail(int movieId, int showingId)
+    {
+        Navigation.NavigateTo($"/showingdetail/{movieId}/{showingId}");
+    }
+    
+    private string? GetAgeIndication(int movieId) =>
+        _ageByMovieId.TryGetValue(movieId, out var age) ? age : null;
+
+    private string? GetLanguage(int movieId) =>
+        _languageByMovieId.TryGetValue(movieId, out var lang) ? lang : null;
+    
+    private void ToggleSelection(HashSet<string> set, string value)
+    {
+        if (!set.Add(value))
+            set.Remove(value);
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading   = true;
+        _loadError = false;
+
+        try
+        {
+            var allShowings = await ShowingApi.GetShowingDisplayAsync();
+
+            var startDay = _daysInWeek.First().Date;
+            var endDay   = _daysInWeek.Last().Date.AddDays(1);
+
+            _showings = allShowings
+                .Where(s =>
+                {
+                    var localDate = s.StartsAt.ToLocalTime().Date;
+                    return localDate >= startDay && localDate < endDay;
+                })
+                .OrderBy(s => s.StartsAt)
+                .ToList();
+
+            var movieIds = _showings.Select(s => s.MovieId).Distinct().ToList();
+
+            // ── Fetch movie metadata in parallel (fixes sequential await issue) ──
+            await Task.WhenAll(movieIds.Select(async movieId =>
+            {
+                var movie = await MovieApi.GetMovieByIdAsync(movieId);
+                _posterUrlsByMovieId[movieId] = movie?.PosterPath;
+                _runtimeByMovieId[movieId]    = movie?.Runtime;
+                _ageByMovieId[movieId]        = movie?.AgeIndication;
+                _languageByMovieId[movieId]   = movie?.InformationLanguage;
+
+                // ── Genre names also fetched in parallel per movie ──
+                var genreNames = new List<string>();
+                if (movie?.GenresIds != null && movie.GenresIds.Any())
+                {
+                    var genreResults = await Task.WhenAll(
+                        movie.GenresIds.Select(gid =>
+                            MovieApi.GetGenreByIdAsync(gid, "nl")));
+
+                    genreNames.AddRange(
+                        genreResults
+                            .Where(g => g != null)
+                            .Select(g => g!.Name));
+                }
+                _genreNamesByMovieId[movieId] = genreNames;
+                
+                _languageByMovieId[movieId] = movie?.InformationLanguage;
+                Console.WriteLine($"Movie {movieId} language: {movie?.InformationLanguage}");
+            }));
+        }
+        catch (Exception ex)
+        {
+            _loadError = true;
+            Console.WriteLine($"Error loading data: {ex.Message}");
+            Snackbar.Add($"Failed to load data: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

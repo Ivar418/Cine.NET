@@ -34,7 +34,13 @@ public class MovieApiClient : IMovieApiClient
     {
         try
         {
-            return await _http.GetFromJsonAsync<MovieResponse>($"{BasePath}/{id}");
+            var response = await _http.GetAsync($"{BasePath}/{id}");
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadFromJsonAsync<MovieResponse>();
         }
         catch (Exception ex)
         {
@@ -85,28 +91,26 @@ public class MovieApiClient : IMovieApiClient
         }
     }
 
-    public async Task<(bool Success, string? ErrorMessage, MovieResponse? Movie)> AddMovieFromTmdbAsync(
-        int tmdbId,
-        string language = "nl")
+    public async Task<(bool Success, string? ErrorMessage, MovieResponse? Movie)> AddMovieFromTmdbAsync(int tmdbId)
     {
         try
         {
             var response = await _http.PostAsync(
-                $"{BasePath}?tmdbId={tmdbId}&language={language}",
+                $"{BasePath}?tmdbId={tmdbId}",
                 content: null);
 
             if (response.IsSuccessStatusCode)
             {
-                var movie = await response.Content.ReadFromJsonAsync<MovieResponse>();
-                return (true, null, movie);
+                var movies = await response.Content.ReadFromJsonAsync<List<MovieResponse>>();
+                return (true, null, movies?.FirstOrDefault());
             }
 
             var errorMessage = response.StatusCode switch
             {
-                HttpStatusCode.Conflict  => "This movie is already in the system.",
-                HttpStatusCode.NotFound  => "Movie not found on TMDB.",
+                HttpStatusCode.Conflict   => "This movie is already in the system.",
+                HttpStatusCode.NotFound   => "Movie not found on TMDB.",
                 HttpStatusCode.BadRequest => "Invalid TMDB ID.",
-                _ => "An unexpected error occurred. Please try again."
+                _                         => "An unexpected error occurred. Please try again."
             };
 
             return (false, errorMessage, null);
@@ -115,6 +119,25 @@ public class MovieApiClient : IMovieApiClient
         {
             Console.Error.WriteLine($"[MovieApiClient] AddMovieFromTmdb({tmdbId}) failed: {ex.Message}");
             return (false, "An unexpected error occurred. Please try again.", null);
+        }
+    }
+    
+    public async Task<GenreResponse?> GetGenreByIdAsync(int tmdbGenreId, string language = "nl")
+    {
+        try
+        {
+            var response = await _http.GetAsync($"{BasePath}/genres/{tmdbGenreId}?language={language}");
+        
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return null;
+            response.EnsureSuccessStatusCode();
+        
+            return await response.Content.ReadFromJsonAsync<GenreResponse>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[MovieApiClient] GetGenreById({tmdbGenreId}) failed: {ex.Message}");
+            return null;
         }
     }
 }

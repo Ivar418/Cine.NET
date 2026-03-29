@@ -23,6 +23,7 @@
 
 .seat-grid-wrap {
     overflow-x: auto;
+    align-content: center;
 }
 
 .seat-row {
@@ -30,6 +31,7 @@
     align-items: center;
     gap: 3px;
     margin-bottom: 3px;
+    justify-content: center;
 }
 
 .row-lbl {

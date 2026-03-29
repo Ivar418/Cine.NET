@@ -7,6 +7,7 @@ namespace WA.Services.Http;
 public class ShowingApi : IShowingApi
 {
     private readonly HttpClient _http;
+    private const string BasePath = "api/showings";
 
     public ShowingApi(HttpClient http)
     {
@@ -16,9 +17,88 @@ public class ShowingApi : IShowingApi
     public async Task<IReadOnlyList<ShowingsWithPricesResponse>> GetShowingsWithPricesAsync()
     {
         var result = await _http.GetFromJsonAsync<List<ShowingsWithPricesResponse>>(
-            "api/showings/with-prices"
+            $"{BasePath}/with-prices"
         );
 
         return result ?? [];
+    }
+
+    public async Task<ShowingResponse?> GetShowingByIdAsync(int id)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<ShowingResponse>($"{BasePath}/{id}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[ShowingApiClient] GetShowingById({id}) failed: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<ShowingDisplayResponse?> GetShowingDisplayByIdAsync(int id)
+    {
+        try
+        {
+            var response = await _http.GetAsync($"{BasePath}/{id}/details");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<ShowingDisplayResponse>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[ShowingApiClient] GetShowingDisplayById({id}) failed: {ex.Message}");
+            return null;
+        }
+    }
+    
+    public async Task<IReadOnlyList<ShowingDisplayResponse>> GetShowingDisplayAsync(DateOnly? date = null)
+    {
+        var url = $"{BasePath}/details";
+
+        if (date is not null)
+        {
+            url += $"?date={date:yyyy-MM-dd}";
+        }
+
+        var result = await _http.GetFromJsonAsync<List<ShowingDisplayResponse>>(url);
+
+        return result ?? [];
+    }
+
+    public async Task<ShowingsWithPricesResponse?> GetShowingPricesAsync(int showingId)
+    {
+        var result = await _http.GetFromJsonAsync<ShowingsWithPricesResponse>(
+            $"api/showings/{showingId}/prices");
+
+        return result;
+    }
+    
+    public async Task<IReadOnlyList<ShowingResponse>> GetUpcomingShowingsByMovieIdAsync(int movieId)
+    {
+        try
+        {
+            var result = await _http.GetFromJsonAsync<List<ShowingResponse>>(
+                $"{BasePath}/movie/{movieId}/upcoming"
+            );
+            return result ?? [];
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[ShowingApi] GetUpcomingShowingsByMovieId({movieId}) failed: {ex.Message}");
+            return [];
+        }
+    }
+    
+    public async Task<bool> AddShowingAsync(int movieId, int auditoriumId, DateTimeOffset startsAt)
+    {
+        var encodedStartsAt = Uri.EscapeDataString(startsAt.ToString("o"));
+        var url = $"api/showings?movieId={movieId}&auditoriumId={auditoriumId}&startsAt={encodedStartsAt}";
+ 
+        var response = await _http.PostAsync(url, null);
+        return response.IsSuccessStatusCode;
     }
 }
