@@ -1,10 +1,11 @@
 ﻿@page "/seat-finder"
 @using SharedLibrary.DTOs.Models
+@using WA.Components
 @using WA.Services.Http
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @implements IDisposable
-@inject SeatFinderApiService Api
+@inject ISeatFinderApiClient Api
 
 <PageTitle>Cinema Reservering</PageTitle>
 
@@ -28,8 +29,14 @@
                                    Placeholder="Kies een voorstelling…">
                             @foreach (var s in _Showings)
                             {
+                                if (s is null)
+                                    continue;
+
                                 <MudSelectItem Value="(int?)s.Id">
-                                    @s.Movie.Title — @s.StartsAt.LocalDateTime.ToString("dd MMM HH:mm") (@s.Auditorium.Name)
+                                    @(s.Movie?.Title ?? "Onbekende film")
+                                    —
+                                    @(s.StartsAt.LocalDateTime.ToString("dd MMM HH:mm"))
+                                    (@(s.Auditorium?.Name ?? "Onbekende zaal"))
                                 </MudSelectItem>
                             }
                         </MudSelect>
@@ -117,7 +124,7 @@
                     </MudText>
                 </MudStack>
 
-                <SeatGrid Auditorium="@(new AuditoriumDto(_state.Showing.Auditorium.Id, _state.Showing.Auditorium.Name, _state.Showing.Auditorium.Rows))"
+                <SeatGrid Auditorium="@(new AuditoriumDto(_state.Showing.Auditorium.Id, _state.Showing.Auditorium.Name, _state.Showing.GetLayoutSnapshot()))"
                           AllSeats="@_state.AllSeats"
                           OccupiedKeys="@_state.OccupiedKeys"
                           SuggestedKeys="@_suggestedKeys"
@@ -166,6 +173,7 @@
     private int                 _wcCount     = 0;
     private HashSet<string>     _suggestedKeys = [];
     private Guid?               _pendingId;
+    private Reservation? _confirmedReservation = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -228,6 +236,7 @@
 
         _pendingId     = null;
         _suggestedKeys = [];
+        _confirmedReservation = res;
         // Refresh state from server to get accurate picture
         if (_ShowingId.HasValue)
             _state = await Api.GetShowingStateAsync(_ShowingId.Value);

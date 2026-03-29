@@ -1,0 +1,131 @@
+﻿@page "/showingdetail/{MovieId:int}/{ShowingId:int}"
+@inject IMovieApiClient MovieApi
+@inject IShowingApi ShowingApi
+@inject NavigationManager Nav
+@using SharedLibrary.DTOs.Responses
+@using WA.Services.Http.Interfaces
+@using MudBlazor
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_movie == null || _showing == null)
+    {
+        <MudAlert Severity="Severity.Error">Movie or showing not found.</MudAlert>
+    }
+    else if (_mismatch)
+    {
+        <MudAlert Severity="Severity.Warning">
+            This showing does not belong to this movie.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Elevation="3" Class="pa-6">
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudImage
+                        Src="@PosterUrl"
+                        Alt="@_movie.Title"
+                        ObjectFit="ObjectFit.Cover"
+                        Style="width: 100%; border-radius: 8px;" />
+                </MudItem>
+                <MudItem xs="12" md="8">
+
+                    <MudText
+                        Typo="Typo.h4"
+                        Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                        Class="mb-4">
+                        @_movie.Title
+                    </MudText>
+                    <div class="white-text">
+                        <MudText><strong>Runtime:</strong> @_movie.Runtime min</MudText>
+                        <MudText><strong>Release date:</strong> @_movie.ReleaseDate</MudText>
+                        <MudText><strong>Age indication:</strong> @(_movie.AgeIndication ?? "Unknown")</MudText>
+                        <MudText><strong>Language:</strong> @(_movie.SpokenLanguageName ?? "Unknown")</MudText>
+                        <MudText><strong>Genres:</strong> @(_genreNames.Any() ? string.Join(", ", _genreNames) : "Unknown")</MudText>
+                    </div>
+
+                    <MudDivider Class="my-4" />
+                    <div class="white-text">
+                        <MudText><strong>Date:</strong> @_showing?.StartsAt.ToString("dddd d MMMM yyyy")</MudText>
+                        <MudText><strong>Start time:</strong> @_showing?.StartsAt.ToString("HH:mm")</MudText>
+                        <MudText><strong>Auditorium:</strong> @_showing?.AuditoriumName</MudText>
+                        
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1">
+                            <MudText><strong>3D:</strong></MudText>
+                            @if (_showing?.Is3D == true)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" />
+                            }
+                        </MudStack>
+                    </div>
+                    <MudButton
+                        Variant="Variant.Filled"
+                        Color="Color.Primary"
+                        Size="Size.Large"
+                        Class="mt-6"
+                               OnClick="() => NavigateToOrder(ShowingId)">
+                        Order Tickets
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-6" />
+            <MudText
+                Typo="Typo.h4"
+                Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                Class="mb-3">
+                Description
+            </MudText>
+            <MudText class="white-text">@(_movie.About ?? "No description available.")</MudText>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public int MovieId { get; set; }
+    [Parameter] public int ShowingId { get; set; }
+
+    private MovieResponse? _movie;
+    private ShowingDisplayResponse? _showing;
+    
+    private bool _loading = true;
+    private bool _mismatch = false;
+
+    private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterPath}";
+    
+    private List<string> _genreNames = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _movie = await MovieApi.GetMovieByIdAsync(MovieId);
+        _showing = await ShowingApi.GetShowingDisplayByIdAsync(ShowingId);
+
+        if (_movie != null && _showing != null && _showing.MovieId != MovieId)
+            _mismatch = true;
+
+        if (_movie?.GenresIds != null)
+        {
+            foreach (var genreId in _movie.GenresIds)
+            {
+                var genre = await MovieApi.GetGenreByIdAsync(genreId, "nl");
+                if (genre != null)
+                    _genreNames.Add(genre.Name);
+            }
+        }
+
+        _loading = false;
+    }
+
+    private void NavigateToOrder(int ShowingId)
+    {
+        Nav.NavigateTo($"/checkout/{ShowingId}");
+    }
+}

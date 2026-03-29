@@ -111,14 +111,45 @@ The application reads configuration via environment variables at runtime.
 
 ### Environment Variables (Docker)
 
-This project uses a `.env` file for Docker Compose configuration.
+This project uses a `.env` file for Docker Compose configuration and runtime application settings.
 
 **Setup:**
 1. Copy `.env.example` to `.env`
-2. Fill in your local database credentials
+2. Fill in the required credentials and configuration values
 3. The `.env` file is ignored by Git for security
 
-The `.env.example` file documents all required variables and acts as a configuration contract.
+#### Configuration Reference
+
+The following variables are supported and documented in `.env.example`:
+
+| Category | Variable | Description |
+| :--- | :--- | :--- |
+| **Environment** | `ASPNETCORE_ENVIRONMENT` | Defines the runtime environment (e.g., `Development`, `Production`). |
+| **Database** | `DB_HOST` | Hostname of the MySQL database container (usually `db`). |
+| | `DB_PORT` | Port number for the MySQL database (default: `3306`). |
+| | `DB_NAME` | Name of the database to be created/used. |
+| | `DB_USER` | The application's database user. |
+| | `DB_PASSWORD` | Password for the application's database user. |
+| **Root Access** | `DB_ROOT_USER` | Root user for MySQL (required for initialization and phpMyAdmin). |
+| | `DB_ROOT_PASSWORD` | Root password for MySQL. |
+| **Tooling** | `PHP_MYADMIN_HOST` | Hostname for phpMyAdmin connection (usually `db`). |
+| **External APIs** | `TMDB_API_KEY_READ_ONLY` | Your API key for The Movie Database (TMDB). |
+| **Email Server** | `MAIL_SERVER_URL` | Hostname of the SMTP server (e.g., `localhost`). |
+| | `MAIL_SERVER_PORT` | Port number of the SMTP server (e.g., `25`, `587`). |
+| | `MAIL_SENDER_EMAIL` | The email address shown as the sender. |
+| | `MAIL_SENDER_USERNAME` | Username for SMTP authentication (optional for local). |
+| | `MAIL_SENDER_PASSWORD` | Password for SMTP authentication (optional for local). |
+
+### Email Server configuration
+
+For local development and testing of email functionality, you need to configure an SMTP server.
+
+**Recommended Local Testing Tool:**
+We suggest using **[Papercut SMTP](https://github.com/ChangemakerStudios/Papercut-SMTP)** for local testing. It acts as a dummy SMTP server that catches all outgoing emails and displays them in a UI without actually sending them to real addresses.
+
+1. Download and run Papercut SMTP.
+2. Set `MAIL_SERVER_URL=localhost` and `MAIL_SERVER_PORT=25` (or your configured port) in your `.env`.
+3. No authentication is usually required for Papercut.
 
 ## Running the Application
 

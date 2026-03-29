@@ -1,9 +1,5 @@
 ﻿using SharedLibrary.DTOs.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
-using static System.Net.WebRequestMethods;
 
 namespace SharedLibrary.Domain.Entities
 {
@@ -12,7 +8,7 @@ namespace SharedLibrary.Domain.Entities
         public int Id { get; set; }
         public int MovieId { get; set; }
         public int AuditoriumId { get; set; }
-        public bool IsThreeD { get; set; }
+        public bool IsThreeD { get; set; } = false;
         public DateTimeOffset StartsAt { get; set; }
 
         /// <summary>
@@ -28,9 +24,7 @@ namespace SharedLibrary.Domain.Entities
         public void SetLayoutSnapshot(IEnumerable<RowConfig> rows) =>
             AuditoriumLayoutSnapshot = JsonSerializer.Serialize(rows.ToList());
 
-        // Navigation
         public Movie Movie { get; set; } = default!;
         public Auditorium Auditorium { get; set; } = default!;
-        public ICollection<Reservation> Reservations { get; set; } = [];
     }
 }

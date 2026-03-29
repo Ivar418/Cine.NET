@@ -1,9 +1,9 @@
-﻿@page "/moviedetails/{MovieId:int}/{ShowingId:int}"
+﻿@page "/moviedetail/{MovieId:int}"
 @inject IMovieApiClient MovieApi
+@inject IShowingApi ShowingApi
 @inject NavigationManager Nav
-@using SharedLibrary.DTOs.Responses
 @using WA.Services.Http.Interfaces
-@using MudBlazor
+<link href="css/movie-detail.css" rel="stylesheet" />
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     @if (_loading)
@@ -38,97 +38,130 @@
                         <MudText><strong>Release date:</strong> @_movie.ReleaseDate</MudText>
                         <MudText><strong>Age indication:</strong> @(_movie.AgeIndication ?? "Unknown")</MudText>
                         <MudText><strong>Language:</strong> @(_movie.SpokenLanguageName ?? "Unknown")</MudText>
+                        <MudText><strong>Genres:</strong> @(_genreNames.Any() ? string.Join(", ", _genreNames) : "Unknown")</MudText>
                     </div>
-
-                    <MudDivider Class="my-4" />
-                    <div class="white-text">
-                        <MudText><strong>Start time:</strong> @_showing?.StartTime</MudText>
-                        <MudText><strong>End time:</strong> @_showing?.EndTime</MudText>
-                        <MudText><strong>Auditorium:</strong> @_showing?.AuditoriumName</MudText>
-
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1">
-                            <MudText><strong>Wheelchair accessible:</strong></MudText>
-                            @if (_showing?.WheelchairAccessible == true)
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
-                            }
-                            else
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" />
-                            }
-                        </MudStack>
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1">
-                            <MudText><strong>3D:</strong></MudText>
-                            @if (_showing?.Is3DCompatible == true)
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
-                            }
-                            else
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" />
-                            }
-                        </MudStack>
-                    </div>
-                    <MudButton
-                        Variant="Variant.Filled"
-                        Color="Color.Primary"
-                        Size="Size.Large"
-                        Class="mt-6"
-                        OnClick="NavigateToOrder">
-                        Order Tickets
-                    </MudButton>
+                    <MudText
+                        Typo="Typo.h5"
+                        Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                        Class="mb-3 mt-10">
+                        Description
+                    </MudText>
+                    <MudText class="white-text">@(_movie.About ?? "No description available.")</MudText>
                 </MudItem>
             </MudGrid>
 
             <MudDivider Class="my-6" />
-            <MudText
-                Typo="Typo.h4"
-                Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
-                Class="mb-3">
-                Description
+            
+            @if (!string.IsNullOrWhiteSpace(TrailerUrl))
+            {
+                <MudText Typo="Typo.h4" Style="color: var(--mud-palette-text-secondary); font-weight: 700;" Class="mb-3 mt-6">
+                    Trailer
+                </MudText>
+                <div class="trailer-wrapper mb-6">
+                    @if (_trailerPlaying)
+                    {
+                        <iframe
+                            src="@(TrailerUrl + "&autoplay=1")"
+                            title="YouTube trailer"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen>
+                        </iframe>
+                    }
+                    else
+                    {
+                        <div class="trailer-thumbnail" @onclick="PlayTrailer">
+                            <img src="@ThumbnailUrl" alt="Trailer thumbnail" />
+                            <div class="play-button">
+                                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Circle background -->
+                                    <circle cx="50" cy="50" r="48" fill="#4F4B4B" fill-opacity="0.85"/>
+                                    <!-- Triangle -->
+                                    <polygon points="40,30 40,70 70,50" fill="white"/>
+                                </svg>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </MudPaper>
+        
+        <MudPaper Elevation="3" Class="pa-6 mt-6">
+            <MudText Typo="Typo.h4"
+                     Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
+                     Class="mb-4">
+                Upcoming Showings
             </MudText>
-            <MudText class="white-text">@(_movie.About ?? "No description available.")</MudText>
+
+            @if (!_showings.Any())
+            {
+                <MudText Class="white-text">No upcoming showings scheduled.</MudText>
+            }
+            else
+            {
+                @foreach (var day in _showings.GroupBy(s => s.StartsAt.LocalDateTime.Date).OrderBy(g => g.Key))
+                {
+                    <MudText Typo="Typo.h6"
+                             Class="mb-2 mt-4 white-text">
+                        @day.Key.ToString("dddd d MMMM", new System.Globalization.CultureInfo("nl-NL"))
+                    </MudText>
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;" class="mb-2">
+                        @foreach (var showing in day.OrderBy(s => s.StartsAt))
+                        {
+                            <MudButton Class="nav-button"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="@(() => Nav.NavigateTo($"/showingdetail/{showing.MovieId}/{showing.Id}"))">
+                                @showing.StartsAt.ToString("HH:mm")
+                            </MudButton>
+                        }
+                    </div>
+                }
+            }
         </MudPaper>
     }
 </MudContainer>
 
 @code {
     [Parameter] public int MovieId { get; set; }
-    [Parameter] public int ShowingId { get; set; }
 
     private MovieResponse? _movie;
-    private MockShowing? _showing;
+    
+    private IReadOnlyList<ShowingResponse> _showings = [];
+    
     private bool _loading = true;
+    
+    private bool _trailerPlaying = false;
+    
+    private void PlayTrailer() => _trailerPlaying = true;
 
-    private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterUrl}";
+    private string PosterUrl => $"https://image.tmdb.org/t/p/w500{_movie?.PosterPath}";
+    
+    private string? TrailerUrl => string.IsNullOrWhiteSpace(_movie?.YoutubeTrailerKey)
+        ? null
+        : $"https://www.youtube.com/embed/{_movie.YoutubeTrailerKey}?modestbranding=1&rel=0";
+    
+    private string ThumbnailUrl => $"https://img.youtube.com/vi/{_movie?.YoutubeTrailerKey}/maxresdefault.jpg";
+    
+    private List<string> _genreNames = new();
 
     protected override async Task OnInitializedAsync()
     {
         _movie = await MovieApi.GetMovieByIdAsync(MovieId);
 
-        _showing = new MockShowing
+        _showings = await ShowingApi.GetUpcomingShowingsByMovieIdAsync(MovieId);
+
+        if (_movie?.GenresIds != null)
         {
-            StartTime = "20:00",
-            EndTime = "22:15",
-            AuditoriumName = "Zaal 3",
-            WheelchairAccessible = true,
-            Is3DCompatible = false
-        };
+            foreach (var genreId in _movie.GenresIds)
+            {
+                var genre = await MovieApi.GetGenreByIdAsync(genreId, "nl");
+                if (genre != null)
+                    _genreNames.Add(genre.Name);
+            }
+        }
 
         _loading = false;
-    }
-
-    private void NavigateToOrder()
-    {
-        Nav.NavigateTo($"/ideal-mock?reference=76328&amount=36.00&merchant=Cine.NET&description=Filmtickets");
-    }
-
-    private class MockShowing
-    {
-        public string StartTime { get; set; } = string.Empty;
-        public string EndTime { get; set; } = string.Empty;
-        public string AuditoriumName { get; set; } = string.Empty;
-        public bool WheelchairAccessible { get; set; }
-        public bool Is3DCompatible { get; set; }
     }
 }

@@ -1,4 +1,9 @@
 ﻿@using SharedLibrary.DTOs.Models
+
+<HeadContent>
+    <link rel="stylesheet" href="css/seats.css" />
+</HeadContent>
+
 <div class="seat-grid-wrap">
     <div class="screen-bar">▬▬▬▬▬▬▬▬ SCHERM ▬▬▬▬▬▬▬▬</div>
 
@@ -58,8 +63,8 @@
 
     private string SeatCss(SeatInfo s, bool occupied, bool suggested)
     {
-        if (occupied) return "seat-occupied";
         if (suggested) return $"seat-suggested{(s.Type == SeatType.Wheelchair ? " seat-wc" : "")}";
+        if (occupied) return "seat-occupied";
         return s.Type switch
         {
             SeatType.Wheelchair => $"seat-wc seat-cat{s.Category}",
@@ -69,8 +74,8 @@
 
     private static string SeatIcon(SeatInfo s, bool occupied, bool suggested)
     {
-        if (occupied) return "✓";
         if (suggested) return s.Type == SeatType.Wheelchair ? "♿" : "★";
+        if (occupied) return "✓";
         return s.Type == SeatType.Wheelchair ? "♿" : "";
     }
 }

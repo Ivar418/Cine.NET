@@ -1,13 +1,11 @@
-﻿using System.Net.Http.Headers;
-using System.Text.Json;
-using API.Domain.Common;
+﻿using API.Domain.Common;
 using API.Infrastructure.Database;
-using API.src.Repositories.Interfaces;
+using API.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
-using Microsoft.EntityFrameworkCore;
 
-namespace API.src.Repositories.Implementations
+namespace API.Repositories.Implementations
 {
     public class AuditoriumRepository : IAuditoriumRepository
     {

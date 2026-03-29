@@ -56,13 +56,13 @@ public static class AppTheme
             Surface = "#080A11",               // Near-black with slight blue tint
 
             AppbarBackground = "#080A11",      // Near-black (same as surface)
-            AppbarText = "#27BAFE",            // Bright cyan / electric blue
+            AppbarText = "#FFFFFF",            // White
 
             DrawerBackground = "#181818",      // Deep charcoal gray
             DrawerText = "#E0E0E0",            // Light gray
             DrawerIcon = "#D4AF37",            // Muted gold
 
-            TextPrimary = "#27BAFE",           // Bright cyan / electric blue
+            TextPrimary = "#FFFFFF",           // White
             TextSecondary = "#7927FE",         // Purple / violet
 
             Divider = "#2C2C2C",               // Dark neutral gray
