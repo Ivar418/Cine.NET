@@ -15,175 +15,186 @@
         <MudChip T="string" Color=@(step == 5 ? Color.Primary : Color.Default)>Payment</MudChip>
     </MudStack>
 
-    @if(step == 1){
+    @if (step == 1)
+    {
+        <MudStack Spacing="4">
 
-            <MudStack Spacing="4">
+            @* ── Showing selector ────────────────────────────────────────── *@
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudStack Row="true" Wrap="Wrap.Wrap" AlignItems="AlignItems.End" Spacing="3">
 
-        @* ── Showing selector ────────────────────────────────────────── *@
-        <MudPaper Elevation="2" Class="pa-4">
-            <MudStack Row="true" Wrap="Wrap.Wrap" AlignItems="AlignItems.End" Spacing="3">
+                    @if (isLoading)
+                    {
+                        <MudProgressCircular Indeterminate="true"/>
+                    }
+                    else if (errorMessage != null)
+                    {
+                        <MudAlert Severity="Severity.Warning">
+                            Er zijn geen films gevonden
+                        </MudAlert>
+                    }
+                    else if (showing == null)
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            Er zijn geen films beschikbaar
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudPaper Class="pa-4 mb-4">
+                            <MudText Typo="Typo.h6">@Summary.MovieTitle</MudText>
+                            <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
+                        </MudPaper>
+                    }
 
-                @if (isLoading)
-            {
-                <MudProgressCircular Indeterminate="true"/>
-            }
-            else if (errorMessage != null)
-            {
-                <MudAlert Severity="Severity.Warning">
-                    Er zijn geen films gevonden
-                </MudAlert>
-            }
-            else if (showing == null)
-            {
-                <MudAlert Severity="Severity.Info">
-                    Er zijn geen films beschikbaar
-                </MudAlert>
-            }
-            else
-            {
-                <MudPaper Class="pa-4 mb-4">
-                    <MudText Typo="Typo.h6">@Summary.MovieTitle</MudText>
-                    <MudText Typo="Typo.body2">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
-                </MudPaper>
-            }
-
-                @if (_state is not null)
-                {
-                    @* Normal tickets *@
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.caption" Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">🪑 NORMAL</MudText>
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="() => _normalCount = Math.Max(0, _normalCount - 1)" />
-                            <MudText Style="min-width:28px;text-align:center;font-weight:700;font-size:1.1rem">@_normalCount</MudText>
-                            <MudIconButton Icon="@Icons.Material.Filled.Add"    Size="Size.Small" OnClick="() => _normalCount++" />
+                    @if (_state is not null)
+                    {
+                        @* Normal tickets *@
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption"
+                                     Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">🪑 NORMAL
+                            </MudText>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                                <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small"
+                                               OnClick="() => _normalCount = Math.Max(0, _normalCount - 1)"/>
+                                <MudText
+                                    Style="min-width:28px;text-align:center;font-weight:700;font-size:1.1rem">@_normalCount</MudText>
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
+                                               OnClick="() => _normalCount++"/>
+                            </MudStack>
                         </MudStack>
-                    </MudStack>
 
-                    @* Wheelchair tickets *@
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.caption" Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">♿ WHEELCHAIR</MudText>
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="() => _wcCount = Math.Max(0, _wcCount - 1)" />
-                            <MudText Style="min-width:28px;text-align:center;font-weight:700;font-size:1.1rem;color:#93c5fd">@_wcCount</MudText>
-                            <MudIconButton Icon="@Icons.Material.Filled.Add"    Size="Size.Small" OnClick="() => _wcCount++" />
+                        @* Wheelchair tickets *@
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption"
+                                     Style="letter-spacing:.1em;color:var(--mud-palette-text-secondary)">♿ WHEELCHAIR
+                            </MudText>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                                <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small"
+                                               OnClick="() => _wcCount = Math.Max(0, _wcCount - 1)"/>
+                                <MudText
+                                    Style="min-width:28px;text-align:center;font-weight:700;font-size:1.1rem;color:#93c5fd">@_wcCount</MudText>
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
+                                               OnClick="() => _wcCount++"/>
+                            </MudStack>
                         </MudStack>
-                    </MudStack>
 
-                    @* Actions *@
-                    <MudStack Row="true" Spacing="1" Class="ml-auto" AlignItems="AlignItems.Center">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.Search"
-                                   OnClick="SuggestAsync"
-                                   Disabled="@(_normalCount + _wcCount == 0 || _busy)">
-                            Zoek @(_normalCount + _wcCount) @(_normalCount + _wcCount == 1 ? "plek" : "plekken")
-                        </MudButton>
-                        @if (_pendingId.HasValue)
-                        {
-                            @* <MudButton Variant="Variant.Filled" Color="Color.Success"
+                        @* Actions *@
+                        <MudStack Row="true" Spacing="1" Class="ml-auto" AlignItems="AlignItems.Center">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Search"
+                                       OnClick="SuggestAsync"
+                                       Disabled="@(_normalCount + _wcCount == 0 || _busy)">
+                                Zoek @(_normalCount + _wcCount) @(_normalCount + _wcCount == 1 ? "plek" : "plekken")
+                            </MudButton>
+                            @if (_pendingId.HasValue)
+                            {
+                                @* <MudButton Variant="Variant.Filled" Color="Color.Success"
                                        StartIcon="@Icons.Material.Filled.Check"
                                        OnClick="ConfirmAsync">Bevestig</MudButton> *@
                                 <MudButton Variant="Variant.Outlined" Color="Color.Error"
-                                       StartIcon="@Icons.Material.Filled.Close"
-                                       OnClick="CancelPendingAsync">Cancel</MudButton>
-                        }
-                        @* <MudButton Variant="Variant.Outlined" Color="Color.Error"
+                                           StartIcon="@Icons.Material.Filled.Close"
+                                           OnClick="CancelPendingAsync">Cancel
+                                </MudButton>
+                            }
+                            @* <MudButton Variant="Variant.Outlined" Color="Color.Error"
                                    StartIcon="@Icons.Material.Filled.Refresh"
                                    OnClick="ResetAsync">Reset</MudButton> *@
-                    </MudStack>
-                }
-            </MudStack>
-        </MudPaper>
-
-        @* ── Seat grid ───────────────────────────────────────────────── *@
-        @if (_busy && _state is null)
-        {
-            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-        }
-        else if (_state is not null)
-        {
-            <MudPaper Elevation="2" Class="pa-3" Style="overflow-x:auto">
-                @* Film/Auditorium info strip *@
-                <MudStack Row="true" Spacing="2" Class="mb-3" AlignItems="AlignItems.Center">
-                    <MudChip T="string" Color="Color.Dark" Size="Size.Small"
-                             Icon="@Icons.Material.Filled.Movie">
-                        @_state.Showing.Movie.Title
-                    </MudChip>
-                    <MudChip T="string" Color="Color.Dark" Size="Size.Small"
-                             Icon="@Icons.Material.Filled.Schedule">
-                        @_state.Showing.StartsAt.LocalDateTime.ToString("dd MMM yyyy HH:mm")
-                    </MudChip>
-                    <MudChip T="string" Color="Color.Dark" Size="Size.Small"
-                             Icon="@Icons.Material.Filled.EventSeat">
-                        @_state.Showing.Auditorium.Name
-                    </MudChip>
-                    <MudSpacer />
-                    <MudText Typo="Typo.caption" Style="color:var(--mud-palette-text-secondary)">
-                        @(_state.AllSeats.Count - _state.OccupiedKeys.Count) vrije plekken
-                    </MudText>
-                </MudStack>
-
-                <SeatGrid Auditorium="@(new AuditoriumDto(_state.Showing.Auditorium.Id, _state.Showing.Auditorium.Name, _state.Showing.GetLayoutSnapshot()))"
-                          AllSeats="@_state.AllSeats"
-                          OccupiedKeys="@_state.OccupiedKeys"
-                          SuggestedKeys="@_suggestedKeys"
-                              ShowZones="@_showZones" />
-            </MudPaper>
-        }
-        else if (_ShowingId.HasValue)
-        {
-            <MudAlert Severity="Severity.Warning">Kan voorstelling niet laden.</MudAlert>
-        }
-        else
-        {
-            <MudPaper Elevation="1" Class="pa-6" Style="text-align:center">
-                <MudText Style="color:var(--mud-palette-text-secondary);letter-spacing:.15em">
-                    Selecteer een voorstelling om te beginnen
-                </MudText>
-            </MudPaper>
-        }
-
-        @* ── Legend ──────────────────────────────────────────────────── *@
-        @if (_state is not null)
-        {
-            <MudPaper Elevation="1" Class="pa-3">
-                <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Justify="Justify.Center">
-                    @foreach (var (label, color) in _legend)
-                    {
-                        <MudChip T="string" Size="Size.Small"
-                                 Style="@($"background:{color}22;border:1px solid {color}66;color:{color};font-size:.65rem")">
-                            @label
-                        </MudChip>
+                        </MudStack>
                     }
                 </MudStack>
             </MudPaper>
-        }
 
-    </MudStack>
-        <MudButton Style="float:right" Variant="Variant.Filled" Color="Color.Success" OnClick="(ConfirmAsync)" Disabled="@(_state == null || _pendingId == null)">Confirm</MudButton>
-
-        }
-        @if(step == 2){
-
-
-            @if (isLoading)
+            @* ── Seat grid ───────────────────────────────────────────────── *@
+            @if (_busy && _state is null)
             {
-                <MudProgressCircular Indeterminate="true"/>
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true"/>
             }
-            else if (errorMessage != null)
+            else if (_state is not null)
             {
-                <MudAlert Severity="Severity.Warning">
-                    Er zijn geen films gevonden
-                </MudAlert>
+                <MudPaper Elevation="2" Class="pa-3" Style="overflow-x:auto">
+                    @* Film/Auditorium info strip *@
+                    <MudStack Row="true" Spacing="2" Class="mb-3" AlignItems="AlignItems.Center">
+                        <MudChip T="string" Color="Color.Dark" Size="Size.Small"
+                                 Icon="@Icons.Material.Filled.Movie">
+                            @_state.Showing.Movie.Title
+                        </MudChip>
+                        <MudChip T="string" Color="Color.Dark" Size="Size.Small"
+                                 Icon="@Icons.Material.Filled.Schedule">
+                            @_state.Showing.StartsAt.LocalDateTime.ToString("dd MMM yyyy HH:mm")
+                        </MudChip>
+                        <MudChip T="string" Color="Color.Dark" Size="Size.Small"
+                                 Icon="@Icons.Material.Filled.EventSeat">
+                            @_state.Showing.Auditorium.Name
+                        </MudChip>
+                        <MudSpacer/>
+                        <MudText Typo="Typo.caption" Style="color:var(--mud-palette-text-secondary)">
+                            @(_state.AllSeats.Count - _state.OccupiedKeys.Count) vrije plekken
+                        </MudText>
+                    </MudStack>
+
+                    <SeatGrid
+                        Auditorium="@(new AuditoriumDto(_state.Showing.Auditorium.Id, _state.Showing.Auditorium.Name, _state.Showing.GetLayoutSnapshot()))"
+                        AllSeats="@_state.AllSeats"
+                        OccupiedKeys="@_state.OccupiedKeys"
+                        SuggestedKeys="@_suggestedKeys"
+                        ShowZones="@_showZones"/>
+                </MudPaper>
             }
-            else if (showing == null)
+            else if (_ShowingId.HasValue)
             {
-                <MudAlert Severity="Severity.Info">
-                    Er zijn geen films beschikbaar
-                </MudAlert>
+                <MudAlert Severity="Severity.Warning">Kan voorstelling niet laden.</MudAlert>
             }
             else
             {
+                <MudPaper Elevation="1" Class="pa-6" Style="text-align:center">
+                    <MudText Style="color:var(--mud-palette-text-secondary);letter-spacing:.15em">
+                        Selecteer een voorstelling om te beginnen
+                    </MudText>
+                </MudPaper>
+            }
 
+            @* ── Legend ──────────────────────────────────────────────────── *@
+            @if (_state is not null)
+            {
+                <MudPaper Elevation="1" Class="pa-3">
+                    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Justify="Justify.Center">
+                        @foreach (var (label, color) in _legend)
+                        {
+                            <MudChip T="string" Size="Size.Small"
+                                     Style="@($"background:{color}22;border:1px solid {color}66;color:{color};font-size:.65rem")">
+                                @label
+                            </MudChip>
+                        }
+                    </MudStack>
+                </MudPaper>
+            }
+
+        </MudStack>
+        <MudButton Style="float:right" Variant="Variant.Filled" Color="Color.Success" OnClick="(ConfirmAsync)"
+                   Disabled="@(_state == null || _pendingId == null)">Confirm
+        </MudButton>
+    }
+    @if (step == 2)
+    {
+        @if (isLoading)
+        {
+            <MudProgressCircular Indeterminate="true"/>
+        }
+        else if (errorMessage != null)
+        {
+            <MudAlert Severity="Severity.Warning">
+                Er zijn geen films gevonden
+            </MudAlert>
+        }
+        else if (showing == null)
+        {
+            <MudAlert Severity="Severity.Info">
+                Er zijn geen films beschikbaar
+            </MudAlert>
+        }
+        else
+        {
             <MudPaper Class="pa-4 mb-4">
                 <MudStack Spacing="2">
                     <MudText Typo="Typo.h6">@Summary.MovieTitle</MudText>
@@ -200,106 +211,104 @@
                 </MudStack>
             </MudPaper>
 
-                @foreach (var seat in seats)
-                {
-                    <MudPaper Class="pa-4 mb-2">
+            @foreach (var seat in seats)
+            {
+                <MudPaper Class="pa-4 mb-2">
 
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 
-                            <MudText>
+                        <MudText>
                             Rij @seat.Row Stoel @seat.SeatNumber
                         </MudText>
-                            
-                            <MudSelect T="string" @bind-Value="seat.TicketType" Dense="true">
 
-                                <MudSelectItem Value=@("Adult") Disabled="@(!showing.Prices.Adult.IsAvailable)">
-                                    Adult €@showing.Prices.Adult.Price
-                                </MudSelectItem>
+                        <MudSelect T="string" @bind-Value="seat.TicketType" Dense="true">
 
-                                <MudSelectItem Value=@("Student") Disabled="@(!showing.Prices.Student.IsAvailable)">
-                                    Student €@showing.Prices.Student.Price
-                                </MudSelectItem>
+                            <MudSelectItem Value=@("Adult") Disabled="@(!showing.Prices.Adult.IsAvailable)">
+                                Adult €@showing.Prices.Adult.Price
+                            </MudSelectItem>
 
-                                <MudSelectItem Value=@("Child") Disabled="@(!showing.Prices.Child.IsAvailable)">
-                                    Child €@showing.Prices.Child.Price
-                                </MudSelectItem>
+                            <MudSelectItem Value=@("Student") Disabled="@(!showing.Prices.Student.IsAvailable)">
+                                Student €@showing.Prices.Student.Price
+                            </MudSelectItem>
 
-                                <MudSelectItem Value=@("Senior") Disabled="@(!showing.Prices.Senior.IsAvailable)">
-                                    Senior €@showing.Prices.Senior.Price
-                                </MudSelectItem>
-                            
-                            </MudSelect>
-                            
-                            <MudText Typo="Typo.body1">
-                                €@GetSeatPrice(seat)
-                            </MudText>
+                            <MudSelectItem Value=@("Child") Disabled="@(!showing.Prices.Child.IsAvailable)">
+                                Child €@showing.Prices.Child.Price
+                            </MudSelectItem>
 
-                        </MudStack>
+                            <MudSelectItem Value=@("Senior") Disabled="@(!showing.Prices.Senior.IsAvailable)">
+                                Senior €@showing.Prices.Senior.Price
+                            </MudSelectItem>
 
-                    </MudPaper>
-                }
+                        </MudSelect>
 
+                        <MudText Typo="Typo.body1">
+                            €@GetSeatPrice(seat)
+                        </MudText>
+
+                    </MudStack>
+
+                </MudPaper>
             }
-            
-            
+        }
 
-            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2 d-block">
 
-                <MudList T="object" Dense="true">
+        <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2 d-block">
 
-                    <MudListItem T="object">
-                        <MudText>
-                            Standaardprijs: €8,50
-                        </MudText>
-                        <MudText Typo="Typo.caption"  Style="font-style: italic;" Class="text-muted">
-                            (+ €0,50 bij films >120 min)
-                        </MudText>
-                    </MudListItem>
+            <MudList T="object" Dense="true">
 
-                    <MudListItem T="object">
-                        <MudText>
-                            Kinderkorting: €1,50
-                        </MudText>
-                        <MudText Typo="Typo.caption"  Style="font-style: italic;" Class="text-muted">
-                            (t/m 11 jaar, alleen Nederlands gesproken kinderfilms vóór 18:00)
-                        </MudText>
-                    </MudListItem>
+                <MudListItem T="object">
+                    <MudText>
+                        Standaardprijs: €8,50
+                    </MudText>
+                    <MudText Typo="Typo.caption" Style="font-style: italic;" Class="text-muted">
+                        (+ €0,50 bij films >120 min)
+                    </MudText>
+                </MudListItem>
 
-                    <MudListItem T="object">
-                        <MudText>
-                            Studentenkorting: €1,50)
-                        </MudText>
-                        <MudText Typo="Typo.caption"  Style="font-style: italic;" Class="text-muted">
-                            (van ma t/m do op vertoon van studentenkaart)
-                        </MudText>
-                    </MudListItem>
+                <MudListItem T="object">
+                    <MudText>
+                        Kinderkorting: €1,50
+                    </MudText>
+                    <MudText Typo="Typo.caption" Style="font-style: italic;" Class="text-muted">
+                        (t/m 11 jaar, alleen Nederlands gesproken kinderfilms vóór 18:00)
+                    </MudText>
+                </MudListItem>
 
-                    <MudListItem T="object">
-                        <MudText>
+                <MudListItem T="object">
+                    <MudText>
+                        Studentenkorting: €1,50)
+                    </MudText>
+                    <MudText Typo="Typo.caption" Style="font-style: italic;" Class="text-muted">
+                        (van ma t/m do op vertoon van studentenkaart)
+                    </MudText>
+                </MudListItem>
+
+                <MudListItem T="object">
+                    <MudText>
                         65+ korting: €1,50
-                        </MudText>
-                        <MudText Typo="Typo.caption" Style="font-style: italic;" Class="text-muted">
-                            (van ma t/m do, exclusief vakanties/feestdagen)
-                        </MudText>
-                    </MudListItem>
+                    </MudText>
+                    <MudText Typo="Typo.caption" Style="font-style: italic;" Class="text-muted">
+                        (van ma t/m do, exclusief vakanties/feestdagen)
+                    </MudText>
+                </MudListItem>
 
-                    <MudListItem T="object">
-                        <MudText>
+                <MudListItem T="object">
+                    <MudText>
                         3D toeslag: €2,50
-                        </MudText>
-                    </MudListItem>
+                    </MudText>
+                </MudListItem>
 
-                </MudList>
+            </MudList>
 
-            </MudAlert>
+        </MudAlert>
 
-        <MudButton Style="float:right" Variant="Variant.Filled" Color="Color.Success" OnClick="() => step = 3" Disabled="@seats.Any(s => s.TicketType == null)">Next</MudButton>
+        <MudButton Style="float:right" Variant="Variant.Filled" Color="Color.Success" OnClick="() => step = 3"
+                   Disabled="@seats.Any(s => s.TicketType == null)">Next
+        </MudButton>
+    }
 
-            }
-            
-@if (step == 3)
-{
-            
+    @if (step == 3)
+    {
         <MudPaper Class="pa-4 mb-4">
             <MudStack Spacing="2">
                 <MudText Typo="Typo.h6">Boekingsoverzicht</MudText>
@@ -318,133 +327,183 @@
         </MudPaper>
 
 
-        
-            
-            @foreach (var seat in seats)
-            {
-                <MudText>
-                    Rij @seat.Row Stoel @seat.SeatNumber - @seat.TicketType
-                </MudText>
-            }
-            
-            <MudPaper Class="pa-4 mt-4">
-                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                    <MudText Typo="Typo.h6">Totaal</MudText>
-                    <MudText Typo="Typo.h6">€@Summary.TotalPrice</MudText>
-                </MudStack>
-            </MudPaper>
-
-        <MudButton Style="float:right" Variant="Variant.Filled" Color="Color.Primary" OnClick="() => step = 4">Confirm</MudButton>
-
-}
-
-@if(step == 4){
-    <MudPaper Class="pa-4 mb-4">
-        <MudStack Spacing="2">
-            <MudText Typo="Typo.h6">Kies een betaalmethode</MudText>
-            <MudStack Row="true" Justify="Justify.FlexEnd">
-                <MudButton Variant="Variant.Outlined"
-                           StartIcon="@Icons.Material.Filled.Close"
-                           Color="Color.Error"
-                           OnClick="() => OnShowingChangedAsync(ShowingId)">
-                    Cancel
-                </MudButton>
-            </MudStack>
-        </MudStack>
-    </MudPaper>
-    <MudGrid Spacing="3">
-        <MudItem xs="12" md="4">
-            <MudButton FullWidth="true"
-                       Variant="@(selectedPaymentMethod == "IDEAL" ? Variant.Filled : Variant.Outlined)"
-                       Color="Color.Primary"
-                       Class="pa-6"
-                       Style="height:100%;min-height:140px"
-                       OnClick='() => SelectPaymentMethod("IDEAL")'>
-                <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" />
-                    <MudText>iDeal</MudText>
-                </MudStack>
-            </MudButton>
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudButton FullWidth="true"
-                       Variant="@(selectedPaymentMethod == "Creditcard" ? Variant.Filled : Variant.Outlined)"
-                       Color="Color.Secondary"
-                       Class="pa-6"
-                       Style="height:100%;min-height:140px"
-                       OnClick='() => SelectPaymentMethod("Creditcard")'>
-                <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                    <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Large" />
-                    <MudText>Creditcard</MudText>
-                </MudStack>
-            </MudButton>
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudButton FullWidth="true"
-                       Variant="@(selectedPaymentMethod == "Reservation" ? Variant.Filled : Variant.Outlined)"
-                       Color="Color.Success"
-                       Class="pa-6"
-                       Style="height:100%;min-height:140px"
-                       OnClick='() => SelectPaymentMethod("Reservation")'>
-                <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                    <MudIcon Icon="@Icons.Material.Filled.BookmarkAdd" Size="Size.Large" />
-                    <MudText>Reserveren</MudText>
-                </MudStack>
-            </MudButton>
-        </MudItem>
-    </MudGrid>
-}
-
-@if(step == 5){
-    <MudPaper Class="pa-4 mb-4">
-        <MudStack Spacing="2">
-            <MudText Typo="Typo.h6">Bevestig bestelling</MudText>
-            <MudText Typo="Typo.body2">Betaalmethode: <strong>@selectedPaymentMethod</strong></MudText>
-        </MudStack>
-    </MudPaper>
-
-    @* Order summary *@
-    <MudPaper Class="pa-4 mb-4">
-        <MudText Typo="Typo.subtitle1" Class="mb-2">@Summary.MovieTitle</MudText>
-        <MudText Typo="Typo.body2" Class="mb-3">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
         @foreach (var seat in seats)
         {
-            <MudText Typo="Typo.body2">
-                Rij @seat.Row · Stoel @seat.SeatNumber · @seat.TicketType · €@GetSeatPrice(seat).ToString("F2")
+            <MudText>
+                Rij @seat.Row Stoel @seat.SeatNumber - @seat.TicketType
             </MudText>
         }
-        <MudDivider Class="my-3" />
-        <MudStack Row Justify="Justify.SpaceBetween">
-            <MudText Typo="Typo.h6">Totaal</MudText>
-            <MudText Typo="Typo.h6">€@Summary.TotalPrice.ToString("F2")</MudText>
+
+        <MudPaper Class="pa-4 mt-4">
+            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h6">Totaal</MudText>
+                <MudText Typo="Typo.h6">€@Summary.TotalPrice</MudText>
+            </MudStack>
+        </MudPaper>
+
+        <MudButton Style="float:right" Variant="Variant.Filled" Color="Color.Primary" OnClick="() => step = 4">Confirm
+        </MudButton>
+    }
+
+    @if (step == 4)
+    {
+        <MudPaper Class="pa-4 mb-4">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.h6">Kies een betaalmethode</MudText>
+                <MudStack Row="true" Justify="Justify.FlexEnd">
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Close"
+                               Color="Color.Error"
+                               OnClick="() => OnShowingChangedAsync(ShowingId)">
+                        Cancel
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="4">
+                <MudButton FullWidth="true"
+                           Variant="@(selectedPaymentMethod == "IDEAL" ? Variant.Filled : Variant.Outlined)"
+                           Color="Color.Primary"
+                           Class="pa-6"
+                           Style="height:100%;min-height:140px"
+                           OnClick='() => SelectPaymentMethod("IDEAL")'>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large"/>
+                        <MudText>iDeal</MudText>
+                    </MudStack>
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudButton FullWidth="true"
+                           Variant="@(selectedPaymentMethod == "Creditcard" ? Variant.Filled : Variant.Outlined)"
+                           Color="Color.Secondary"
+                           Class="pa-6"
+                           Style="height:100%;min-height:140px"
+                           OnClick='() => SelectPaymentMethod("Creditcard")'>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Large"/>
+                        <MudText>Creditcard</MudText>
+                    </MudStack>
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudButton FullWidth="true"
+                           Variant="@(selectedPaymentMethod == "Reservation" ? Variant.Filled : Variant.Outlined)"
+                           Color="Color.Success"
+                           Class="pa-6"
+                           Style="height:100%;min-height:140px"
+                           OnClick='() => SelectPaymentMethod("Reservation")'>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.BookmarkAdd" Size="Size.Large"/>
+                        <MudText>Reserveren</MudText>
+                    </MudStack>
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    }
+    @if (step == 5)
+    {
+        <MudPaper Class="pa-4 mb-4">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.h6">Bevestig bestelling</MudText>
+                <MudText Typo="Typo.body2">Betaalmethode: <strong>@selectedPaymentMethod</strong></MudText>
+            </MudStack>
+        </MudPaper>
+
+        @* Order summary *@
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.subtitle1" Class="mb-2">@Summary.MovieTitle</MudText>
+            <MudText Typo="Typo.body2" Class="mb-3">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
+            @foreach (var seat in seats)
+            {
+                <MudText Typo="Typo.body2">
+                    Rij @seat.Row · Stoel @seat.SeatNumber · @seat.TicketType · €@GetSeatPrice(seat).ToString("F2")
+                </MudText>
+            }
+            <MudDivider Class="my-3"/>
+            <MudStack Row Justify="Justify.SpaceBetween">
+                <MudText Typo="Typo.h6">Totaal</MudText>
+                <MudText Typo="Typo.h6">€@Summary.TotalPrice.ToString("F2")</MudText>
+            </MudStack>
+        </MudPaper>
+
+        <MudStack Row="true" Spacing="2" Justify="Justify.SpaceBetween">
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="() => step = 4"
+                       Disabled="@_orderBusy">
+                ← Terug
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="@(selectedPaymentMethod == "Reservation" ? Color.Success : Color.Primary)"
+                       OnClick="ProcessOrderAsync"
+                       Disabled="@_orderBusy"
+                       StartIcon="@(selectedPaymentMethod == "Reservation" ? Icons.Material.Filled.BookmarkAdd : Icons.Material.Filled.Payment)">
+                @if (_orderBusy)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/>
+                    <text>Bezig...</text>
+                }
+                else if (selectedPaymentMethod == "Reservation")
+                {
+                    <text>Reservering bevestigen</text>
+                }
+                else
+                {
+                    <text>Doorgaan naar betaling</text>
+                }
+            </MudButton>
         </MudStack>
-    </MudPaper>
+    }
+    @if (step == 6)
+    {
+        <MudPaper Class="pa-4 mb-4">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.h6">Bevestig bestelling</MudText>
+                <MudText Typo="Typo.body2">Betaalmethode: <strong>@selectedPaymentMethod</strong></MudText>
+            </MudStack>
+        </MudPaper>
 
-    <MudStack Row="true" Spacing="2" Justify="Justify.SpaceBetween">
-        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="() => step = 4"
-                   Disabled="@_orderBusy">
-            ← Terug
-        </MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Color="@(selectedPaymentMethod == "Reservation" ? Color.Success : Color.Primary)"
-                   OnClick="ProcessOrderAsync"
-                   Disabled="@_orderBusy"
-                   StartIcon="@(selectedPaymentMethod == "Reservation" ? Icons.Material.Filled.BookmarkAdd : Icons.Material.Filled.Payment)">
-            @if (_orderBusy)
+        @* Order summary *@
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.subtitle1" Class="mb-2">@Summary.MovieTitle</MudText>
+            <MudText Typo="Typo.body2" Class="mb-3">@Summary.StartsAt.ToString("dddd d MMMM yyyy HH:mm")</MudText>
+            @foreach (var seat in seats)
             {
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                <text>Bezig...</text>
+                <MudText Typo="Typo.body2">
+                    Rij @seat.Row · Stoel @seat.SeatNumber · @seat.TicketType · €@GetSeatPrice(seat).ToString("F2")
+                </MudText>
             }
-            else if (selectedPaymentMethod == "Reservation")
-            {
-                <text>Reservering bevestigen</text>
-            }
-            else
-            {
-                <text>Doorgaan naar betaling</text>
-            }
-        </MudButton>
-    </MudStack>
-}
+            <MudDivider Class="my-3"/>
+            <MudStack Row Justify="Justify.SpaceBetween">
+                <MudText Typo="Typo.h6">Totaal</MudText>
+                <MudText Typo="Typo.h6">€@Summary.TotalPrice.ToString("F2")</MudText>
+            </MudStack>
+        </MudPaper>
 
+        <MudStack Row="true" Spacing="2" Justify="Justify.SpaceBetween">
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="() => step = 4"
+                       Disabled="@_orderBusy">
+                ← Terug
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="@(selectedPaymentMethod == "Reservation" ? Color.Success : Color.Primary)"
+                       OnClick="ProcessOrderAsync"
+                       Disabled="@_orderBusy"
+                       StartIcon="@(selectedPaymentMethod == "Reservation" ? Icons.Material.Filled.BookmarkAdd : Icons.Material.Filled.Payment)">
+                @if (_orderBusy)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/>
+                    <text>Bezig...</text>
+                }
+                else if (selectedPaymentMethod == "Reservation")
+                {
+                    <text>Reservering bevestigen</text>
+                }
+                else
+                {
+                    <text>Doorgaan naar betaling</text>
+                }
+            </MudButton>
+        </MudStack>
+    }
 </MudContainer>
