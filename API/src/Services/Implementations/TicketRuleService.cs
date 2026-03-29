@@ -11,18 +11,24 @@ public class TicketRuleService : ITicketRuleService
     {
         var isWeekday = DateTimeHelper.IsMaDiWoDo(now);
         var isBefore18Hour = showing.StartsAt.TimeOfDay < TimeSpan.FromHours(18);
+        var isBelowAgeIndication = 
+            int.TryParse(showing.Movie.AgeIndication, out var age) && age < 12;
+        var isDutchSpokenLanguage = 
+            string.Equals(showing.Movie.SpokenLanguageCodeIso6391, "nl", StringComparison.OrdinalIgnoreCase);
 
         switch (type.Name)
         {
             case "Child":
-                return isBefore18Hour;
-            // && showing.Movie.AgeRating < 16 later toevoegen indien nodig
-
+                return isBefore18Hour &&
+                       isBelowAgeIndication &&
+                       isDutchSpokenLanguage;
+            
             case "Student":
                 return isWeekday;
 
             case "Senior":
-                return isWeekday && !DateTimeHelper.IsHoliday(now);
+                return isWeekday && 
+                       !DateTimeHelper.IsHoliday(now);
 
             case "Adult":
                 return true;
