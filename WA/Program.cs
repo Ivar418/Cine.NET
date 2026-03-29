@@ -28,8 +28,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 
 // HTTP
 builder.Services.AddScoped(sp =>
-    //new HttpClient { BaseAddress = new Uri("https://p3api-prod.gielvangaal.dev/") });
-    new HttpClient { BaseAddress = new Uri("https://p3api-acc.gielvangaal.dev/") });
+    new HttpClient { BaseAddress = new Uri("https://p3api-prod.gielvangaal.dev/") });
+    // new HttpClient { BaseAddress = new Uri("https://p3api-acc.gielvangaal.dev/") });
     // new HttpClient { BaseAddress = new Uri("http://localhost:8080/") });
 
 // WA API/SERVICES
