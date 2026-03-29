@@ -105,13 +105,21 @@ else
                                          Variant="Variant.Filled">
                                     @(showing.Is3D ? "3D" : "2D")
                                 </MudChip>
+                                <div>
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => NavigateToMovieDetail(showing.MovieId))">
+                                        Movie details
+                                    </MudButton>
 
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           OnClick="@(() => NavigateToShowingDetail(showing.MovieId, showing.Id))">
-                                    Details
-                                </MudButton>
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => NavigateToShowingDetail(showing.MovieId, showing.Id))">
+                                        Order now
+                                    </MudButton>
+                                </div>
                             </MudStack>
                         </div>
                     </MudCardContent>
@@ -154,6 +162,11 @@ else
     private void NavigateToShowingDetail(int movieId, int showingId)
     {
         Navigation.NavigateTo($"/showingdetail/{movieId}/{showingId}");
+    }
+    
+    private void NavigateToMovieDetail(int movieId)
+    {
+        Navigation.NavigateTo($"/moviedetail/{movieId}");
     }
 
     private async Task LoadDataAsync()
