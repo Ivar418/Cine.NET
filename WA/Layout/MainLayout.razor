@@ -7,19 +7,17 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
+<MudLayout Style="min-height: 100vh; display: flex; flex-direction: column;">
 
     @if (LayoutState.ShowTopBar)
     {
         <TopBar />
     }
 
-    <MudMainContent>
-
+    <MudMainContent Style="flex: 1;">
         <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
             @Body
         </MudContainer>
-
     </MudMainContent>
 
     @if (LayoutState.ShowFooter)
@@ -35,15 +33,3 @@
     }
 
 </MudLayout>
-
-@code {
-    protected override void OnInitialized()
-    {
-        LayoutState.OnChange += () => InvokeAsync(StateHasChanged);
-    }
-
-    public void Dispose()
-    {
-        LayoutState.OnChange -= StateHasChanged;
-    }
-}
