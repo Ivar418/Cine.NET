@@ -40,7 +40,38 @@ namespace API.Infrastructure.Database
                 // 83533 = Avatar: Fire and Ash
                 // 1272837 = 28 Years Later: The Bone Temple
                 // 1242898 = Predator: Badlands
-                var MovieIdList = new List<int> { 285, 83533, 1272837, 1242898 };
+                var MovieIdList = new List<int>
+                {
+                    // Existing
+                    285, 83533, 1272837, 1242898,
+                    
+                    // Action
+                    76341, 284053, 299534,
+
+                    // Comedy
+                    505600, 93456,
+
+                    // Drama
+                    13, 497, 238,
+
+                    // Animation (kids)
+                    508943, 9806, 12,
+
+                    // Family (kids)
+                    11544, 672, 585,
+
+                    // Sci-Fi
+                    157336, 603, 11,
+
+                    // Horror
+                    694, 419430, 138843,
+
+                    // Romance
+                    597, 19995, 398818,
+                    
+                    // NL gesproken
+                    21872, 5497
+                };
                 foreach (var id in MovieIdList)
                 {
                     var movie = await movieService.AddMovieAsyncForEachSpecifiedLanguage(tmdbId: id);
@@ -158,33 +189,78 @@ namespace API.Infrastructure.Database
                     await auditoriumService.AddAuditoriumAsync(request);
                 }
             }
+            
+            // SEED SHOWINGS
+            var movies = await db.Movies.ToListAsync();
+            var auditoriums = await db.Auditoriums.ToListAsync();
 
+            var random = new Random();
+            var showings = new List<Showing>();
 
-            if (!await db.Showings.AnyAsync())
+            var dutchMovies = movies
+                .Where(m => m.SpokenLanguageCodeIso6391 == "nl")
+                .ToList();
+
+            var kidsMovies = movies
+                .Where(m => int.TryParse(m.AgeIndication, out var age) && age < 12)
+                .ToList();
+
+// tijdslots tussen 10:00 en 23:00 (ongeveer elke 2 uur)
+            var baseDate = DateTimeOffset.UtcNow.Date;
+            var timeSlots = new List<DateTimeOffset>();
+
+            for (int hour = 10; hour <= 23; hour += 2)
             {
-                var movies = movieService.GetMoviesAsync("nl").Result.Value?.ToList();
-                var auditoriums = auditoriumService.GetAuditoriumsAsync().Result.Value?.ToList();
-
-                var showings = new List<Showing>();
-                var start = DateTimeOffset.UtcNow.Date.AddHours(18); // 18:00 start
-
-                for (int i = 0; i < movies.Count; i++)
-                {
-                    showings.Add(new Showing
-                    {
-                        MovieId = movies[i].Id,
-                        AuditoriumId = auditoriums[i % auditoriums.Count].Id,
-                        StartsAt = start.AddHours(i * 2), // elke 2 uur
-                        IsThreeD = (i % 2 == 0), // om en om 3D
-                        AuditoriumLayoutSnapshot =
-                            auditoriums[i].RowConfigJson // Sla de auditorium layout op als JSON string in de showing
-                    });
-                }
-
-                db.Showings.AddRange(showings);
-                await db.SaveChangesAsync(); // commit showings first so dummy order can reference one
+                timeSlots.Add(baseDate.AddHours(hour));
             }
 
+// shuffle + basis selectie
+            var selectedMovies = movies
+                .OrderBy(_ => random.Next())
+                .Take(10)
+                .ToList();
+
+// forceer NL film
+            if (dutchMovies.Any())
+            {
+                var dutchMovie = dutchMovies[random.Next(dutchMovies.Count)];
+                selectedMovies = selectedMovies.Where(m => m.Id != dutchMovie.Id).ToList();
+                selectedMovies.Add(dutchMovie);
+            }
+
+// forceer kids film (<12)
+            if (kidsMovies.Any())
+            {
+                var kidsMovie = kidsMovies[random.Next(kidsMovies.Count)];
+                selectedMovies = selectedMovies.Where(m => m.Id != kidsMovie.Id).ToList();
+                selectedMovies.Add(kidsMovie);
+            }
+
+// max 12 totaal
+            selectedMovies = selectedMovies.Take(12).ToList();
+
+// maak showings
+            for (int i = 0; i < selectedMovies.Count; i++)
+            {
+                var movie = selectedMovies[i];
+                var auditorium = auditoriums[i % auditoriums.Count];
+                var time = timeSlots[i % timeSlots.Count];
+
+                showings.Add(new Showing
+                {
+                    MovieId = movie.Id,
+                    AuditoriumId = auditorium.Id,
+                    StartsAt = time,
+                    IsThreeD = random.Next(0, 2) == 0,
+                    AuditoriumLayoutSnapshot = auditorium.RowConfigJson
+                });
+            }
+
+// reset + opslaan
+            db.Showings.RemoveRange(db.Showings);
+            db.Showings.AddRange(showings);
+            await db.SaveChangesAsync();
+            
             // Dummy order for API testing when no orders exist
             if (!await db.Orders.AnyAsync())
             {
