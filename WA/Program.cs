@@ -53,6 +53,3 @@ CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 await host.RunAsync();
-
-
-//await builder.Build().RunAsync();

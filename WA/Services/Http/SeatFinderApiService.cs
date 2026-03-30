@@ -195,5 +195,22 @@ namespace WA.Services.Http
                 return null;
             }
         }
+
+        public async Task<Reservation?> UpdateReservationSeatsAsync(Guid suggestionId, IEnumerable<SeatInfo> seats)
+        {
+            try
+            {
+                var req = new UpdateReservationSeatsRequest(suggestionId, seats.ToList());
+                var response = await _http.PostAsJsonAsync("api/reservations/update-seats", req);
+                return response.IsSuccessStatusCode
+                    ? await response.Content.ReadFromJsonAsync<Reservation>()
+                    : null;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[SeatFinderApiClient] UpdateReservationSeats({suggestionId}) failed: {ex.Message}");
+                return null;
+            }
+        }
     }
 }
