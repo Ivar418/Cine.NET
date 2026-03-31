@@ -11,12 +11,19 @@
             <MudImage src="images/logo.png" alt="App Logo" style="height:90px; width:auto; padding-top:10px; padding-bottom:10px;"/>
         </a>
     </div>
-    <select @onchange="ChangeLanguage">
-        <option value="nl">Nederlands</option>
-        <option value="en">English</option>
-    </select>
 
     <MudSpacer />
+    
+    <div style="display: flex; align-items: center; gap: 4px; margin: 0 8px;">
+        <span @onclick='() => ChangeLanguage("nl")'
+              style="cursor: pointer; font-size: 1.5rem; opacity: @(_selectedLanguage == "nl" ? "1" : "0.4"); transition: opacity 0.2s;">
+            🇳🇱
+        </span>
+        <span @onclick='() => ChangeLanguage("en")'
+              style="cursor: pointer; font-size: 1.5rem; opacity: @(_selectedLanguage == "en" ? "1" : "0.4"); transition: opacity 0.2s;">
+            🇬🇧
+        </span>
+    </div>
 
     <MudButton Class="nav-button"
                Variant="Variant.Filled"
@@ -50,12 +57,11 @@
 </MudAppBar>
 
 @code {
-    private async Task ChangeLanguage(ChangeEventArgs e)
-    {
-        // Use the injected instance (not the type) to call instance members.
-        LayoutStateService.Language = LayoutStateService.ChangeLanguage(e);
+    private string _selectedLanguage = CultureInfo.CurrentUICulture.Name.StartsWith("en") ? "en" : "nl";
 
-        // UI opnieuw renderen
-        await InvokeAsync(StateHasChanged);
+    private void ChangeLanguage(string value)
+    {
+        _selectedLanguage = value;
+        LayoutStateService.ChangeLanguage(value);
     }
 }

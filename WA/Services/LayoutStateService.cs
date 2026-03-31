@@ -32,11 +32,6 @@ public class LayoutStateService
     public bool EnableSnackbar { get; private set; } = true;
 
     /// <summary>
-    /// The current application language/culture.
-    /// </summary>
-    public CultureInfo Language { get; set; } = CultureInfo.CurrentCulture;
-
-    /// <summary>
     /// Event triggered when layout state changes.
     /// </summary>
     public event Action? OnChange;
@@ -65,18 +60,24 @@ public class LayoutStateService
     /// Notifies subscribers that the layout state has changed.
     /// </summary>
     private void Notify() => OnChange?.Invoke();
+    
+    private CultureInfo _language = CultureInfo.CurrentCulture;
+    public CultureInfo Language
+    {
+        get => _language;
+        private set { _language = value; Notify(); }
+    }
 
     /// <summary>
     /// Changes the current application language based on a UI event.
     /// </summary>
     /// <param name="language">The change event containing the selected culture value.</param>
     /// <returns>The updated <see cref="CultureInfo"/>.</returns>
-    public static CultureInfo ChangeLanguage(ChangeEventArgs language)
+    public void ChangeLanguage(string cultureName)
     {
-        var culture = new CultureInfo(language.Value!.ToString()!);
+        var culture = new CultureInfo(cultureName);
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
-
-        return culture;
+        Language = culture;
     }
 }
