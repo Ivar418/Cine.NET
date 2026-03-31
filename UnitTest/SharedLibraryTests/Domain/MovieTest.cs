@@ -1,7 +1,7 @@
 ﻿using SharedLibrary.Domain.Entities;
 using Xunit;
 
-namespace UnitTest;
+namespace UnitTest.SharedLibraryTests.Domain;
 
 public class MovieTests
 {
