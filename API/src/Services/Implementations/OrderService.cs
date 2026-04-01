@@ -197,6 +197,36 @@ public class OrderService : IOrderService
         return ResultOf<CreateOrderResponse>.Success(response);
     }
 
+    public async Task<ResultOf<List<CreateOrderResponse>>> GetAllAsync()
+    {
+        var orders = await _orderRepository.GetAllWithTicketsAsync();
+
+        var responses = orders.Select(order => new CreateOrderResponse
+        {
+            OrderId = order.Id,
+            OrderCode = order.OrderCode,
+            OrderType = order.OrderType,
+            PaymentStatus = order.PaymentStatus,
+            PaymentMethod = order.PaymentMethod,
+            TotalAmount = order.TotalAmount,
+            CreatedAtUtc = order.CreatedAtUtc,
+            Tickets = order.OrderTickets
+                .Where(ot => ot.Ticket is not null)
+                .Select(ot => new CreatedOrderTicketResponse
+                {
+                    TicketId = ot.TicketId,
+                    ShowingId = ot.Ticket!.ShowingId,
+                    SeatNumber = ot.Ticket.SeatNumber,
+                    TicketType = ot.Ticket.TicketType,
+                    Price = ot.Ticket.Price,
+                    PaymentStatus = ot.Ticket.PaymentStatus,
+                    TicketCode = ot.Ticket.QrCodeGuid
+                }).ToList()
+        }).ToList();
+
+        return ResultOf<List<CreateOrderResponse>>.Success(responses);
+    }
+
     public async Task<ResultOf<CreateOrderResponse>> ResetToPendingAsync(int orderId)
     {
         if (orderId <= 0)

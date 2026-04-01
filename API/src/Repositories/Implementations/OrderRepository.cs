@@ -34,6 +34,15 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(o => o.Id == orderId);
     }
     
+    public async Task<List<Order>> GetAllWithTicketsAsync()
+    {
+        return await _db.Orders
+            .Include(o => o.OrderTickets)
+            .ThenInclude(ot => ot.Ticket)
+            .OrderByDescending(o => o.CreatedAtUtc)
+            .ToListAsync();
+    }
+
     public async Task SaveChangesAsync()
     {
         await _db.SaveChangesAsync();
