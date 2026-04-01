@@ -132,6 +132,62 @@
   <data name="Contact" xml:space="preserve">
     <value>Contact</value>
   </data>
+  <data name="moviedetail not found" xml:space="preserve">
+    <value>Geen film gevonden</value>
+  </data>
+  <data name="moviedetail runtime" xml:space="preserve">
+    <value>Filmduur</value>
+  </data>
+  <data name="moviedetail release date" xml:space="preserve">
+    <value>Releasedatum</value>
+  </data>
+  <data name="moviedetail age indication" xml:space="preserve">
+    <value>Leeftijdsindicatie</value>
+  </data>
+  <data name="unknown" xml:space="preserve">
+    <value>Niet bekend</value>
+  </data>
+  <data name="moviedetail language" xml:space="preserve">
+    <value>Taal</value>
+  </data>
+  <data name="moviedetail genre" xml:space="preserve">
+    <value>Genre</value>
+  </data>
+  <data name="moviedetail description" xml:space="preserve">
+    <value>Beschrijving</value>
+  </data>
+  <data name="moviedetail no description available" xml:space="preserve">
+    <value>Geen beschrijving beschikbaar</value>
+  </data>
+  <data name="moviedetail trailer" xml:space="preserve">
+    <value>Trailer</value>
+  </data>
+  <data name="moviedetail upcoming showings" xml:space="preserve">
+    <value>Aankomende voorstellingen</value>
+  </data>
+  <data name="moviedetail no upcoming showings scheduled" xml:space="preserve">
+    <value>Er staan geen komende voorstellingen op het programma</value>
+  </data>
+  <data name="showingdetail not found" xml:space="preserve">
+    <value>Film of voorstelling niet gevonden</value>
+  </data>
+  <data name="showingdetail does not belong" xml:space="preserve">
+    <value>Deze voorstelling hoort niet bij deze film</value>
+  </data>
+  <data name="showingdetail date" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="showingdetail start time" xml:space="preserve">
+    <value>Starttijd</value>
+  </data>
+  <data name="showingdetail auditorium" xml:space="preserve">
+    <value>Zaal</value>
+  </data>
+  <data name="3d" xml:space="preserve">
+    <value>3D</value>
+  </data>
+  <data name="showingdetail order tickets" xml:space="preserve">
+    <value>Bestel tickets</value>
   <data name="admin movies title" xml:space="preserve">
     <value>Admin - Films</value>
   </data>
