@@ -4,6 +4,7 @@ using API.Services.Interfaces;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using QRCoder;
 
 namespace API.Services.Implementations;
 
@@ -42,6 +43,9 @@ public class OrderPdfService : IOrderPdfService
             }
         }
 
+        var reservationCode = order.OrderCode;
+        var reservationQrPng = GenerateQrPng(reservationCode);
+
         var pdfBytes = Document.Create(container =>
         {
             container.Page(page =>
@@ -61,7 +65,14 @@ public class OrderPdfService : IOrderPdfService
                 page.Content().PaddingTop(20).Column(col =>
                 {
                     col.Item().Text("Bedankt voor uw reservering!").SemiBold().FontSize(16);
-                    col.Item().PaddingTop(10).Text($"Reserveringscode: {order.OrderCode}").SemiBold();
+                    col.Item().PaddingTop(10).Text($"Reserveringscode: {reservationCode}").SemiBold();
+
+                    col.Item().PaddingTop(12).Text("Reserveringscode QR").SemiBold();
+                    col.Item().PaddingTop(6).Width(120).Height(120).Image(reservationQrPng);
+                    col.Item().PaddingTop(4).Text(reservationCode)
+                        .FontSize(9)
+                        .FontColor(Colors.Grey.Darken2);
+
                     col.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
                     if (showingInfo is not null)
@@ -131,6 +142,10 @@ public class OrderPdfService : IOrderPdfService
             foreach (var ticket in tickets)
             {
                 showingCache.TryGetValue(ticket.ShowingId, out var showing);
+                var ticketCode = string.IsNullOrWhiteSpace(ticket.QrCodeGuid)
+                    ? order.OrderCode
+                    : ticket.QrCodeGuid;
+                var ticketQrPng = GenerateQrPng(ticketCode);
 
                 container.Page(page =>
                 {
@@ -164,10 +179,11 @@ public class OrderPdfService : IOrderPdfService
                         col.Item().PaddingTop(5).Text($"Prijs: €{ticket.Price:F2}");
                         col.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                         col.Item().PaddingTop(15).Text("Ticketcode (QR):").SemiBold();
-                        col.Item().PaddingTop(5).Text(ticket.QrCodeGuid ?? "N/A")
-                            .FontSize(10)
-                            .FontColor(Colors.Grey.Darken2);
-                        col.Item().PaddingTop(5).Text($"Ordernummer: {order.OrderCode}").FontSize(10);
+                        col.Item().PaddingTop(6).Width(120).Height(120).Image(ticketQrPng);
+                        col.Item().PaddingTop(8).Text($"Ordernummer: {ticketCode}")
+                            .FontFamily("Courier New")
+                            .FontSize(12)
+                            .FontColor(Colors.Grey.Darken3); 
                     });
 
                     page.Footer().AlignCenter().Text(text =>
@@ -180,6 +196,14 @@ public class OrderPdfService : IOrderPdfService
         }).GeneratePdf();
 
         return ResultOf<byte[]>.Success(pdfBytes);
+    }
+
+    private static byte[] GenerateQrPng(string value)
+    {
+        using var generator = new QRCodeGenerator();
+        using var data = generator.CreateQrCode(value, QRCodeGenerator.ECCLevel.Q);
+        var qr = new PngByteQRCode(data);
+        return qr.GetGraphic(10);
     }
 
     private record ShowingInfo(string MovieTitle, string AuditoriumName, DateTimeOffset StartsAt);

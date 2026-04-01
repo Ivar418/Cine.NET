@@ -8,13 +8,9 @@ namespace WA.Services.Http;
 public class OrderApi : IOrderApi
 {
     private readonly HttpClient _http;
-    private const string BasePath = "api/orders";
+    private const string Base = "api/orders";
 
-    public OrderApi(HttpClient http)
-    {
-        _http = http;
-    }
-
+    public OrderApi(HttpClient http) => _http = http;
     public async Task<List<CreateOrderResponse>> GetAllOrdersAsync()
     {
         try
@@ -46,60 +42,45 @@ public class OrderApi : IOrderApi
     {
         try
         {
-            var response = await _http.PostAsJsonAsync(BasePath, request);
-            if (!response.IsSuccessStatusCode) return null;
-            return await response.Content.ReadFromJsonAsync<CreateOrderResponse>();
+            var r = await _http.PostAsJsonAsync(Base, request);
+            return r.IsSuccessStatusCode ? await r.Content.ReadFromJsonAsync<CreateOrderResponse>() : null;
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"[OrderApi] CreateOrder failed: {ex.Message}");
-            return null;
-        }
+        catch (Exception ex) { Console.Error.WriteLine("[OrderApi] Create: " + ex.Message); return null; }
+    }
+
+    public async Task<CreateOrderResponse?> GetOrderAsync(int orderId)
+    {
+        try { return await _http.GetFromJsonAsync<CreateOrderResponse>(Base + "/" + orderId); }
+        catch (Exception ex) { Console.Error.WriteLine("[OrderApi] Get: " + ex.Message); return null; }
     }
 
     public async Task<CreateOrderResponse?> ConfirmPaymentAsync(int orderId)
     {
         try
         {
-            var response = await _http.PostAsync($"{BasePath}/{orderId}/confirm-payment", null);
-            if (!response.IsSuccessStatusCode) return null;
-            return await response.Content.ReadFromJsonAsync<CreateOrderResponse>();
+            var r = await _http.PostAsync(Base + "/" + orderId + "/confirm-payment", null);
+            return r.IsSuccessStatusCode ? await r.Content.ReadFromJsonAsync<CreateOrderResponse>() : null;
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"[OrderApi] ConfirmPayment({orderId}) failed: {ex.Message}");
-            return null;
-        }
+        catch (Exception ex) { Console.Error.WriteLine("[OrderApi] Confirm: " + ex.Message); return null; }
     }
 
     public async Task<byte[]?> GetReservationPdfAsync(int orderId)
     {
         try
         {
-            var response = await _http.GetAsync($"{BasePath}/{orderId}/reservation-pdf");
-            if (!response.IsSuccessStatusCode) return null;
-            return await response.Content.ReadAsByteArrayAsync();
+            var r = await _http.GetAsync(Base + "/" + orderId + "/reservation-pdf");
+            return r.IsSuccessStatusCode ? await r.Content.ReadAsByteArrayAsync() : null;
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"[OrderApi] GetReservationPdf({orderId}) failed: {ex.Message}");
-            return null;
-        }
+        catch (Exception ex) { Console.Error.WriteLine("[OrderApi] ResPdf: " + ex.Message); return null; }
     }
 
     public async Task<byte[]?> GetTicketsPdfAsync(int orderId)
     {
         try
         {
-            var response = await _http.GetAsync($"{BasePath}/{orderId}/tickets-pdf");
-            if (!response.IsSuccessStatusCode) return null;
-            return await response.Content.ReadAsByteArrayAsync();
+            var r = await _http.GetAsync(Base + "/" + orderId + "/tickets-pdf");
+            return r.IsSuccessStatusCode ? await r.Content.ReadAsByteArrayAsync() : null;
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"[OrderApi] GetTicketsPdf({orderId}) failed: {ex.Message}");
-            return null;
-        }
+        catch (Exception ex) { Console.Error.WriteLine("[OrderApi] TktPdf: " + ex.Message); return null; }
     }
 }
-

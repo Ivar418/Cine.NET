@@ -1,4 +1,5 @@
 @page "/ideal-mock"
+@inject NavigationManager Nav
 
 @* <comment> *@
 @*     When calling this page you need to specify as follows: *@
@@ -27,6 +28,12 @@
             </div>
 
             <button class="btn-return" @onclick="Reset">← Terug naar betaling</button>
+            @if (_result?.BadgeClass == "success")
+            {
+                <button class="btn-return" style="background:#22c55e;color:white;margin-top:.5rem" @onclick="ReturnToApp">
+                    ✅ Terug naar bestelling
+                </button>
+            }
         </div>
     </div>
 }
@@ -125,6 +132,12 @@
             "open" => new("🔄", "In behandeling", "Uw betaling wordt nog verwerkt.", "open", "In behandeling"),
             _ => null
         };
+    }
+
+    private void ReturnToApp()
+    {
+        var url = string.IsNullOrWhiteSpace(ReturnUrl) ? "/" : Uri.UnescapeDataString(ReturnUrl);
+        Nav.NavigateTo(url);
     }
 
     private void Reset()
