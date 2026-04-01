@@ -12,15 +12,13 @@ namespace UnitTest.APITests.Controllers
 {
     public class ReservationControllerTests
     {
-        private readonly Mock<IReservationRepository> _repositoryMock;
         private readonly Mock<IReservationService>    _serviceMock;
         private readonly ReservationController        _sut;
 
         public ReservationControllerTests()
         {
-            _repositoryMock = new Mock<IReservationRepository>();
             _serviceMock    = new Mock<IReservationService>();
-            _sut = new ReservationController(_repositoryMock.Object, _serviceMock.Object);
+            _sut = new ReservationController(_serviceMock.Object);
         }
 
         // ── GetReservationById ────────────────────────────────────────────
@@ -30,7 +28,7 @@ namespace UnitTest.APITests.Controllers
         {
             var id          = Guid.NewGuid();
             var reservation = new Reservation { Id = id };
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.GetReservationByIdAsync(id))
                 .ReturnsAsync(ResultOf<Reservation>.Success(reservation));
 
@@ -44,7 +42,7 @@ namespace UnitTest.APITests.Controllers
         public async Task GetReservationById_WhenNotFound_Returns404()
         {
             var id = Guid.NewGuid();
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.GetReservationByIdAsync(id))
                 .ReturnsAsync(ResultOf<Reservation>.Failure("Reservation not found"));
 
@@ -57,7 +55,7 @@ namespace UnitTest.APITests.Controllers
         public async Task GetReservationById_WhenRepositoryFailsWithOtherError_Returns500()
         {
             var id = Guid.NewGuid();
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.GetReservationByIdAsync(id))
                 .ReturnsAsync(ResultOf<Reservation>.Failure("Unexpected error"));
             
@@ -70,7 +68,7 @@ namespace UnitTest.APITests.Controllers
         [Fact]
         public async Task GetReservationById_WhenRepositoryThrows_Returns500()
         {
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.GetReservationByIdAsync(It.IsAny<Guid>()))
                 .ThrowsAsync(new Exception("DB crash"));
             
@@ -86,7 +84,7 @@ namespace UnitTest.APITests.Controllers
         public async Task GetReservationByShowingId_WhenReservationsExist_ReturnsOk()
         {
             var reservations = new List<Reservation> { new Reservation(), new Reservation() };
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.GetReservationByShowingAsync(1))
                 .ReturnsAsync(reservations);
             
@@ -99,7 +97,7 @@ namespace UnitTest.APITests.Controllers
         [Fact]
         public async Task GetReservationByShowingId_WhenListIsEmpty_Returns404()
         {
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.GetReservationByShowingAsync(99))
                 .ReturnsAsync(new List<Reservation>());
 
@@ -111,7 +109,7 @@ namespace UnitTest.APITests.Controllers
         [Fact]
         public async Task GetReservationByShowingId_WhenRepositoryThrows_Returns500()
         {
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.GetReservationByShowingAsync(It.IsAny<int>()))
                 .ThrowsAsync(new Exception("DB error"));
 
@@ -159,7 +157,7 @@ namespace UnitTest.APITests.Controllers
         {
             var suggestionId = Guid.NewGuid();
             var confirmed    = new Reservation { Id = suggestionId };
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.UpdateReservationStatusAsync(suggestionId, "Confirmed"))
                 .ReturnsAsync(confirmed);
 
@@ -172,7 +170,7 @@ namespace UnitTest.APITests.Controllers
         [Fact]
         public async Task ConfirmReservation_WhenRepositoryThrows_Returns500()
         {
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.UpdateReservationStatusAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("DB error"));
             
@@ -187,13 +185,13 @@ namespace UnitTest.APITests.Controllers
         public async Task ConfirmReservation_PassesCorrectStatusToRepository()
         {
             var suggestionId = Guid.NewGuid();
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.UpdateReservationStatusAsync(suggestionId, "Confirmed"))
                 .ReturnsAsync(new Reservation());
 
             await _sut.ConfirmReservationById(new ConfirmRequest(suggestionId));
 
-            _repositoryMock.Verify(
+            _serviceMock.Verify(
                 r => r.UpdateReservationStatusAsync(suggestionId, "Confirmed"),
                 Times.Once);
         }
@@ -205,7 +203,7 @@ namespace UnitTest.APITests.Controllers
         {
             var reservationId = Guid.NewGuid();
             var cancelled     = new Reservation { Id = reservationId };
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.UpdateReservationStatusAsync(reservationId, "Cancelled"))
                 .ReturnsAsync(cancelled);
 
@@ -218,7 +216,7 @@ namespace UnitTest.APITests.Controllers
         [Fact]
         public async Task CancelReservation_WhenRepositoryThrows_Returns500()
         {
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.UpdateReservationStatusAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("DB error"));
 
@@ -233,13 +231,13 @@ namespace UnitTest.APITests.Controllers
         public async Task CancelReservation_PassesCorrectStatusToRepository()
         {
             var reservationId = Guid.NewGuid();
-            _repositoryMock
+            _serviceMock
                 .Setup(r => r.UpdateReservationStatusAsync(reservationId, "Cancelled"))
                 .ReturnsAsync(new Reservation());
 
             await _sut.CancelReservationById(new CancelRequest(reservationId));
-            
-            _repositoryMock.Verify(
+
+            _serviceMock.Verify(
                 r => r.UpdateReservationStatusAsync(reservationId, "Cancelled"),
                 Times.Once);
         }

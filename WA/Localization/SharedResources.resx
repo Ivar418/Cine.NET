@@ -186,8 +186,9 @@
   <data name="3d" xml:space="preserve">
     <value>3D</value>
   </data>
-  <data name="showingdetail order tickets" xml:space="preserve">
+	<data name="showingdetail order tickets" xml:space="preserve">
     <value>Order tickets</value>
+	  </data>
   <data name="admin movies title" xml:space="preserve">
     <value>Admin - Movies</value>
   </data>
