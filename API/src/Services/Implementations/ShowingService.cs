@@ -2,13 +2,15 @@ using API.Domain.Common;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Mappers;
-using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
 using SharedLibrary.DTOs.Responses;
 
 namespace API.Services.Implementations;
 
+/// <summary>
+/// Service responsible for retrieving Showings and composing responses with pricing and availability logic.
+/// </summary>
 public class ShowingService : IShowingService
 {
     private readonly IShowingRepository _showingRepository;
@@ -18,6 +20,9 @@ public class ShowingService : IShowingService
     private readonly ITicketTypeRepository _ticketTypeRepository;
     private readonly IReservationRepository _reservationrepository;
 
+    /// <summary>
+    /// Initializes a new instance of the ShowingService.
+    /// </summary>
     public ShowingService(
         IShowingRepository repository,
         IPricingService pricingService,
@@ -34,7 +39,14 @@ public class ShowingService : IShowingService
         _ticketRuleService = ticketRuleService;
     }
 
-    // /{id}/prices 
+    /// <summary>
+    /// Retrieves a Showing by ID including calculated prices per ticket type.
+    /// </summary>
+    /// <param name="id">The Showing ID.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing a <see cref="ShowingsWithPricesResponse"/> on success.
+    /// Returns a failure result if the Showing or required data cannot be retrieved.
+    /// </returns>
     public async Task<ResultOf<ShowingsWithPricesResponse>> GetShowingAsync(int id)
     {
         var showingResult = await _showingRepository.GetShowingAsync(id);
@@ -53,19 +65,30 @@ public class ShowingService : IShowingService
             return ResultOf<ShowingsWithPricesResponse>.Failure(ticketTypesResult.Error!);
 
         var (adult, child, student, senior) = ticketTypesResult.Value;
-        
-
 
         return await BuildShowingResponseAsync(showing, adult, child, student, senior);
     }
 
-    // /prices
+    /// <summary>
+    /// Retrieves the full Showing entity by ID without additional processing.
+    /// </summary>
+    /// <param name="id">The Showing ID.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the <see cref="Showing"/> on success.
+    /// </returns>
     public async Task<ResultOf<Showing>> GetFullShowingByIdAsync(int id)
     {
         var showingsResult = await _showingRepository.GetShowingAsync(id);
         return showingsResult;
     }
 
+    /// <summary>
+    /// Retrieves all Showings and enriches them with pricing information.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing a list of <see cref="ShowingsWithPricesResponse"/> on success.
+    /// Returns a failure result if any step in the process fails.
+    /// </returns>
     public async Task<ResultOf<List<ShowingsWithPricesResponse>>> GetShowingsAsync()
     {
         var showingsResult = await _showingRepository.GetShowingsAsync();
@@ -97,7 +120,13 @@ public class ShowingService : IShowingService
         return ResultOf<List<ShowingsWithPricesResponse>>.Success(result);
     }
     
-    // Helpder: haalt alle TicketTypes op en mapt deze naar de vier verwachte categorieën
+    /// <summary>
+    /// Retrieves all TicketTypes and maps them to the expected categories (Adult, Child, Student, Senior).
+    /// </summary>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing a tuple of TicketTypes on success.
+    /// Returns a failure result if TicketTypes are missing or misconfigured.
+    /// </returns>
     private async Task<ResultOf<(TicketType adult, TicketType child, TicketType student, TicketType senior)>> GetTicketTypes()
     {
         var result = await _ticketTypeService.GetAllAsync();
@@ -122,7 +151,18 @@ public class ShowingService : IShowingService
         }
     }
     
-    // Helper: bouwt een Showing response inclusief prijsberekeningen per tickettype.
+    /// <summary>
+    /// Builds a Showing response including calculated prices and availability per ticket type.
+    /// </summary>
+    /// <param name="showing">The Showing entity.</param>
+    /// <param name="adult">The Adult ticket type.</param>
+    /// <param name="child">The Child ticket type.</param>
+    /// <param name="student">The Student ticket type.</param>
+    /// <param name="senior">The Senior ticket type.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing a <see cref="ShowingsWithPricesResponse"/> on success.
+    /// Returns a failure result if price calculation fails.
+    /// </returns>
     private async Task<ResultOf<ShowingsWithPricesResponse>> BuildShowingResponseAsync(
         Showing showing,
         TicketType adult,
@@ -174,15 +214,12 @@ public class ShowingService : IShowingService
     }
     
     /// <summary>
-    /// Retrieves all upcoming showings for a specific movie by calculating a cutoff time
-    /// and delegating the query to the repository. A showing is considered upcoming if it
-    /// starts no more than 15 minutes before the current UTC time, allowing users to still
-    /// book tickets shortly after a showing has started.
+    /// Retrieves upcoming Showings for a specific movie based on a cutoff time.
     /// </summary>
-    /// <param name="movieId">The internal ID of the movie to retrieve upcoming showings for.</param>
+    /// <param name="movieId">The Movie ID.</param>
     /// <returns>
-    /// A <see cref="ResultOf{T}"/> containing a read-only list of <see cref="ShowingResponse"/> on success,
-    /// or a failure with an error message if the repository query fails.
+    /// A <see cref="ResultOf{T}"/> containing a list of <see cref="ShowingResponse"/> on success.
+    /// Returns a failure result if the repository query fails.
     /// </returns>
     public async Task<ResultOf<IReadOnlyList<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId)
     {
@@ -196,6 +233,14 @@ public class ShowingService : IShowingService
         return ResultOf<IReadOnlyList<ShowingResponse>>.Success(result.Value!.ToList());
     }
 
+    /// <summary>
+    /// Retrieves the current state of a Showing including reservation data.
+    /// </summary>
+    /// <param name="id">The Showing ID.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing a <see cref="ShowingStateDto"/> on success.
+    /// Returns a failure result if the Showing or state cannot be determined.
+    /// </returns>
     public async Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id)
     {
         var showing = _showingRepository.GetShowingAsync(id).Result.Value;
@@ -207,6 +252,13 @@ public class ShowingService : IShowingService
         return showingState == null ? ResultOf<ShowingStateDto>.Failure("ShowingState not found") : ResultOf<ShowingStateDto>.Success(showingState);
     }
     
+    /// <summary>
+    /// Retrieves Showing display data optionally filtered by date.
+    /// </summary>
+    /// <param name="date">Optional date filter.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing a collection of <see cref="ShowingDisplayResponse"/> on success.
+    /// </returns>
     public async Task<ResultOf<ICollection<ShowingDisplayResponse>>> GetShowingDisplayAsync(DateOnly? date = null)
     {
         return await _showingRepository.GetShowingDisplayAsync(date);

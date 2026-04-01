@@ -1,25 +1,24 @@
 ﻿@inherits LayoutComponentBase
 @using WA.Theme
 @inject WA.Services.LayoutStateService LayoutState
+@implements IDisposable
 
 <MudThemeProvider Theme="@AppTheme.Dark" IsDarkMode="true" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
+<MudLayout Style="min-height: 100vh; display: flex; flex-direction: column;">
 
     @if (LayoutState.ShowTopBar)
     {
         <TopBar />
     }
 
-    <MudMainContent>
-
+    <MudMainContent Style="flex: 1;">
         <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
             @Body
         </MudContainer>
-
     </MudMainContent>
 
     @if (LayoutState.ShowFooter)
@@ -36,14 +35,27 @@
 
 </MudLayout>
 
+
+
 @code {
+    private Action? _handler;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LayoutState.InitializeLanguageAsync();
+        }
+    }
+
     protected override void OnInitialized()
     {
-        LayoutState.OnChange += () => InvokeAsync(StateHasChanged);
+        _handler = async () => await InvokeAsync(StateHasChanged);
+        LayoutState.OnChange += _handler;
     }
 
     public void Dispose()
     {
-        LayoutState.OnChange -= StateHasChanged;
+        LayoutState.OnChange -= _handler;
     }
 }

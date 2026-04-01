@@ -79,31 +79,24 @@
                             </MudStack>
                         </MudStack>
 
-                        @* Actions *@
-                        <MudStack Row="true" Spacing="1" Class="ml-auto" AlignItems="AlignItems.Center">
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                                       StartIcon="@Icons.Material.Filled.Search"
-                                       OnClick="SuggestAsync"
-                                       Disabled="@(_normalCount + _wcCount == 0 || _busy)">
-                                Zoek @(_normalCount + _wcCount) @(_normalCount + _wcCount == 1 ? "plek" : "plekken")
-                            </MudButton>
-                            @if (_pendingId.HasValue)
-                            {
-                                @* <MudButton Variant="Variant.Filled" Color="Color.Success"
-                                       StartIcon="@Icons.Material.Filled.Check"
-                                       OnClick="ConfirmAsync">Bevestig</MudButton> *@
+                    @* Actions *@
+                    <MudStack Row="true" Spacing="1" Class="ml-auto" AlignItems="AlignItems.Center">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Search"
+                                   OnClick="SuggestAsync"
+                                   Disabled="@(_normalCount + _wcCount == 0 || _busy)">
+                            Zoek @(_normalCount + _wcCount) @(_normalCount + _wcCount == 1 ? "plek" : "plekken")
+                        </MudButton>
+                        @if (_pendingId.HasValue)
+                        {
                                 <MudButton Variant="Variant.Outlined" Color="Color.Error"
-                                           StartIcon="@Icons.Material.Filled.Close"
-                                           OnClick="CancelPendingAsync">Cancel
-                                </MudButton>
-                            }
-                            @* <MudButton Variant="Variant.Outlined" Color="Color.Error"
-                                   StartIcon="@Icons.Material.Filled.Refresh"
-                                   OnClick="ResetAsync">Reset</MudButton> *@
-                        </MudStack>
-                    }
-                </MudStack>
-            </MudPaper>
+                                       StartIcon="@Icons.Material.Filled.Close"
+                                       OnClick="CancelPendingAsync">Cancel</MudButton>
+                        }
+                    </MudStack>
+                }
+            </MudStack>
+        </MudPaper>
 
             @* ── Seat grid ───────────────────────────────────────────────── *@
             @if (_busy && _state is null)
@@ -133,26 +126,26 @@
                         </MudText>
                     </MudStack>
 
-                    <SeatGrid
-                        Auditorium="@(new AuditoriumDto(_state.Showing.Auditorium.Id, _state.Showing.Auditorium.Name, _state.Showing.GetLayoutSnapshot()))"
-                        AllSeats="@_state.AllSeats"
-                        OccupiedKeys="@_state.OccupiedKeys"
-                        SuggestedKeys="@_suggestedKeys"
-                        ShowZones="@_showZones"/>
-                </MudPaper>
-            }
-            else if (_ShowingId.HasValue)
-            {
-                <MudAlert Severity="Severity.Warning">Kan voorstelling niet laden.</MudAlert>
-            }
-            else
-            {
-                <MudPaper Elevation="1" Class="pa-6" Style="text-align:center">
-                    <MudText Style="color:var(--mud-palette-text-secondary);letter-spacing:.15em">
-                        Selecteer een voorstelling om te beginnen
-                    </MudText>
-                </MudPaper>
-            }
+                <SeatGrid Auditorium="@(new AuditoriumDto(_state.Showing.Auditorium.Id, _state.Showing.Auditorium.Name, _state.Showing.GetLayoutSnapshot()))"
+                          AllSeats="@_state.AllSeats"
+                          OccupiedKeys="@_state.OccupiedKeys"
+                          SuggestedKeys="@_suggestedKeys"
+                          ShowZones="@_showZones"
+                          OnSeatClick="HandleSeatClickAsync" />
+            </MudPaper>
+        }
+        else if (_ShowingId.HasValue)
+        {
+            <MudAlert Severity="Severity.Warning">Kan voorstelling niet laden.</MudAlert>
+        }
+        else
+        {
+            <MudPaper Elevation="1" Class="pa-6" Style="text-align:center">
+                <MudText Style="color:var(--mud-palette-text-secondary);letter-spacing:.15em">
+                    Selecteer een voorstelling om te beginnen
+                </MudText>
+            </MudPaper>
+        }
 
             @* ── Legend ──────────────────────────────────────────────────── *@
             @if (_state is not null)

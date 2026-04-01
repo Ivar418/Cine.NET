@@ -7,15 +7,17 @@
 @inject ISnackbar Snackbar
 @using WA.Layout
 @layout MainLayout
+@inherits LocalizedComponentBase
+@inject IStringLocalizer<WA.Localization.SharedResources> L
 
-<PageTitle>Movies Today</PageTitle>
+<PageTitle>@L["Movies Today"]</PageTitle>
 
 <HeadContent>
     <link rel="stylesheet" href="css/moviestoday.css" />
 </HeadContent>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
-    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">Movies Today</MudText>
+    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">@L["Movies Today"]</MudText>
     <MudText Typo="Typo.h6" Style="color: #03DAC6;">@DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm")</MudText>
 </MudStack>
 
@@ -105,13 +107,21 @@ else
                                          Variant="Variant.Filled">
                                     @(showing.Is3D ? "3D" : "2D")
                                 </MudChip>
+                                <div>
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => NavigateToMovieDetail(showing.MovieId))">
+                                        Movie details
+                                    </MudButton>
 
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           OnClick="@(() => NavigateToShowingDetail(showing.MovieId, showing.Id))">
-                                    Details
-                                </MudButton>
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => NavigateToShowingDetail(showing.MovieId, showing.Id))">
+                                        Order now
+                                    </MudButton>
+                                </div>
                             </MudStack>
                         </div>
                     </MudCardContent>
@@ -154,6 +164,11 @@ else
     private void NavigateToShowingDetail(int movieId, int showingId)
     {
         Navigation.NavigateTo($"/showingdetail/{movieId}/{showingId}");
+    }
+    
+    private void NavigateToMovieDetail(int movieId)
+    {
+        Navigation.NavigateTo($"/moviedetail/{movieId}");
     }
 
     private async Task LoadDataAsync()
