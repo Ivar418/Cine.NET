@@ -12,7 +12,6 @@ using WA.Models;
 using WA.Services.Http;
 using WA.Services.Http.Interfaces;
 
-
 public partial class Checkout
 {
     protected bool isLoading = true;
@@ -43,7 +42,27 @@ public partial class Checkout
         Lines = seats,
         TotalPrice = seats.Sum(GetSeatPrice)
     };
-    
+
+    protected string[] paymentMethods = new[]
+    {
+        "Ideal",
+        "Pinnen",
+        "Creditcard",
+        "Creditcard Online",
+        "Reserveren",
+        "Cadeaubon"
+    };
+
+    protected Dictionary<string, string> paymentIcons = new()
+    {
+        { "Ideal", Icons.Material.Filled.AccountBalance },
+        { "Pinnen", Icons.Material.Filled.PointOfSale },
+        { "Creditcard", Icons.Material.Filled.CreditCard },
+        { "Creditcard Online", Icons.Material.Filled.Language },
+        { "Reserveren", Icons.Material.Filled.Schedule },
+        { "Cadeaubon", Icons.Material.Filled.CardGiftcard }
+    };
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -58,11 +77,11 @@ public partial class Checkout
         finally
         {
             isLoading = false;
-            
         }
     }
 
     [Inject] public ISnackbar Snackbar { get; set; } = default!;
+
     protected decimal GetSeatPrice(TicketSelection seat)
     {
         if (showing is null || string.IsNullOrWhiteSpace(seat.TicketType))
@@ -89,6 +108,11 @@ public partial class Checkout
     private HashSet<string> _suggestedKeys = [];
     private Guid? _pendingId;
     private Reservation? _confirmedReservation = null;
+
+    private void SetStep(int step)
+    {
+        this.step = step;
+    }
 
     // ── Showing selection ────────────────────────────────────────────────
     private async Task OnShowingChangedAsync(int id)
@@ -134,7 +158,8 @@ public partial class Checkout
                 _state.OccupiedKeys.Add(k);
 
         double avgCat = resp.Seats.Average(s => s.Category);
-        Snackbar.Add($"{resp.Seats.Count} plekken gevonden (gem. cat. {avgCat:F1}). Bevestig of annuleer.", Severity.Info);
+        Snackbar.Add($"{resp.Seats.Count} plekken gevonden (gem. cat. {avgCat:F1}). Bevestig of annuleer.",
+            Severity.Info);
     }
 
     // ── Confirm ───────────────────────────────────────────────────────────
@@ -142,7 +167,11 @@ public partial class Checkout
     {
         if (!_pendingId.HasValue) return;
         var res = await Api.ConfirmAsync(_pendingId.Value);
-        if (res is null) { Snackbar.Add("Bevestiging mislukt.", Severity.Error); return; }
+        if (res is null)
+        {
+            Snackbar.Add("Bevestiging mislukt.", Severity.Error);
+            return;
+        }
 
         _suggestedKeys = [];
         _confirmedReservation = res;
@@ -160,9 +189,6 @@ public partial class Checkout
             var col = seatInfo.Col + 1;
             seats.Add(new TicketSelection() { Row = row, SeatNumber = col });
         }
-
-        step++;
-
     }
 
     // ── Cancel ────────────────────────────────────────────────────────────
@@ -180,7 +206,6 @@ public partial class Checkout
         _suggestedKeys = [];
         step = 1;
         await InvokeAsync(StateHasChanged);
-
     }
 
     // ── Legend ────────────────────────────────────────────────────────────
@@ -189,14 +214,13 @@ public partial class Checkout
         ("1e keuze", "#f59e0b"), ("2e keuze", "#a3e635"), ("3e keuze", "#34d399"),
         ("4e keuze", "#60a5fa"), ("5e keuze", "#c084fc"), ("6e keuze", "#f87171"),
         ("Suggestie ★", "#fbbf24"), ("Bevestigd ✓", "#22c55e"),
-        ("Bezet", "#3f3f46"),    ("Rolstoel ♿", "#1d4ed8"),
+        ("Bezet", "#3f3f46"), ("Rolstoel ♿", "#1d4ed8"),
     ];
 
     // ── Step 4: pick payment method and advance ───────────────────────────
     protected void SelectPaymentMethod(string method)
     {
         selectedPaymentMethod = method;
-        step = 5;
     }
 
     // ── Step 5: build & submit order, then branch ─────────────────────────
@@ -209,27 +233,27 @@ public partial class Checkout
 
         var ticketRequests = seats.Select(seat => new TicketRequest
         {
-            ShowingId     = ShowingId,
+            ShowingId = ShowingId,
             ShowDateTimeUtc = showing?.StartsAt ?? DateTimeOffset.UtcNow,
-            SeatNumber    = $"{(char)('A' + seat.Row - 1)}{seat.SeatNumber}",
-            TicketType    = seat.TicketType ?? "Adult",
-            Price         = GetSeatPrice(seat)
+            SeatNumber = $"{(char)('A' + seat.Row - 1)}{seat.SeatNumber}",
+            TicketType = seat.TicketType ?? "Adult",
+            Price = GetSeatPrice(seat)
         }).ToList();
 
         var apiPaymentMethod = selectedPaymentMethod switch
         {
-            "IDEAL"      => "IDEAL",
+            "IDEAL" => "IDEAL",
             "Creditcard" => "CREDITCARD",
-            _            => "PIN"
+            _ => "PIN"
         };
 
-        var orderType = selectedPaymentMethod == "Reservation" ? "Reservation" : "Payment";
+        var orderType = selectedPaymentMethod == "Reserveren" ? "Reserveren" : "Payment";
 
         var request = new CreateOrderRequest
         {
-            OrderType     = orderType,
+            OrderType = orderType,
             PaymentMethod = apiPaymentMethod,
-            Tickets       = ticketRequests
+            Tickets = ticketRequests
         };
 
         var order = await OrderApi.CreateOrderAsync(request);
@@ -243,13 +267,13 @@ public partial class Checkout
 
         createdOrder = order;
 
-        if (selectedPaymentMethod == "Reservation")
+        if (selectedPaymentMethod == "Reserveren")
         {
             await HandleReservationAsync(order);
         }
         else
         {
-            GoToIdealMock(order);
+            GoToPaymentMock(order);
         }
     }
 
@@ -263,18 +287,22 @@ public partial class Checkout
             Snackbar.Add("Reservering aangemaakt maar PDF kon niet worden gegenereerd.", Severity.Warning);
 
         Snackbar.Add($"Reservering {order.OrderCode} aangemaakt!", Severity.Success);
+        var url = $"/checkout/payment-result?orderId={order.OrderId}&reservation=true";
+        Nav.NavigateTo(url);
     }
 
     // ── Payment: redirect to iDeal mock with all required params ─────────
-    private void GoToIdealMock(CreateOrderResponse order)
+    private void GoToPaymentMock(CreateOrderResponse order)
     {
-        var returnUrl = Uri.EscapeDataString($"/checkout/payment-result?orderId={order.OrderId}&success=true");
-        var url = $"/ideal-mock" +
+        var returnUrl = Uri.EscapeDataString($"/checkout/payment-result?orderId={order.OrderId}");
+        // var url = $"/ideal-mock" +
+        var url = $"/payment-mock" +
                   $"?reference={Uri.EscapeDataString(order.OrderCode)}" +
                   $"&amount={order.TotalAmount:F2}" +
                   $"&merchant={Uri.EscapeDataString("CineNet B.V.")}" +
                   $"&description={Uri.EscapeDataString("Bestelling " + order.OrderCode)}" +
-                  $"&returnUrl={returnUrl}";
+                  $"&returnUrl={returnUrl}"+
+                  $"&ChosenPaymentType={Uri.EscapeDataString(selectedPaymentMethod)}";
         Nav.NavigateTo(url);
     }
 
