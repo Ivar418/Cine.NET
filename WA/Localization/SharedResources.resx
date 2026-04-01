@@ -132,4 +132,10 @@
   <data name="Contact" xml:space="preserve">
     <value>Contact</value>
   </data>
+  <data name="admin movies title" xml:space="preserve">
+    <value>Admin - Movies</value>
+  </data>
+  <data name="Admin movies" xml:space="preserve">
+    <value>Movies</value>
+  </data>
 </root>

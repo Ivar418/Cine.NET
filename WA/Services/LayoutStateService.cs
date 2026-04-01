@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Microsoft.JSInterop;
 
 namespace WA.Services;
 
@@ -11,6 +12,12 @@ namespace WA.Services;
 /// </summary>
 public class LayoutStateService
 {
+    private readonly IJSRuntime _js;
+
+    public LayoutStateService(IJSRuntime js)
+    {
+        _js = js;
+    }
     /// <summary>
     /// Indicates whether the top bar is visible.
     /// </summary>
@@ -30,11 +37,6 @@ public class LayoutStateService
     /// Indicates whether snackbar notifications are enabled.
     /// </summary>
     public bool EnableSnackbar { get; private set; } = true;
-
-    /// <summary>
-    /// The current application language/culture.
-    /// </summary>
-    public CultureInfo Language { get; set; } = CultureInfo.CurrentCulture;
 
     /// <summary>
     /// Event triggered when layout state changes.
@@ -65,18 +67,32 @@ public class LayoutStateService
     /// Notifies subscribers that the layout state has changed.
     /// </summary>
     private void Notify() => OnChange?.Invoke();
-
-    /// <summary>
-    /// Changes the current application language based on a UI event.
-    /// </summary>
-    /// <param name="language">The change event containing the selected culture value.</param>
-    /// <returns>The updated <see cref="CultureInfo"/>.</returns>
-    public static CultureInfo ChangeLanguage(ChangeEventArgs language)
+    
+    private CultureInfo _language = CultureInfo.CurrentCulture;
+    public CultureInfo Language
     {
-        var culture = new CultureInfo(language.Value!.ToString()!);
+        get => _language;
+        private set { _language = value; Notify(); }
+    }
+
+    public void ChangeLanguage(string cultureName)
+    {
+        var culture = new CultureInfo(cultureName);
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
+        Language = culture;
+        _ = SaveLanguageAsync(cultureName); // fire and forget
+    }
 
-        return culture;
+    private async Task SaveLanguageAsync(string cultureName)
+    {
+        await _js.InvokeVoidAsync("languageStorage.set", cultureName);
+    }
+
+    public async Task InitializeLanguageAsync()
+    {
+        var saved = await _js.InvokeAsync<string?>("languageStorage.get");
+        if (!string.IsNullOrEmpty(saved))
+            ChangeLanguage(saved);
     }
 }
