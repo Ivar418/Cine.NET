@@ -55,6 +55,12 @@ namespace API.Controllers
             }
         }
         
+        /**
+ * Retrieves all Showings with pricing information.
+ *
+ * @response 200 OK Returns Showings with prices.
+ * @response 500 Internal Server Error If an unexpected error occurs.
+ */
         [HttpGet("with-prices")]
         public async Task<IActionResult> GetShowingsWithPrices()
         {
@@ -68,6 +74,14 @@ namespace API.Controllers
             };
         }
         
+        /**
+ * Retrieves a Showing with pricing information by ID.
+ *
+ * @param id The Showing ID.
+ * @response 200 OK Returns the Showing with prices.
+ * @response 404 Not Found If the Showing does not exist.
+ * @response 500 Internal Server Error If an unexpected error occurs.
+ */
         [HttpGet("{id}/prices")]
         public async Task<IActionResult> GetShowingWithPrices(int id)
         {
@@ -82,7 +96,13 @@ namespace API.Controllers
             };
         }
 
-
+        /**
+         * Retrieves the current state of a Showing.
+         *
+         * @param ShowingId The Showing ID.
+         * @response 200 OK Returns the Showing state.
+         * @response 500 Internal Server Error If an unexpected error occurs.
+         */
         [HttpGet]
         [Route("{ShowingId:int}/state")]
         public async Task<IActionResult> GetShowingStateById(int ShowingId)

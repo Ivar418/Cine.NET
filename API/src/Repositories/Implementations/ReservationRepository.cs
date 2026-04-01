@@ -46,6 +46,15 @@ public class ReservationRepository : IReservationRepository
         return res;
     }
 
+    public async Task<Reservation?> UpdateReservationSeatsAsync(Guid id, IEnumerable<SeatInfo> seats)
+    {
+        var res = await _db.Reservations.FindAsync(id);
+        if (res is null) return null;
+        res.SetSeats(seats);
+        await _db.SaveChangesAsync();
+        return res;
+    }
+
     public async Task<HashSet<string>> GetOccupiedKeysAsync(int showingId)
     {
         var reservations = await _db.Reservations

@@ -79,16 +79,10 @@
                         </MudButton>
                         @if (_pendingId.HasValue)
                         {
-                            @* <MudButton Variant="Variant.Filled" Color="Color.Success"
-                                       StartIcon="@Icons.Material.Filled.Check"
-                                       OnClick="ConfirmAsync">Bevestig</MudButton> *@
                                 <MudButton Variant="Variant.Outlined" Color="Color.Error"
                                        StartIcon="@Icons.Material.Filled.Close"
                                        OnClick="CancelPendingAsync">Cancel</MudButton>
                         }
-                        @* <MudButton Variant="Variant.Outlined" Color="Color.Error"
-                                   StartIcon="@Icons.Material.Filled.Refresh"
-                                   OnClick="ResetAsync">Reset</MudButton> *@
                     </MudStack>
                 }
             </MudStack>
@@ -126,7 +120,8 @@
                           AllSeats="@_state.AllSeats"
                           OccupiedKeys="@_state.OccupiedKeys"
                           SuggestedKeys="@_suggestedKeys"
-                              ShowZones="@_showZones" />
+                          ShowZones="@_showZones"
+                          OnSeatClick="HandleSeatClickAsync" />
             </MudPaper>
         }
         else if (_ShowingId.HasValue)

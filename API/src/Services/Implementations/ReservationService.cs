@@ -70,5 +70,25 @@ namespace API.Services.Implementations
         {
             return await _reservationRepository.GetOccupiedKeysAsync(showingId);
         }
+
+        public Task<Reservation> UpdateReservationStatusAsync(Guid id, string status)
+        {
+            return _reservationRepository.UpdateReservationStatusAsync(id, status);
+        }
+
+        public Task<ResultOf<Reservation>> GetReservationByIdAsync(Guid id)
+        {
+            return _reservationRepository.GetReservationByIdAsync(id);
+        }
+
+        public Task<List<Reservation>> GetReservationByShowingAsync(int showtimeId)
+        {
+            return _reservationRepository.GetReservationByShowingAsync(showtimeId);
+        }
+
+        public Task<Reservation?> UpdateReservationSeatsAsync(Guid id, IEnumerable<SeatInfo> seats)
+        {
+            return _reservationRepository.UpdateReservationSeatsAsync(id, seats);
+        }
     }
 }

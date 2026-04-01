@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Localization;
+using System.Globalization;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
@@ -13,6 +15,9 @@ using WA.Services.Http.Interfaces;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+//LOCALIZATION
+builder.Services.AddLocalization();
 
 // MUDBLAZOR
 builder.Services.AddMudServices(config =>
@@ -41,4 +46,11 @@ builder.Services.AddScoped<IAuditoriumApi, AuditoriumApi>();
 builder.Services.AddScoped<ISeatFinderApiClient, SeatFinderApiService>();
 builder.Services.AddScoped<IOrderApi, OrderApi>();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+// Standaard cultuur instellen
+var culture = new CultureInfo("nl");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+await host.RunAsync();

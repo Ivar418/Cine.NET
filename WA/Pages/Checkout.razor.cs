@@ -183,6 +183,86 @@ public partial class Checkout
 
     }
 
+    // Toggle a single seat as suggested or not. This updates local counts (_normalCount/_wcCount)
+    // and then requests an updated suggestion from the API so the reservation state stays in sync.
+    private async Task HandleSeatClickAsync(SeatInfo seat)
+    {
+        if (_state is null || !_ShowingId.HasValue) return;
+
+        var key = $"{seat.Row}-{seat.Col}";
+
+        // If the seat is occupied (and not currently part of our suggested set), ignore clicks
+        var occupied = _state.OccupiedKeys.Contains(key);
+        if (occupied && !_suggestedKeys.Contains(key))
+            return;
+
+        if (_suggestedKeys.Count() == 0)
+        {
+            _normalCount = 0;
+            _wcCount = 0;
+        }
+
+        // Toggle selection
+        if (_suggestedKeys.Contains(key))
+        {
+            _suggestedKeys.Remove(key);
+            if (seat.Type == SeatType.Wheelchair)
+                _wcCount = Math.Max(0, _wcCount - 1);
+            else
+                _normalCount = Math.Max(0, _normalCount - 1);
+        }
+        else
+        {
+            _suggestedKeys.Add(key);
+            if (seat.Type == SeatType.Wheelchair)
+                _wcCount++;
+            else
+                _normalCount++;
+        }
+
+        // If we have an active pending suggestion, update that reservation's seats on the server
+        // to add/remove the clicked seat while preserving the other suggested seats.
+        if (_pendingId.HasValue)
+        {
+            // Build the list of SeatInfo objects from the current _suggestedKeys
+            var seatsToSend = _suggestedKeys
+                .Select(k => {
+                    var parts = k.Split('-');
+                    if (parts.Length != 2) return null;
+                    if (!int.TryParse(parts[0], out var r)) return null;
+                    if (!int.TryParse(parts[1], out var c)) return null;
+                    return _state.AllSeats.FirstOrDefault(s => s.Row == r && s.Col == c);
+                })
+                .Where(s => s is not null)
+                .Select(s => s!)
+                .ToList();
+
+            var updated = await Api.UpdateReservationSeatsAsync(_pendingId.Value, seatsToSend);
+            if (updated is null)
+            {
+                Snackbar.Add("Bijwerken van reservering mislukt.", Severity.Error);
+                // As a fallback, cancel the pending suggestion locally
+                await CancelPendingAsync();
+            }
+            else
+            {
+                // Refresh the showing state so occupied keys are accurate
+                if (_ShowingId.HasValue)
+                    _state = await Api.GetShowingStateAsync(_ShowingId.Value);
+
+                Snackbar.Add("Reservering bijgewerkt.", Severity.Info);
+            }
+        }
+        else
+        {
+            // No pending suggestion yet -> ask server to suggest based on counts
+            var id = await Api.SuggestAsync(new SuggestRequest(_ShowingId.Value, _normalCount, _wcCount));
+            _pendingId = id.SuggestionId;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
     // ── Legend ────────────────────────────────────────────────────────────
     private static readonly (string, string)[] _legend =
     [

@@ -2,6 +2,7 @@
 @inject IMovieApiClient MovieApi
 @inject IShowingApi ShowingApi
 @inject NavigationManager Nav
+@inject IStringLocalizer<WA.Localization.SharedResources> L
 @using SharedLibrary.DTOs.Responses
 @using WA.Services.Http.Interfaces
 @using MudBlazor
@@ -13,12 +14,12 @@
     }
     else if (_movie == null || _showing == null)
     {
-        <MudAlert Severity="Severity.Error">Movie or showing not found.</MudAlert>
+        <MudAlert Severity="Severity.Error">@L["showingdetail not found"]</MudAlert>
     }
     else if (_mismatch)
     {
         <MudAlert Severity="Severity.Warning">
-            This showing does not belong to this movie.
+            @L["showingdetail does not belong"]
         </MudAlert>
     }
     else
@@ -41,21 +42,21 @@
                         @_movie.Title
                     </MudText>
                     <div class="white-text">
-                        <MudText><strong>Runtime:</strong> @_movie.Runtime min</MudText>
-                        <MudText><strong>Release date:</strong> @_movie.ReleaseDate</MudText>
-                        <MudText><strong>Age indication:</strong> @(_movie.AgeIndication ?? "Unknown")</MudText>
-                        <MudText><strong>Language:</strong> @(_movie.SpokenLanguageName ?? "Unknown")</MudText>
-                        <MudText><strong>Genres:</strong> @(_genreNames.Any() ? string.Join(", ", _genreNames) : "Unknown")</MudText>
+                        <MudText><strong>@L["moviedetail runtime"]:</strong> @_movie.Runtime min</MudText>
+                        <MudText><strong>@L["moviedetail release date"]:</strong> @_movie.ReleaseDate</MudText>
+                        <MudText><strong>@L["moviedetail age indication"]:</strong> @(_movie.AgeIndication ?? @L["unknown"])</MudText>
+                        <MudText><strong>@L["moviedetail language"]:</strong> @(_movie.SpokenLanguageName ?? @L["unknown"])</MudText>
+                        <MudText><strong>@L["moviedetail genre"]:</strong> @(_genreNames.Any() ? string.Join(", ", _genreNames) : @L["unknown"])</MudText>
                     </div>
 
                     <MudDivider Class="my-4" />
                     <div class="white-text">
-                        <MudText><strong>Date:</strong> @_showing?.StartsAt.ToString("dddd d MMMM yyyy")</MudText>
-                        <MudText><strong>Start time:</strong> @_showing?.StartsAt.ToString("HH:mm")</MudText>
-                        <MudText><strong>Auditorium:</strong> @_showing?.AuditoriumName</MudText>
+                        <MudText><strong>@L["showingdetail date"]:</strong> @_showing?.StartsAt.ToString("dddd d MMMM yyyy")</MudText>
+                        <MudText><strong>@L["showingdetail start time"]:</strong> @_showing?.StartsAt.ToString("HH:mm")</MudText>
+                        <MudText><strong>@L["showingdetail auditorium"]:</strong> @_showing?.AuditoriumName</MudText>
                         
                         <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1">
-                            <MudText><strong>3D:</strong></MudText>
+                            <MudText><strong>@L["3d"]:</strong></MudText>
                             @if (_showing?.Is3D == true)
                             {
                                 <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
@@ -71,8 +72,8 @@
                         Color="Color.Primary"
                         Size="Size.Large"
                         Class="mt-6"
-                               OnClick="() => NavigateToOrder(ShowingId)">
-                        Order Tickets
+                        OnClick="() => NavigateToOrder(ShowingId)">
+                        @L["showingdetail order tickets"]
                     </MudButton>
                 </MudItem>
             </MudGrid>
@@ -82,9 +83,9 @@
                 Typo="Typo.h4"
                 Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
                 Class="mb-3">
-                Description
+                @L["moviedetail description"]
             </MudText>
-            <MudText class="white-text">@(_movie.About ?? "No description available.")</MudText>
+            <MudText class="white-text">@(_movie.About ?? @L["moviedetail no description available"])</MudText>
         </MudPaper>
     }
 </MudContainer>

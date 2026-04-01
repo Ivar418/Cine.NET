@@ -10,6 +10,7 @@ namespace API.Repositories.Interfaces
         Task<ResultOf<Reservation>> GetReservationByIdAsync(Guid id);
         Task<Reservation> CreateReservationAsync(int showtimeId, IEnumerable<SeatInfo> seats, string status);
         Task<Reservation> UpdateReservationStatusAsync(Guid id, string status);
+        Task<Reservation?> UpdateReservationSeatsAsync(Guid id, IEnumerable<SeatInfo> seats);
         Task<HashSet<string>> GetOccupiedKeysAsync(int showingId);
 
     }
