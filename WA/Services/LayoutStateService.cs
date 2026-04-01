@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Microsoft.JSInterop;
 
 namespace WA.Services;
 
@@ -11,6 +12,12 @@ namespace WA.Services;
 /// </summary>
 public class LayoutStateService
 {
+    private readonly IJSRuntime _js;
+
+    public LayoutStateService(IJSRuntime js)
+    {
+        _js = js;
+    }
     /// <summary>
     /// Indicates whether the top bar is visible.
     /// </summary>
@@ -68,16 +75,24 @@ public class LayoutStateService
         private set { _language = value; Notify(); }
     }
 
-    /// <summary>
-    /// Changes the current application language based on a UI event.
-    /// </summary>
-    /// <param name="language">The change event containing the selected culture value.</param>
-    /// <returns>The updated <see cref="CultureInfo"/>.</returns>
     public void ChangeLanguage(string cultureName)
     {
         var culture = new CultureInfo(cultureName);
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
         Language = culture;
+        _ = SaveLanguageAsync(cultureName); // fire and forget
+    }
+
+    private async Task SaveLanguageAsync(string cultureName)
+    {
+        await _js.InvokeVoidAsync("languageStorage.set", cultureName);
+    }
+
+    public async Task InitializeLanguageAsync()
+    {
+        var saved = await _js.InvokeAsync<string?>("languageStorage.get");
+        if (!string.IsNullOrEmpty(saved))
+            ChangeLanguage(saved);
     }
 }

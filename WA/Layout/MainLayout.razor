@@ -40,6 +40,14 @@
 @code {
     private Action? _handler;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LayoutState.InitializeLanguageAsync();
+        }
+    }
+
     protected override void OnInitialized()
     {
         _handler = async () => await InvokeAsync(StateHasChanged);

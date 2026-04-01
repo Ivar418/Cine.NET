@@ -1,6 +1,7 @@
 @using System.Globalization
 @inject IStringLocalizer<WA.Localization.SharedResources> L
 @inject LayoutStateService LayoutStateService
+@implements IDisposable
 
 <MudAppBar Color="Color.Default"
            Elevation="1"
@@ -57,11 +58,33 @@
 </MudAppBar>
 
 @code {
-    private string _selectedLanguage = CultureInfo.CurrentUICulture.Name.StartsWith("en") ? "en" : "nl";
+    private string _selectedLanguage = "nl";
+    private Action? _handler;
+
+    protected override void OnInitialized()
+    {
+        _handler = async () =>
+        {
+            SyncLanguage();
+            await InvokeAsync(StateHasChanged);
+        };
+        LayoutStateService.OnChange += _handler;
+        SyncLanguage();
+    }
+
+    private void SyncLanguage()
+    {
+        _selectedLanguage = LayoutStateService.Language.Name.StartsWith("en") ? "en" : "nl";
+    }
 
     private void ChangeLanguage(string value)
     {
         _selectedLanguage = value;
         LayoutStateService.ChangeLanguage(value);
+    }
+
+    public void Dispose()
+    {
+        LayoutStateService.OnChange -= _handler;
     }
 }
