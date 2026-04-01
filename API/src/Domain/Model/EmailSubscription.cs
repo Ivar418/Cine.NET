@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿    using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Domain.Model;
+    namespace API.Domain.Model;
 
-public class EmailSubscription
-{
-    [Column("id")] public int Id { get; init; }
-    [Column("email")] public required string Email { get; init; }
-}
+    public class EmailSubscription
+    {
+        [Column("id")] public int Id { get; init; }
+        [Column("email")] public required string Email { get; init; }
+    }
