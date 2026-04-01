@@ -1,5 +1,7 @@
 ﻿@using WA.Theme
 @inherits LayoutComponentBase
+@inject WA.Services.LayoutStateService LayoutState
+@implements IDisposable
 
 <MudThemeProvider Theme="@AppTheme.Dark" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -17,3 +19,24 @@
     </MudMainContent>
 
 </MudLayout>
+
+@code {
+    private Action? _handler;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await LayoutState.InitializeLanguageAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        _handler = async () => await InvokeAsync(StateHasChanged);
+        LayoutState.OnChange += _handler;
+    }
+
+    public void Dispose()
+    {
+        LayoutState.OnChange -= _handler;
+    }
+}
