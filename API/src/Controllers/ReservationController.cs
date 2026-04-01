@@ -19,17 +19,30 @@ namespace API.src.Controllers
         /// such as databases or external APIs, to perform operations including retrieval,
         /// search, creation, updating, and deletion of Reservation records.
         /// </summary>
-        private readonly IReservationRepository _ReservationRepository;
         private readonly IReservationService _reservationService;
 
         /// <summary>
         /// A controller for managing Reservation-related operations, providing endpoints to retrieve,
         /// and manage Reservation data.
         /// </summary>
-        public ReservationController(IReservationRepository ReservationRepository, IReservationService reservationService)
+        public ReservationController(IReservationService reservationService)
         {
-            _ReservationRepository = ReservationRepository;
             _reservationService = reservationService;
+        }
+
+        [HttpPost]
+        [Route("update-seats")]
+        public async Task<IActionResult> UpdateReservationSeats([FromBody] UpdateReservationSeatsRequest req)
+        {
+            try
+            {
+                var result = await _reservationService.UpdateReservationSeatsAsync(req.SuggestionId, req.Seats);
+                return result is null ? NotFound(new { error = "Reservation not found" }) : Ok(result);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
         }
 
 
@@ -42,7 +55,7 @@ namespace API.src.Controllers
         {
             try
             {
-                var Reservation = await _ReservationRepository.GetReservationByIdAsync(reservationId);
+                var Reservation = await _reservationService.GetReservationByIdAsync(reservationId);
                 return Reservation switch
                 {
                     { IsFailure: true, Error: "Reservation not found" } => NotFound(new { error = "Reservation not found" }),
@@ -66,7 +79,7 @@ namespace API.src.Controllers
         {
             try
             {
-                var Reservation = await _ReservationRepository.GetReservationByShowingAsync(showingId);
+                var Reservation = await _reservationService.GetReservationByShowingAsync(showingId);
                 return Reservation.Count > 0 ? Ok(Reservation) : NotFound(new { error = "No Reservations found for the given showingId" });
             }
             catch (Exception)
@@ -108,7 +121,7 @@ namespace API.src.Controllers
         {
             try
             {
-                var result = await _ReservationRepository.UpdateReservationStatusAsync(reservationId.SuggestionId, "Confirmed");
+                var result = await _reservationService.UpdateReservationStatusAsync(reservationId.SuggestionId, "Confirmed");
                 return result is null ? NotFound(new { error = "Reservation not found" }) : Ok(result);
             }
             catch (Exception e)
@@ -124,7 +137,7 @@ namespace API.src.Controllers
         {
             try
             {
-                var result = await _ReservationRepository.UpdateReservationStatusAsync(reservationId.ReservationId, "Cancelled");
+                var result = await _reservationService.UpdateReservationStatusAsync(reservationId.ReservationId, "Cancelled");
                 return result is null ? NotFound(new { error = "Reservation not found" }) : Ok(result);
             }
             catch (Exception e)

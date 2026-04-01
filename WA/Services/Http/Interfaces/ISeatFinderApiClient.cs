@@ -22,4 +22,5 @@ public interface ISeatFinderApiClient
     Task<SuggestResponse?> SuggestAsync(SuggestRequest req);
     Task<Reservation?> ConfirmAsync(Guid suggestionId);
     Task<Reservation?> CancelAsync(Guid reservationId);
+    Task<Reservation?> UpdateReservationSeatsAsync(Guid suggestionId, IEnumerable<SeatInfo> seats);
 }
