@@ -153,10 +153,10 @@
   <data name="moviedetail genre" xml:space="preserve">
     <value>Genre</value>
   </data>
-  <data name="description" xml:space="preserve">
+  <data name="moviedetail description" xml:space="preserve">
     <value>Beschrijving</value>
   </data>
-  <data name="no description available" xml:space="preserve">
+  <data name="moviedetail no description available" xml:space="preserve">
     <value>Geen beschrijving beschikbaar</value>
   </data>
   <data name="moviedetail trailer" xml:space="preserve">
@@ -167,5 +167,26 @@
   </data>
   <data name="moviedetail no upcoming showings scheduled" xml:space="preserve">
     <value>Er staan geen komende voorstellingen op het programma</value>
+  </data>
+  <data name="showingdetail not found" xml:space="preserve">
+    <value>Film of voorstelling niet gevonden</value>
+  </data>
+  <data name="showingdetail does not belong" xml:space="preserve">
+    <value>Deze voorstelling hoort niet bij deze film</value>
+  </data>
+  <data name="showingdetail date" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="showingdetail start time" xml:space="preserve">
+    <value>Starttijd</value>
+  </data>
+  <data name="showingdetail auditorium" xml:space="preserve">
+    <value>Zaal</value>
+  </data>
+  <data name="3d" xml:space="preserve">
+    <value>3D</value>
+  </data>
+  <data name="showingdetail order tickets" xml:space="preserve">
+    <value>Bestel tickets</value>
   </data>
 </root>
