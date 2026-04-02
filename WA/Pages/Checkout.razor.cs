@@ -32,6 +32,12 @@ public partial class Checkout
 
     protected List<TicketSelection> seats = [];
     [Parameter] public int ShowingId { get; set; }
+    
+    [Parameter, SupplyParameterFromQuery(Name = "step")]
+    public int? ReturnStep { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "paymentMethod")]
+    public string? ReturnPaymentMethod { get; set; }
 
     protected ShowingsWithPricesResponse? showing;
 
@@ -69,6 +75,13 @@ public partial class Checkout
         {
             showing = await ShowingApi.GetShowingPricesAsync(ShowingId);
             await OnShowingChangedAsync(ShowingId);
+            
+            // Restore checkout flow after failed/cancelled payment
+            if (ReturnStep.HasValue && ReturnStep.Value is >= 1 and <= 5)
+                step = ReturnStep.Value;
+
+            if (!string.IsNullOrWhiteSpace(ReturnPaymentMethod))
+                selectedPaymentMethod = ReturnPaymentMethod;
         }
         catch (Exception ex)
         {
@@ -374,15 +387,29 @@ public partial class Checkout
     // ── Payment: redirect to iDeal mock with all required params ─────────
     private void GoToPaymentMock(CreateOrderResponse order)
     {
-        var returnUrl = Uri.EscapeDataString($"/checkout/payment-result?orderId={order.OrderId}");
-        // var url = $"/ideal-mock" +
+        // var returnUrl = Uri.EscapeDataString($"/checkout/payment-result?orderId={order.OrderId}");
+        // // var url = $"/ideal-mock" +
+        // var url = $"/payment-mock" +
+        //           $"?reference={Uri.EscapeDataString(order.OrderCode)}" +
+        //           $"&amount={order.TotalAmount:F2}" +
+        //           $"&merchant={Uri.EscapeDataString("CineNet B.V.")}" +
+        //           $"&description={Uri.EscapeDataString("Bestelling " + order.OrderCode)}" +
+        //           $"&returnUrl={returnUrl}"+
+        //           $"&ChosenPaymentType={Uri.EscapeDataString(selectedPaymentMethod)}";
+        // Nav.NavigateTo(url);
+        var chosen = selectedPaymentMethod ?? "Ideal";
+        // Send enough context so PaymentResult can return customer to step 4 in checkout
+        var returnUrl = Uri.EscapeDataString(
+            $"/checkout/payment-result?orderId={order.OrderId}&showingId={ShowingId}&paymentMethod={Uri.EscapeDataString(chosen)}");
+
         var url = $"/payment-mock" +
                   $"?reference={Uri.EscapeDataString(order.OrderCode)}" +
                   $"&amount={order.TotalAmount:F2}" +
                   $"&merchant={Uri.EscapeDataString("CineNet B.V.")}" +
                   $"&description={Uri.EscapeDataString("Bestelling " + order.OrderCode)}" +
-                  $"&returnUrl={returnUrl}"+
-                  $"&ChosenPaymentType={Uri.EscapeDataString(selectedPaymentMethod)}";
+                  $"&returnUrl={returnUrl}" +
+                  $"&ChosenPaymentType={Uri.EscapeDataString(chosen)}";
+
         Nav.NavigateTo(url);
     }
 

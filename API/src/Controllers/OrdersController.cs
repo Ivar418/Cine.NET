@@ -17,6 +17,17 @@ namespace API.Controllers
             _orderPdfService = orderPdfService;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _orderService.GetAllAsync();
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok(result.Value);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create(CreateOrderRequest request)
         {
