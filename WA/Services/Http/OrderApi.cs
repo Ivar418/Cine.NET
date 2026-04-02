@@ -15,7 +15,7 @@ public class OrderApi : IOrderApi
     {
         try
         {
-            var result = await _http.GetFromJsonAsync<List<CreateOrderResponse>>(BasePath);
+            var result = await _http.GetFromJsonAsync<List<CreateOrderResponse>>(Base);
             return result ?? [];
         }
         catch (Exception ex)
@@ -25,18 +25,6 @@ public class OrderApi : IOrderApi
         }
     }
 
-    public async Task<CreateOrderResponse?> GetOrderAsync(int orderId)
-    {
-        try
-        {
-            return await _http.GetFromJsonAsync<CreateOrderResponse>($"{BasePath}/{orderId}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"[OrderApi] GetOrder({orderId}) failed: {ex.Message}");
-            return null;
-        }
-    }
 
     public async Task<CreateOrderResponse?> CreateOrderAsync(CreateOrderRequest request)
     {

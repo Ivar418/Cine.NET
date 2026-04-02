@@ -3,10 +3,12 @@
 @using WA.Services.Http.Interfaces
 @using SharedLibrary.DTOs.Responses
 @using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components
 @layout AdminLayout
 @inject IOrderApi OrderApi
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <MudText Typo="Typo.h4" Class="mb-4">Reserveringen & Bestellingen</MudText>
@@ -209,8 +211,26 @@
     private bool _showDetail = false;
     private CreateOrderResponse? _detailOrder = null;
 
+    [SupplyParameterFromQuery]
+    public bool PaymentComplete { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? PaymentCompleteOrderId { get; set; }
+
     protected override async Task OnInitializedAsync()
-        => await LoadOrdersAsync();
+    {
+        await LoadOrdersAsync();
+
+        // Show success message if returning from payment
+        if (PaymentComplete && PaymentCompleteOrderId.HasValue)
+        {
+            var order = _orders.FirstOrDefault(o => o.OrderId == PaymentCompleteOrderId.Value);
+            if (order != null)
+            {
+                Snackbar.Add($"Order {order.OrderCode} is betaald! Tickets zijn geprint.", Severity.Success);
+            }
+        }
+    }
 
     private async Task LoadOrdersAsync()
     {
@@ -232,27 +252,18 @@
         _showDetail = true;
     }
 
-    private async Task ConfirmPaymentAsync(CreateOrderResponse order)
+    private void ConfirmPaymentAsync(CreateOrderResponse order)
     {
-        _busy = true;
-        var result = await OrderApi.ConfirmPaymentAsync(order.OrderId);
-        _busy = false;
-
-        if (result is null)
-        {
-            Snackbar.Add("Betaling bevestigen mislukt.", Severity.Error);
-            return;
-        }
-
-        Snackbar.Add($"Order {order.OrderCode} is betaald! Tickets worden gegenereerd...", Severity.Success);
-
-        // Refresh list and detail
-        await LoadOrdersAsync();
-        if (_detailOrder?.OrderId == order.OrderId)
-            _detailOrder = _orders.FirstOrDefault(o => o.OrderId == order.OrderId);
-
-        // Auto-download tickets PDF
-        await DownloadTicketsPdfAsync(result);
+        // Redirect to payment mock with PaymentResult as return target (not directly back to admin panel)
+        var returnUrl = Uri.EscapeDataString($"/checkout/payment-result?orderId={order.OrderId}&fromAdmin=true");
+        var url = $"/payment-mock" +
+                  $"?reference={Uri.EscapeDataString(order.OrderCode)}" +
+                  $"&amount={order.TotalAmount:F2}" +
+                  $"&merchant={Uri.EscapeDataString("CineNet B.V.")}" +
+                  $"&description={Uri.EscapeDataString("Reservering " + order.OrderCode)}" +
+                  $"&returnUrl={returnUrl}" +
+                  $"&ChosenPaymentType=IDEAL";
+        Nav.NavigateTo(url);
     }
 
     private async Task DownloadTicketsPdfAsync(CreateOrderResponse order)

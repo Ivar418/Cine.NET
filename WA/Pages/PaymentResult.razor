@@ -36,8 +36,8 @@
                     @(Reservation ? "Reservering opnieuw downloaden" : "Tickets opnieuw downloaden")
                 </MudButton>
                 <MudButton Variant="Variant.Outlined" Color="Color.Default"
-                           OnClick='() => Nav.NavigateTo("/")'>
-                    Terug naar home
+                           OnClick="() => ReturnToProperPage()">
+                    @(FromAdmin ? "Terug naar reserveringen" : "Terug naar home")
                 </MudButton>
             </MudStack>
         </MudPaper>
@@ -49,9 +49,12 @@
                 <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="font-size:4rem" />
                 <MudText Typo="Typo.h5">@(Reservation ? "Reservering mislukt" : "Betaling mislukt")</MudText>
                 <MudText Typo="Typo.body1">@(Reservation ? "De reservering kon niet worden voltooid." : "De betaling is niet geslaagd of geannuleerd.")</MudText>
+                <MudText Typo="Typo.caption" Class="mt-1">
+                    U wordt automatisch teruggestuurd...
+                </MudText>
                 <MudButton Variant="Variant.Outlined" Color="Color.Default"
-                           OnClick='() => Nav.NavigateTo("/")'>
-                    Terug naar home
+                           OnClick="ReturnToProperPage">
+                    @(FromAdmin ? "Terug naar reserveringen" : "Terug naar betaling")
                 </MudButton>
             </MudStack>
         </MudPaper>
@@ -61,10 +64,15 @@
     [Parameter, SupplyParameterFromQuery] public int OrderId { get; set; }
     [Parameter, SupplyParameterFromQuery] public bool Success { get; set; }
     [Parameter, SupplyParameterFromQuery] public bool Reservation { get; set; }
+    [Parameter, SupplyParameterFromQuery] public bool FromAdmin { get; set; }
+    [Parameter, SupplyParameterFromQuery] public int ShowingId { get; set; }
+    [Parameter, SupplyParameterFromQuery] public string? PaymentMethod { get; set; }
 
     private bool _loading = true;
     private bool _success = false;
     private CreateOrderResponse? _order;
+    private bool _autoRedirectScheduled = false;
+    
     protected override async Task OnInitializedAsync()
     {
         if (OrderId <= 0)
@@ -98,7 +106,33 @@
         }
 
         _loading = false;
+        // Failed/cancelled/expired/open => auto return after short delay
+        if (!_success && !_autoRedirectScheduled)
+        {
+            _autoRedirectScheduled = true;
+            _ = AutoRedirectAfterFailureAsync();
+        }
     }
+
+    private void ReturnToProperPage()
+    {
+        if (FromAdmin)
+        {
+            Nav.NavigateTo("/admin/reservations");
+            return;
+        }
+
+        if (ShowingId > 0)
+        {
+            var method = Uri.EscapeDataString(PaymentMethod ?? string.Empty);
+            Nav.NavigateTo($"/checkout/{ShowingId}?step=4&paymentMethod={method}");
+        }
+        else
+        {
+            Nav.NavigateTo("/");
+        }
+    }
+
     private async Task DownloadAsync()
     {
         if (OrderId <= 0) return;
@@ -121,6 +155,29 @@
         {
             var base64 = Convert.ToBase64String(pdf);
             await JS.InvokeVoidAsync("downloadBase64Pdf", base64, fileName);
+        }
+    }
+    
+    private async Task AutoRedirectAfterFailureAsync()
+    {
+        // show failure popup for a few seconds
+        await Task.Delay(3000);
+
+        if (FromAdmin)
+        {
+            Nav.NavigateTo("/admin/reservations");
+            return;
+        }
+
+        // customer: go back to payment-choice step, keep chosen payment if available
+        if (ShowingId > 0)
+        {
+            var method = Uri.EscapeDataString(PaymentMethod ?? string.Empty);
+            Nav.NavigateTo($"/checkout/{ShowingId}?step=4&paymentMethod={method}");
+        }
+        else
+        {
+            Nav.NavigateTo("/");
         }
     }
 }
