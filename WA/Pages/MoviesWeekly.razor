@@ -415,12 +415,15 @@ else
 
             var startDay = _daysInWeek.First().Date;
             var endDay   = _daysInWeek.Last().Date.AddDays(1);
+            var cutoff = DateTimeOffset.UtcNow.AddMinutes(-15);
 
             _showings = allShowings
                 .Where(s =>
                 {
-                    var localDate = s.StartsAt.ToLocalTime().Date;
-                    return localDate >= startDay && localDate < endDay;
+                    var local = s.StartsAt.ToLocalTime();
+                    return s.StartsAt >= cutoff // 👈 dit is je nieuwe filter
+                           && local.Date >= startDay
+                           && local.Date < endDay;
                 })
                 .OrderBy(s => s.StartsAt)
                 .ToList();
