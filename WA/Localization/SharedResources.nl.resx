@@ -186,13 +186,54 @@
   <data name="3d" xml:space="preserve">
     <value>3D</value>
   </data>
-	<data name="showingdetail order tickets" xml:space="preserve">
+  <data name="showingdetail order tickets" xml:space="preserve">
     <value>Bestel tickets</value>
-	  </data>
+  </data>
   <data name="admin movies title" xml:space="preserve">
     <value>Admin - Films</value>
   </data>
   <data name="Admin movies" xml:space="preserve">
     <value>Films</value>
+  </data>
+  <data name="contact title" xml:space="preserve">
+    <value>Contact — Cine.net</value>
+  </data>
+  <data name="contact body" xml:space="preserve">
+    <value>Heeft u vragen, opmerkingen of wilt u meer informatie? Wij staan voor u klaar. 
+Neem gerust contact met ons op via telefoon of e-mail, of kom langs tijdens onze openingstijden.</value>
+  </data>
+  <data name="contact openinghours" xml:space="preserve">
+    <value>Openingstijden</value>
+  </data>
+  <data name="monday" xml:space="preserve">
+    <value>Maandag</value>
+  </data>
+  <data name="teusday" xml:space="preserve">
+    <value>Dinsdag</value>
+  </data>
+  <data name="wednesday" xml:space="preserve">
+    <value>Woensdag</value>
+  </data>
+  <data name="thursday" xml:space="preserve">
+    <value>Donderdag</value>
+  </data>
+  <data name="friday" xml:space="preserve">
+    <value>Vrijdag</value>
+  </data>
+  <data name="saturday" xml:space="preserve">
+    <value>Zaterdag</value>
+  </data>
+  <data name="sunday" xml:space="preserve">
+    <value>Zondag</value>
+  </data>
+  <data name="contact lower body" xml:space="preserve">
+    <value>Wij zijn centraal gelegen en goed bereikbaar per auto en openbaar vervoer. 
+Voer ons adres in uw navigatie in of bekijk de kaart hieronder.</value>
+  </data>
+  <data name="contact info" xml:space="preserve">
+    <value>Contactgegevens</value>
+  </data>
+  <data name="contact how to find" xml:space="preserve">
+    <value>Hoe u ons vindt</value>
   </data>
 </root>

@@ -1,18 +1,21 @@
 ﻿@page "/contact"
+@inject IStringLocalizer<WA.Localization.SharedResources> L
+@inherits LocalizedComponentBase
+@using WA.Layout
+@layout MainLayout
 
-<PageTitle>Contact — Cine.net</PageTitle>
+<PageTitle>@L["contact title"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 mb-10">
 
-    <MudText Typo="Typo.h4" GutterBottom="true" Style="color: var(--mud-palette-text-secondary); font-weight: 700;">Contact</MudText>
+    <MudText Typo="Typo.h4" GutterBottom="true" Style="color: var(--mud-palette-text-secondary); font-weight: 700;">@L["Contact"]</MudText>
     <MudText Typo="Typo.body1" Class="mb-6">
-        Heeft u vragen, opmerkingen of wilt u meer informatie? Wij staan voor u klaar. 
-        Neem gerust contact met ons op via telefoon of e-mail, of kom langs tijdens onze openingstijden.
+        @L["contact body"]
     </MudText>
 
     <MudDivider Class="mb-6" />
 
-    <MudText Typo="Typo.h6" GutterBottom="true" Style="color: var(--mud-palette-text-secondary); font-weight: 700;">Contactgegevens</MudText>
+    <MudText Typo="Typo.h6" GutterBottom="true" Style="color: var(--mud-palette-text-secondary); font-weight: 700;">@L["contact info"]</MudText>
 
     <MudStack Spacing="2" Class="mb-6">
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
@@ -27,36 +30,36 @@
 
     <MudDivider Class="mb-6" />
 
-    <MudText Typo="Typo.h6" GutterBottom="true" Style="color: var(--mud-palette-text-secondary); font-weight: 700;">Openingstijden</MudText>
+    <MudText Typo="Typo.h6" GutterBottom="true" Style="color: var(--mud-palette-text-secondary); font-weight: 700;">@L["contact openinghours"]</MudText>
 
     <MudSimpleTable Hover="false" Striped="true" Class="mb-6" Style="max-width: 400px;">
         <tbody>
             <tr>
-                <td><MudText Typo="Typo.body2">Maandag</MudText></td>
+                <td><MudText Typo="Typo.body2">@L["monday"]</MudText></td>
                 <td><MudText Typo="Typo.body2">10:00 – 23:00</MudText></td>
             </tr>
             <tr>
-                <td><MudText Typo="Typo.body2">Dinsdag</MudText></td>
+                <td><MudText Typo="Typo.body2">@L["teusday"]</MudText></td>
                 <td><MudText Typo="Typo.body2">10:00 – 23:00</MudText></td>
             </tr>
             <tr>
-                <td><MudText Typo="Typo.body2">Woensdag</MudText></td>
+                <td><MudText Typo="Typo.body2">@L["wednesday"]</MudText></td>
                 <td><MudText Typo="Typo.body2">10:00 – 23:00</MudText></td>
             </tr>
             <tr>
-                <td><MudText Typo="Typo.body2">Donderdag</MudText></td>
+                <td><MudText Typo="Typo.body2">@L["thursday"]</MudText></td>
                 <td><MudText Typo="Typo.body2">10:00 – 23:00</MudText></td>
             </tr>
             <tr>
-                <td><MudText Typo="Typo.body2">Vrijdag</MudText></td>
+                <td><MudText Typo="Typo.body2">@L["friday"]</MudText></td>
                 <td><MudText Typo="Typo.body2">10:00 – 23:00</MudText></td>
             </tr>
             <tr>
-                <td><MudText Typo="Typo.body2">Zaterdag</MudText></td>
+                <td><MudText Typo="Typo.body2">@L["saturday"]</MudText></td>
                 <td><MudText Typo="Typo.body2">10:00 – 23:00</MudText></td>
             </tr>
             <tr>
-                <td><MudText Typo="Typo.body2">Zondag</MudText></td>
+                <td><MudText Typo="Typo.body2">@L["sunday"]</MudText></td>
                 <td><MudText Typo="Typo.body2">10:00 – 23:00</MudText></td>
             </tr>
         </tbody>
@@ -64,10 +67,9 @@
 
     <MudDivider Class="mb-6" />
 
-    <MudText Typo="Typo.h6" GutterBottom="true" Style="color: var(--mud-palette-text-secondary); font-weight: 700;">Hoe u ons vindt</MudText>
+    <MudText Typo="Typo.h6" GutterBottom="true" Style="color: var(--mud-palette-text-secondary); font-weight: 700;">@L["contact how to find"]</MudText>
     <MudText Typo="Typo.body1" Class="mb-4">
-        Wij zijn centraal gelegen en goed bereikbaar per auto en openbaar vervoer. 
-        Voer ons adres in uw navigatie in of bekijk de kaart hieronder.
+        @L["contact lower body"]
     </MudText>
 
     <MudPaper Elevation="2" Class="overflow-hidden" Style="border-radius: 8px; height: 550px">
