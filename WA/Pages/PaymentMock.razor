@@ -147,7 +147,7 @@
         }
 
         @* --- Creditcard Section --- *@
-                @if (ChosenPaymentType == "Creditcard")
+        @if (ChosenPaymentType == "Creditcard")
         {
             <div class="ideal-wrapper">
                 <div class="ideal-card">
@@ -450,6 +450,8 @@
     [Parameter, SupplyParameterFromQuery] public string Reference { get; set; } = "REF-20260302";
     [Parameter, SupplyParameterFromQuery] public string ReturnUrl { get; set; } = "/";
     [Parameter, SupplyParameterFromQuery] public string? ChosenPaymentType { get; set; } = null;
+    [Parameter, SupplyParameterFromQuery] public Guid ReservationId { get; set; }
+
 
     private string _selectedBank = "ABN AMRO";
     private string _transactionId = "";
@@ -476,7 +478,7 @@
 
     private void ReturnToApp()
     {
-        var url = string.IsNullOrWhiteSpace(ReturnUrl) ? "/" : Uri.UnescapeDataString(ReturnUrl + $"&success={_result?.BadgeClass == "success"}&transactionId={_transactionId}");
+        var url = string.IsNullOrWhiteSpace(ReturnUrl) ? "/" : Uri.UnescapeDataString(ReturnUrl + $"&success={_result?.BadgeClass == "success"}&transactionId={_transactionId}&reservationId={ReservationId.ToString()}");
         Nav.NavigateTo(url);
     }
 

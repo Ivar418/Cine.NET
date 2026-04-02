@@ -1,15 +1,17 @@
 ﻿@page "/checkout/payment-result"
 @namespace WA.Pages
 @using SharedLibrary.DTOs.Responses
+@using WA.Services.Http
 @using WA.Services.Http.Interfaces
 @inject IOrderApi OrderApi
+@inject ISeatFinderApiClient SeatFinderApiClient
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
     @if (_loading)
     {
         <MudStack AlignItems="AlignItems.Center" Spacing="4">
-            <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+            <MudProgressCircular Indeterminate="true" Size="Size.Large"/>
             <MudText Typo="Typo.h6">@(Reservation ? "Reservering verwerken..." : "Betaling verwerken...")</MudText>
         </MudStack>
     }
@@ -17,19 +19,24 @@
     {
         <MudPaper Class="pa-6" Elevation="3">
             <MudStack AlignItems="AlignItems.Center" Spacing="3">
-                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Style="font-size:4rem" />
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Style="font-size:4rem"/>
                 <MudText Typo="Typo.h5">@(Reservation ? "Reservering geslaagd!" : "Betaling geslaagd!")</MudText>
-                <MudText Typo="Typo.body1">Bestelling <strong>@_order.OrderCode</strong> is @(Reservation ? "geregistreerd" : "bevestigd").</MudText>
+                <MudText Typo="Typo.body1">Bestelling <strong>@_order.OrderCode</strong>
+                    is @(Reservation ? "geregistreerd" : "bevestigd").
+                </MudText>
                 @if (!Reservation)
                 {
-                    <MudText Typo="Typo.body2">Totaal betaald: <strong>€@_order.TotalAmount.ToString("F2")</strong></MudText>
+                    <MudText Typo="Typo.body2">Totaal betaald: <strong>€@_order.TotalAmount.ToString("F2")</strong>
+                    </MudText>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2">Totaal te betalen aan de kassa: <strong>€@_order.TotalAmount.ToString("F2")</strong></MudText>
+                    <MudText Typo="Typo.body2">Totaal te betalen aan de kassa:
+                        <strong>€@_order.TotalAmount.ToString("F2")</strong></MudText>
                 }
-                <MudDivider Class="my-2" Style="width:100%" />
-                <MudText Typo="Typo.body2">@(Reservation ? "Uw reserveringsbewijs is gedownload." : "Uw tickets worden automatisch gedownload.")</MudText>
+                <MudDivider Class="my-2" Style="width:100%"/>
+                <MudText
+                    Typo="Typo.body2">@(Reservation ? "Uw reserveringsbewijs is gedownload." : "Uw tickets worden automatisch gedownload.")</MudText>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Download"
                            OnClick="DownloadAsync">
@@ -46,9 +53,10 @@
     {
         <MudPaper Class="pa-6" Elevation="3">
             <MudStack AlignItems="AlignItems.Center" Spacing="3">
-                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="font-size:4rem" />
+                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="font-size:4rem"/>
                 <MudText Typo="Typo.h5">@(Reservation ? "Reservering mislukt" : "Betaling mislukt")</MudText>
-                <MudText Typo="Typo.body1">@(Reservation ? "De reservering kon niet worden voltooid." : "De betaling is niet geslaagd of geannuleerd.")</MudText>
+                <MudText
+                    Typo="Typo.body1">@(Reservation ? "De reservering kon niet worden voltooid." : "De betaling is niet geslaagd of geannuleerd.")</MudText>
                 <MudText Typo="Typo.caption" Class="mt-1">
                     U wordt automatisch teruggestuurd...
                 </MudText>
@@ -60,6 +68,7 @@
         </MudPaper>
     }
 </MudContainer>
+
 @code {
     [Parameter, SupplyParameterFromQuery] public int OrderId { get; set; }
     [Parameter, SupplyParameterFromQuery] public bool Success { get; set; }
@@ -67,12 +76,14 @@
     [Parameter, SupplyParameterFromQuery] public bool FromAdmin { get; set; }
     [Parameter, SupplyParameterFromQuery] public int ShowingId { get; set; }
     [Parameter, SupplyParameterFromQuery] public string? PaymentMethod { get; set; }
+    [Parameter, SupplyParameterFromQuery] public Guid? ReservationId { get; set; } = null;
+
 
     private bool _loading = true;
     private bool _success = false;
     private CreateOrderResponse? _order;
     private bool _autoRedirectScheduled = false;
-    
+
     protected override async Task OnInitializedAsync()
     {
         if (OrderId <= 0)
@@ -109,6 +120,10 @@
         // Failed/cancelled/expired/open => auto return after short delay
         if (!_success && !_autoRedirectScheduled)
         {
+            if (ReservationId != null)
+            {
+               await SeatFinderApiClient.CancelAsync(ReservationId.Value); // best effort to free up reserved seats
+            }
             _autoRedirectScheduled = true;
             _ = AutoRedirectAfterFailureAsync();
         }
@@ -157,7 +172,7 @@
             await JS.InvokeVoidAsync("downloadBase64Pdf", base64, fileName);
         }
     }
-    
+
     private async Task AutoRedirectAfterFailureAsync()
     {
         // show failure popup for a few seconds
@@ -173,11 +188,12 @@
         if (ShowingId > 0)
         {
             var method = Uri.EscapeDataString(PaymentMethod ?? string.Empty);
-            Nav.NavigateTo($"/checkout/{ShowingId}?step=4&paymentMethod={method}");
+            Nav.NavigateTo($"/checkout/{ShowingId}");
         }
         else
         {
             Nav.NavigateTo("/");
         }
     }
+
 }

@@ -408,7 +408,8 @@ public partial class Checkout
                   $"&merchant={Uri.EscapeDataString("CineNet B.V.")}" +
                   $"&description={Uri.EscapeDataString("Bestelling " + order.OrderCode)}" +
                   $"&returnUrl={returnUrl}" +
-                  $"&ChosenPaymentType={Uri.EscapeDataString(chosen)}";
+                  $"&ChosenPaymentType={Uri.EscapeDataString(chosen)}"+
+                  $"&reservationId={_confirmedReservation?.Id.ToString()}";
 
         Nav.NavigateTo(url);
     }
