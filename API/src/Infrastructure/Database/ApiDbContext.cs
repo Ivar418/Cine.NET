@@ -26,6 +26,8 @@ public class ApiDbContext : DbContext
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderTicket> OrderTickets => Set<OrderTicket>();
     public DbSet<PaymentMethod> PaymentMethods => Set<PaymentMethod>();
+    public DbSet<Arrangement> Arrangements { get; set; }
+    public DbSet<ArrangementItem> ArrangementItems { get; set; }
 
     // Pricing related entities
     public DbSet<TicketType> TicketTypes => Set<TicketType>();
@@ -94,6 +96,17 @@ public class ApiDbContext : DbContext
             .Property(p => p.PriceModifier)
             .HasPrecision(10, 2);
         modelBuilder.Entity<Genre>().ToTable("genres");
+        
+        // Arrangement
+        modelBuilder.Entity<Arrangement>().ToTable("arrangements");
+
+        modelBuilder.Entity<ArrangementItem>().ToTable("arrangement_items");
+
+        modelBuilder.Entity<Arrangement>()
+            .HasMany(a => a.Items)
+            .WithOne(i => i.Arrangement)
+            .HasForeignKey(i => i.ArrangementId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Showing>().Property(e => e.StartsAt).HasConversion(v => v.ToString("O"), v =>
             (DateTimeOffset)System.DateTimeOffset.ParseExact(
