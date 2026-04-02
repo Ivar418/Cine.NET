@@ -44,7 +44,7 @@ namespace API.Infrastructure.Database
                 {
                     // Existing
                     285, 83533, 1272837, 1242898,
-                    
+
                     // Action
                     76341, 284053, 299534,
 
@@ -68,7 +68,7 @@ namespace API.Infrastructure.Database
 
                     // Romance
                     597, 19995, 398818,
-                    
+
                     // NL gesproken
                     21872, 5497
                 };
@@ -189,7 +189,7 @@ namespace API.Infrastructure.Database
                     await auditoriumService.AddAuditoriumAsync(request);
                 }
             }
-            
+
             // SEED SHOWINGS
             var movies = await db.Movies.ToListAsync();
             var auditoriums = await db.Auditoriums.ToListAsync();
@@ -260,7 +260,7 @@ namespace API.Infrastructure.Database
             db.Showings.RemoveRange(db.Showings);
             db.Showings.AddRange(showings);
             await db.SaveChangesAsync();
-            
+
             // Dummy order for API testing when no orders exist
             if (!await db.Orders.AnyAsync())
             {
@@ -311,6 +311,82 @@ namespace API.Infrastructure.Database
                     Price = 8.50m
                 });
             }
+            
+            if (!await db.Arrangements.AnyAsync())
+            {
+                var arr1 = new Arrangement
+                {
+                    Name = "Movie Deal - Popcorn & Cola",
+                    Price = 12.00m,
+                    IsActive = true
+                };
+
+                var arr2 = new Arrangement
+                {
+                    Name = "Movie Deal - M&M's & Fanta",
+                    Price = 12.00m,
+                    IsActive = true
+                };
+
+                db.Arrangements.AddRange(arr1, arr2);
+                await db.SaveChangesAsync();
+            }
+
+            if (!await db.ArrangementItems.AnyAsync())
+            {
+                var arr1 = await db.Arrangements.FirstAsync(a => a.Name.Contains("Popcorn"));
+                var arr2 = await db.Arrangements.FirstAsync(a => a.Name.Contains("M&M"));
+
+                db.ArrangementItems.AddRange(
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr1.Id,
+                        Type = ArrangementItemType.Ticket,
+                        Name = "Ticket",
+                        Quantity = 1
+                    },
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr1.Id,
+                        Type = ArrangementItemType.Food,
+                        Name = "Popcorn",
+                        Quantity = 1
+                    },
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr1.Id,
+                        Type = ArrangementItemType.Drink,
+                        Name = "Cola",
+                        Quantity = 1
+                    },
+
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr2.Id,
+                        Type = ArrangementItemType.Ticket,
+                        Name = "Ticket",
+                        Quantity = 1
+                    },
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr2.Id,
+                        Type = ArrangementItemType.Food,
+                        Name = "M&M's",
+                        Quantity = 1
+                    },
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr2.Id,
+                        Type = ArrangementItemType.Drink,
+                        Name = "Fanta",
+                        Quantity = 1
+                    }
+                );
+
+                await db.SaveChangesAsync();
+            }
+            
+
             if (!await db.EmailSubscriptions.AnyAsync())
             {
                 await localMailService.AddAsync("TheBeeKeerIsAmazing@Badazz.yow");
@@ -329,6 +405,14 @@ CineNet."
             }
 
             await db.SaveChangesAsync();
+
+
+            
+
+
         }
     }
+    
+    
+    
 }

@@ -63,12 +63,16 @@ builder.Services.AddScoped<IPricingService, PricingService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderPdfService, OrderPdfService>();
-
+// TicketRule
 builder.Services.AddScoped<ITicketRuleService, TicketRuleService>();
 
 // Emails
 builder.Services.AddScoped<IMailSubscriptionRepository, MailSubscriptionRepository>();
 builder.Services.AddScoped<ILocalMailService, LocalMailService>();
+// Arrangement
+builder.Services.AddScoped<IArrangementService, ArrangementService>();
+builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
+
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();
