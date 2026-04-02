@@ -1,0 +1,491 @@
+@page "/payment-mock"
+@inject NavigationManager Nav
+
+
+@* <comment> *@
+@*     When calling this page you need to specify as follows: *@
+@*     http://localhost:5031/ideal-mock?reference=123&amount=20&merchant=ikke&description=haha *@
+@* </comment> *@
+<link href="css/payment-mock-page.css" rel="stylesheet"/>
+
+<MudContainer MaxWidth="MaxWidth.Small">
+    @if (_result != null)
+    {
+        <div class="result-overlay">
+            <div class="result-card">
+                <span class="result-icon">@_result.Icon</span>
+                <div class="result-title">@_result.Title</div>
+                <div class="result-subtitle">@_result.Subtitle</div>
+                <span class="result-status-badge badge-@_result.BadgeClass">@_result.Status</span>
+
+                <div class="result-details">
+                    <div><span>Transactie ID</span><span>@_transactionId</span></div>
+                    <div><span>Bedrag</span><span>€ @Amount</span></div>
+                    <div><span>Merchant</span><span>@Merchant</span></div>
+                    <div><span>Bank</span><span>@_selectedBank</span></div>
+                    <div><span>Tijdstip</span><span>@DateTime.Now.ToString("dd-MM-yyyy HH:mm")</span></div>
+                </div>
+
+                @if (_result.BadgeClass == "success")
+                {
+                    <button class="btn-return btn-return-success" @onclick="ReturnToApp">
+                        ✅ Terug naar bestelling
+                    </button>
+                }
+                else
+                {
+                    <button class="btn-return" @onclick="Reset">← Terug naar betaling</button>
+                    <button class="btn-return btn-return-danger" @onclick="ReturnToApp">
+                        ❌ Bestelling annuleren
+                    </button>
+                }
+            </div>
+        </div>
+    }
+    <div class="payment-page">
+        @if (ChosenPaymentType == null)
+        {
+            <MudPaper Class="ideal-wrapper" Elevation="4">
+                <div class="ideal-card">
+                    <div class="ideal-header">
+                        <div class="ideal-header-text">
+                            <h1>Kies uw betaalmethode</h1>
+                            <p>Selecteer hoe u wilt betalen</p>
+                        </div>
+                    </div>
+
+                    <div class="ideal-body">
+                        <div class="payment-info">
+                            <div class="payment-info-row">
+                                <span>Merchant</span>
+                                <span>@Merchant</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Omschrijving</span>
+                                <span>@Description</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Referentie</span>
+                                <span>@Reference</span>
+                            </div>
+                            <div class="payment-info-row total">
+                                <span>Totaalbedrag</span>
+                                <span>€ @Amount</span>
+                            </div>
+                        </div>
+
+                        <div class="mock-buttons-wrapper">
+                            <div class="btn-section">
+                                <h3>Selecteer betaalmethode</h3>
+
+                                <MudButton Color="Color.Success" Variant="Variant.Filled" Class="btn"
+                                           OnClick='() => SelectPaymentMethod("Pinnen")'>
+                                    💳 Pinnen
+                                </MudButton>
+                                <MudButton Color="Color.Success" Variant="Variant.Filled" Class="btn"
+                                           OnClick='() => SelectPaymentMethod("Creditcard")'>
+                                    💳 Creditcard
+                                </MudButton>
+                                <MudButton Color="Color.Success" Variant="Variant.Filled" Class="btn"
+                                           OnClick='() => SelectPaymentMethod("Ideal")'>
+                                    ✅ iDEAL
+                                </MudButton>
+                                <MudButton Color="Color.Success" Variant="Variant.Filled" Class="btn"
+                                           OnClick='() => SelectPaymentMethod("Creditcard Online")'>
+                                    🌐 Creditcard online
+                                </MudButton>
+                                <MudButton Color="Color.Success" Variant="Variant.Filled" Class="btn"
+                                           OnClick='() => SelectPaymentMethod("Later betalen")'>
+                                    ⏰ Later betalen
+                                </MudButton>
+                                <MudButton Color="Color.Success" Variant="Variant.Filled" Class="btn"
+                                           OnClick='() => SelectPaymentMethod("Cadeaubon")'>
+                                    🎁 Cadeaubon
+                                </MudButton>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </MudPaper>
+        }
+
+        @* --- iDEAL Section --- *@
+        @if (ChosenPaymentType == "Ideal")
+        {
+            <MudPaper Class="ideal-wrapper" Elevation="4">
+                <div class="ideal-card">
+                    <div class="ideal-header">
+                        <div class="ideal-logo">iDEAL</div>
+                        <div class="ideal-header-text">
+                            <h1>Betalen met iDEAL</h1>
+                            <p>Veilig en direct via uw bank</p>
+                        </div>
+                    </div>
+
+                    <div class="ideal-body">
+                        <div class="payment-info">
+                            <div class="payment-info-row"><span>Merchant</span><span>@Merchant</span></div>
+                            <div class="payment-info-row"><span>Omschrijving</span><span>@Description</span></div>
+                            <div class="payment-info-row"><span>Referentie</span><span>@Reference</span></div>
+                            <div class="payment-info-row total"><span>Totaalbedrag</span><span>€ @Amount</span></div>
+                        </div>
+                        <div class="bank-section">
+                            <MudSelect T="string" Label="Kies uw bank" @bind-Value="_selectedBank" Class="bank-selects">
+                                <MudSelectItem Value='@("ABN AMRO")'>ABN AMRO</MudSelectItem>
+                                <MudSelectItem Value='@("ING")'>ING</MudSelectItem>
+                                <MudSelectItem Value='@("Rabobank")'>Rabobank</MudSelectItem>
+                                <MudSelectItem Value='@("SNS Bank")'>SNS Bank</MudSelectItem>
+                                <MudSelectItem Value='@("ASN Bank")'>ASN Bank</MudSelectItem>
+                                <MudSelectItem Value='@("Triodos Bank")'>Triodos Bank</MudSelectItem>
+                                <MudSelectItem Value='@("Knab")'>Knab</MudSelectItem>
+                                <MudSelectItem Value='@("Bunq")'>Bunq</MudSelectItem>
+                            </MudSelect>
+                        </div>
+                    </div>
+                </div>
+            </MudPaper>
+        }
+
+        @* --- Creditcard Section --- *@
+                @if (ChosenPaymentType == "Creditcard")
+        {
+            <div class="ideal-wrapper">
+                <div class="ideal-card">
+                    <div class="ideal-header">
+                        <div class="ideal-logo">💳</div>
+                        <div class="ideal-header-text">
+                            <h1>Betalen met Creditcard</h1>
+                            <p>Veilig en wereldwijd geaccepteerd</p>
+                        </div>
+                    </div>
+
+                    <div class="ideal-body">
+                        <div class="payment-info">
+                            <div class="payment-info-row">
+                                <span>Merchant</span>
+                                <span>@Merchant</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Omschrijving</span>
+                                <span>@Description</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Referentie</span>
+                                <span>@Reference</span>
+                            </div>
+                            <div class="payment-info-row total">
+                                <span>Totaalbedrag</span>
+                                <span>€ @Amount</span>
+                            </div>
+                        </div>
+
+                        <div class="bank-section">
+                            <label>Kaartnummer</label>
+                            <input type="text" class="bank-select" placeholder="1234 5678 9012 3456"/>
+
+                            <label>Naam op kaart</label>
+                            <input type="text" class="bank-select" placeholder="Jan Jansen"/>
+
+                            <div style="display: flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label>Vervaldatum</label>
+                                    <input type="text" class="bank-select" placeholder="MM/JJ"/>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label>CVV</label>
+                                    <input type="text" class="bank-select" placeholder="123"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (ChosenPaymentType == "Pinnen")
+        {
+            <div class="ideal-wrapper">
+                <div class="ideal-card">
+                    <div class="ideal-header">
+                        <div class="ideal-logo">💳</div>
+                        <div class="ideal-header-text">
+                            <h1>Betalen met Pin</h1>
+                            <p>Betaal met uw bankpas</p>
+                        </div>
+                    </div>
+
+                    <div class="ideal-body">
+                        <div class="payment-info">
+                            <div class="payment-info-row">
+                                <span>Merchant</span>
+                                <span>@Merchant</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Omschrijving</span>
+                                <span>@Description</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Referentie</span>
+                                <span>@Reference</span>
+                            </div>
+                            <div class="payment-info-row total">
+                                <span>Totaalbedrag</span>
+                                <span>€ @Amount</span>
+                            </div>
+                        </div>
+
+                        <div class="bank-section">
+                            <label>Pincode</label>
+                            <input type="password" class="bank-select" placeholder="••••" maxlength="4"/>
+
+                            <p style="margin-top: 1rem; text-align: center; color: #666;">
+                                Voer uw pincode in om de betaling te voltooien
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (ChosenPaymentType == "Creditcard Online")
+        {
+            <div class="ideal-wrapper">
+                <div class="ideal-card">
+                    <div class="ideal-header">
+                        <div class="ideal-logo">🌐</div>
+                        <div class="ideal-header-text">
+                            <h1>Betalen met Creditcard Online</h1>
+                            <p>Veilig online betalen</p>
+                        </div>
+                    </div>
+
+                    <div class="ideal-body">
+                        <div class="payment-info">
+                            <div class="payment-info-row">
+                                <span>Merchant</span>
+                                <span>@Merchant</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Omschrijving</span>
+                                <span>@Description</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Referentie</span>
+                                <span>@Reference</span>
+                            </div>
+                            <div class="payment-info-row total">
+                                <span>Totaalbedrag</span>
+                                <span>€ @Amount</span>
+                            </div>
+                        </div>
+
+                        <div class="bank-section">
+                            <label>Kaartnummer</label>
+                            <input type="text" class="bank-select" placeholder="1234 5678 9012 3456"/>
+
+                            <label>Naam op kaart</label>
+                            <input type="text" class="bank-select" placeholder="Jan Jansen"/>
+
+                            <div style="display: flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label>Vervaldatum</label>
+                                    <input type="text" class="bank-select" placeholder="MM/JJ"/>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label>CVV</label>
+                                    <input type="text" class="bank-select" placeholder="123"/>
+                                </div>
+                            </div>
+
+                            <label>E-mailadres</label>
+                            <input type="email" class="bank-select" placeholder="uw@email.nl"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (ChosenPaymentType == "Later-betalen")
+        {
+            <div class="ideal-wrapper">
+                <div class="ideal-card">
+                    <div class="ideal-header">
+                        <div class="ideal-logo">⏰</div>
+                        <div class="ideal-header-text">
+                            <h1>Later betalen</h1>
+                            <p>Ontvang nu, betaal later</p>
+                        </div>
+                    </div>
+
+                    <div class="ideal-body">
+                        <div class="payment-info">
+                            <div class="payment-info-row">
+                                <span>Merchant</span>
+                                <span>@Merchant</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Omschrijving</span>
+                                <span>@Description</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Referentie</span>
+                                <span>@Reference</span>
+                            </div>
+                            <div class="payment-info-row total">
+                                <span>Totaalbedrag</span>
+                                <span>€ @Amount</span>
+                            </div>
+                        </div>
+
+                        <div class="bank-section">
+                            <label>E-mailadres</label>
+                            <input type="email" class="bank-select" placeholder="uw@email.nl"/>
+
+                            <label>Telefoonnummer</label>
+                            <input type="tel" class="bank-select" placeholder="+31 6 12345678"/>
+
+                            <label>Geboortedatum</label>
+                            <input type="date" class="bank-select"/>
+
+                            <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">
+                                U betaalt binnen 14 dagen na ontvangst van uw bestelling
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (ChosenPaymentType == "Cadeaubon")
+        {
+            <div class="ideal-wrapper">
+                <div class="ideal-card">
+                    <div class="ideal-header">
+                        <div class="ideal-logo">🎁</div>
+                        <div class="ideal-header-text">
+                            <h1>Betalen met Cadeaubon</h1>
+                            <p>Verzilver uw cadeaubon</p>
+                        </div>
+                    </div>
+
+                    <div class="ideal-body">
+                        <div class="payment-info">
+                            <div class="payment-info-row">
+                                <span>Merchant</span>
+                                <span>@Merchant</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Omschrijving</span>
+                                <span>@Description</span>
+                            </div>
+                            <div class="payment-info-row">
+                                <span>Referentie</span>
+                                <span>@Reference</span>
+                            </div>
+                            <div class="payment-info-row total">
+                                <span>Totaalbedrag</span>
+                                <span>€ @Amount</span>
+                            </div>
+                        </div>
+
+                        <div class="bank-section">
+                            <label>Cadeauboncode</label>
+                            <input type="text" class="bank-select" placeholder="XXXX-XXXX-XXXX-XXXX"/>
+
+                            <label>Pincode (indien van toepassing)</label>
+                            <input type="password" class="bank-select" placeholder="••••" maxlength="4"/>
+
+                            <p style="margin-top: 1rem; text-align: center; color: #666;">
+                                Voer uw cadeauboncode in om te betalen
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* --- Repeat similar structure for other payment types (Pinnen, Creditcard Online, Later Betalen, Cadeaubon) --- *@
+
+        <MudPaper Class="mock-result-buttons-wrapper" Elevation="2">
+            <div>
+                <div class="mock-label">
+                    ⚠️
+                    <span>Dit is een <strong>testomgeving</strong>. Simuleer het gewenste betaalresultaat hieronder.</span>
+                </div>
+                <div class="mock-result-buttons-body">
+                    <div class="btn-section">
+                        <h3>Simuleer betaalresultaat</h3>
+
+                        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick='() => Simulate("success")'>
+                            ✅ Betaling geslaagd
+                        </MudButton>
+
+                        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick='() => Simulate("failure")'>
+                            ❌ Betaling mislukt
+                        </MudButton>
+
+                        <MudButton Color="Color.Secondary" Variant="Variant.Filled"
+                                   OnClick='() => Simulate("cancelled")'>
+                            🚫 Betaling geannuleerd
+                        </MudButton>
+
+                        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick='() => Simulate("expired")'>
+                            ⏱️ Betaling verlopen
+                        </MudButton>
+
+                        <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick='() => Simulate("open")'>
+                            🔄 Betaling in behandeling
+                        </MudButton>
+
+                        @* <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick='() => resetPayment()'> *@
+                        @*     🔄 Terug naar betaalmethode *@
+                        @* </MudButton> *@
+                    </div>
+                </div>
+            </div>
+        </MudPaper>
+    </div>
+</MudContainer>
+
+@code {
+    [Parameter, SupplyParameterFromQuery] public string Amount { get; set; } = "24,99";
+    [Parameter, SupplyParameterFromQuery] public string Merchant { get; set; } = "CineNet B.V.";
+    [Parameter, SupplyParameterFromQuery] public string Description { get; set; } = "Bestelling #10042";
+    [Parameter, SupplyParameterFromQuery] public string Reference { get; set; } = "REF-20260302";
+    [Parameter, SupplyParameterFromQuery] public string ReturnUrl { get; set; } = "/";
+    [Parameter, SupplyParameterFromQuery] public string? ChosenPaymentType { get; set; } = null;
+
+    private string _selectedBank = "ABN AMRO";
+    private string _transactionId = "";
+    private PaymentResult? _result;
+
+    private void Simulate(string type)
+    {
+        _transactionId = $"TRX{Random.Shared.Next(100000000, 999999999)}";
+        _result = type switch
+        {
+            "success" => new("✅", "Betaling geslaagd!", "Uw betaling is succesvol ontvangen.", "success", "Geslaagd"),
+            "failure" => new("❌", "Betaling mislukt", "Er is een fout opgetreden bij de betaling.", "failure", "Mislukt"),
+            "cancelled" => new("🚫", "Betaling geannuleerd", "U heeft de betaling geannuleerd.", "cancelled", "Geannuleerd"),
+            "expired" => new("⏱️", "Betaling verlopen", "De betaaltermijn is verlopen. Probeer opnieuw.", "expired", "Verlopen"),
+            "open" => new("🔄", "In behandeling", "Uw betaling wordt nog verwerkt.", "open", "In behandeling"),
+            _ => null
+        };
+    }
+
+    private void SelectPaymentMethod(string method)
+    {
+        ChosenPaymentType = method;
+    }
+
+    private void ReturnToApp()
+    {
+        var url = string.IsNullOrWhiteSpace(ReturnUrl) ? "/" : Uri.UnescapeDataString(ReturnUrl + $"&success={_result?.BadgeClass == "success"}&transactionId={_transactionId}");
+        Nav.NavigateTo(url);
+    }
+
+    private void Reset()
+    {
+        _result = null;
+        _transactionId = "";
+    }
+
+    private record PaymentResult(string Icon, string Title, string Subtitle, string BadgeClass, string Status);
+
+}
