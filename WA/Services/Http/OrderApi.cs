@@ -11,6 +11,20 @@ public class OrderApi : IOrderApi
     private const string Base = "api/orders";
 
     public OrderApi(HttpClient http) => _http = http;
+    public async Task<List<CreateOrderResponse>> GetAllOrdersAsync()
+    {
+        try
+        {
+            var result = await _http.GetFromJsonAsync<List<CreateOrderResponse>>(Base);
+            return result ?? [];
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[OrderApi] GetAllOrders failed: {ex.Message}");
+            return [];
+        }
+    }
+
 
     public async Task<CreateOrderResponse?> CreateOrderAsync(CreateOrderRequest request)
     {
