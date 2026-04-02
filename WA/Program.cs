@@ -45,6 +45,7 @@ builder.Services.AddScoped<IShowingApi, ShowingApi>();
 builder.Services.AddScoped<IAuditoriumApi, AuditoriumApi>();
 builder.Services.AddScoped<ISeatFinderApiClient, SeatFinderApiService>();
 builder.Services.AddScoped<IArrangementApi, ArrangementApi>();
+builder.Services.AddScoped<IOrderApi, OrderApi>();
 
 var host = builder.Build();
 
