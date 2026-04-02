@@ -3,9 +3,12 @@
 @inject IShowingApi ShowingApi
 @inject NavigationManager Nav
 @inject IStringLocalizer<WA.Localization.SharedResources> L
+@inherits LocalizedComponentBase
 @using SharedLibrary.DTOs.Responses
 @using WA.Services.Http.Interfaces
 @using MudBlazor
+@using WA.Layout
+@layout MainLayout
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     @if (_loading)

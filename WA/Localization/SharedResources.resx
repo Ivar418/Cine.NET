@@ -186,13 +186,52 @@
   <data name="3d" xml:space="preserve">
     <value>3D</value>
   </data>
-	<data name="showingdetail order tickets" xml:space="preserve">
+  <data name="showingdetail order tickets" xml:space="preserve">
     <value>Order tickets</value>
-	  </data>
+  </data>
   <data name="admin movies title" xml:space="preserve">
     <value>Admin - Movies</value>
   </data>
   <data name="Admin movies" xml:space="preserve">
     <value>Movies</value>
+  </data>
+  <data name="contact title" xml:space="preserve">
+    <value>Contact — Cine.net</value>
+  </data>
+  <data name="contact body" xml:space="preserve">
+    <value>Do you have any questions, comments, or would you like more information? We are here to help.</value>
+  </data>
+  <data name="contact openinghours" xml:space="preserve">
+    <value>Openinghours</value>
+  </data>
+  <data name="monday" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="teusday" xml:space="preserve">
+    <value>Teusday</value>
+  </data>
+  <data name="wednesday" xml:space="preserve">
+    <value>Wednesday</value>
+  </data>
+  <data name="thursday" xml:space="preserve">
+    <value>Thursday</value>
+  </data>
+  <data name="friday" xml:space="preserve">
+    <value>Friday</value>
+  </data>
+  <data name="saturday" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="sunday" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="contact lower body" xml:space="preserve">
+    <value>We are centrally located and easily accessible by car and public transport.</value>
+  </data>
+  <data name="contact info" xml:space="preserve">
+    <value>Contact information</value>
+  </data>
+  <data name="contact how to find" xml:space="preserve">
+    <value>How to find us</value>
   </data>
 </root>

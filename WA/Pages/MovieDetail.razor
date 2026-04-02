@@ -4,6 +4,9 @@
 @inject NavigationManager Nav
 @using WA.Services.Http.Interfaces
 @inject IStringLocalizer<WA.Localization.SharedResources> L
+@inherits LocalizedComponentBase
+@using WA.Layout
+@layout MainLayout
 <link href="css/movie-detail.css" rel="stylesheet" />
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
