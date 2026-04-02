@@ -10,6 +10,7 @@ using WA;
 using WA.Auth;
 using WA.Services;
 using WA.Services.Http;
+using WA.Services.Http.Implementation;
 using WA.Services.Http.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -46,6 +47,9 @@ builder.Services.AddScoped<IAuditoriumApi, AuditoriumApi>();
 builder.Services.AddScoped<ISeatFinderApiClient, SeatFinderApiService>();
 builder.Services.AddScoped<IArrangementApi, ArrangementApi>();
 builder.Services.AddScoped<IOrderApi, OrderApi>();
+
+// Mail related
+builder.Services.AddScoped<IMailApi, MailApi>();
 
 var host = builder.Build();
 
