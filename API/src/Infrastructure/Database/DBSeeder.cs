@@ -189,77 +189,90 @@ namespace API.Infrastructure.Database
                     await auditoriumService.AddAuditoriumAsync(request);
                 }
             }
-
+            
             // SEED SHOWINGS
-            var movies = await db.Movies.ToListAsync();
-            var auditoriums = await db.Auditoriums.ToListAsync();
+var movies = await db.Movies.ToListAsync();
+var auditoriums = await db.Auditoriums.ToListAsync();
 
-            var random = new Random();
-            var showings = new List<Showing>();
+var random = new Random();
+var showings = new List<Showing>();
 
-            var dutchMovies = movies
-                .Where(m => m.SpokenLanguageCodeIso6391 == "nl")
-                .ToList();
+var dutchMovies = movies
+    .Where(m => m.SpokenLanguageCodeIso6391 == "nl")
+    .ToList();
 
-            var kidsMovies = movies
-                .Where(m => int.TryParse(m.AgeIndication, out var age) && age < 12)
-                .ToList();
+var kidsMovies = movies
+    .Where(m => int.TryParse(m.AgeIndication, out var age) && age < 12)
+    .ToList();
 
-// tijdslots tussen 10:00 en 23:00 (ongeveer elke 2 uur)
-            var baseDate = DateTimeOffset.UtcNow.Date;
-            var timeSlots = new List<DateTimeOffset>();
+// vanaf vandaag, alleen toekomst (7 dagen)
+var startDate = DateTimeOffset.UtcNow.Date;
 
-            for (int hour = 10; hour <= 23; hour += 2)
-            {
-                timeSlots.Add(baseDate.AddHours(hour));
-            }
+for (int day = 0; day < 7; day++)
+{
+    var currentDate = startDate.AddDays(day);
 
-// shuffle + basis selectie
-            var selectedMovies = movies
-                .OrderBy(_ => random.Next())
-                .Take(10)
-                .ToList();
+    // tijdslots
+    var timeSlots = new List<DateTimeOffset>();
+    for (int hour = 10; hour <= 19; hour += 2)
+    {
+        timeSlots.Add(currentDate.AddHours(hour));
+    }
 
-// forceer NL film
-            if (dutchMovies.Any())
-            {
-                var dutchMovie = dutchMovies[random.Next(dutchMovies.Count)];
-                selectedMovies = selectedMovies.Where(m => m.Id != dutchMovie.Id).ToList();
-                selectedMovies.Add(dutchMovie);
-            }
+    // 6 t/m 12 films
+    var dailyCount = random.Next(6, 7);
 
-// forceer kids film (<12)
-            if (kidsMovies.Any())
-            {
-                var kidsMovie = kidsMovies[random.Next(kidsMovies.Count)];
-                selectedMovies = selectedMovies.Where(m => m.Id != kidsMovie.Id).ToList();
-                selectedMovies.Add(kidsMovie);
-            }
+    var selectedMovies = movies
+        .OrderBy(_ => random.Next())
+        .Take(dailyCount)
+        .ToList();
 
-// max 12 totaal
-            selectedMovies = selectedMovies.Take(12).ToList();
+    if (selectedMovies.Count == 0) continue;
 
-// maak showings
-            for (int i = 0; i < selectedMovies.Count; i++)
-            {
-                var movie = selectedMovies[i];
-                var auditorium = auditoriums[i % auditoriums.Count];
-                var time = timeSlots[i % timeSlots.Count];
+    // force NL
+    if (dutchMovies.Any())
+    {
+        var m = dutchMovies[random.Next(dutchMovies.Count)];
+        if (!selectedMovies.Any(x => x.Id == m.Id))
+        {
+            selectedMovies[0] = m;
+        }
+    }
 
-                showings.Add(new Showing
-                {
-                    MovieId = movie.Id,
-                    AuditoriumId = auditorium.Id,
-                    StartsAt = time,
-                    IsThreeD = random.Next(0, 2) == 0,
-                    AuditoriumLayoutSnapshot = auditorium.RowConfigJson
-                });
-            }
+    // force kids
+    if (kidsMovies.Any())
+    {
+        var m = kidsMovies[random.Next(kidsMovies.Count)];
+        if (!selectedMovies.Any(x => x.Id == m.Id))
+        {
+            if (selectedMovies.Count > 1)
+                selectedMovies[1] = m;
+            else
+                selectedMovies[0] = m;
+        }
+    }
+
+    // maak showings
+    foreach (var movie in selectedMovies)
+    {
+        var auditorium = auditoriums[random.Next(auditoriums.Count)];
+        var time = timeSlots[random.Next(timeSlots.Count)];
+
+        showings.Add(new Showing
+        {
+            MovieId = movie.Id,
+            AuditoriumId = auditorium.Id,
+            StartsAt = time,
+            IsThreeD = random.Next(0, 2) == 0,
+            AuditoriumLayoutSnapshot = auditorium.RowConfigJson
+        });
+    }
+}
 
 // reset + opslaan
-            db.Showings.RemoveRange(db.Showings);
-            db.Showings.AddRange(showings);
-            await db.SaveChangesAsync();
+db.Showings.RemoveRange(db.Showings);
+db.Showings.AddRange(showings);
+await db.SaveChangesAsync();
 
             // Dummy order for API testing when no orders exist
             if (!await db.Orders.AnyAsync())
