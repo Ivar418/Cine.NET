@@ -1,0 +1,65 @@
+﻿@page "/admin/email-management"
+@using WA.Layout
+@layout AdminLayout
+@using WA.Services.Http.Interfaces
+@inject IMailApi MailApi
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h3" Class="mb-4">Mail versturen naar abonnees</MudText>
+
+<MudCard>
+    <MudCardContent>
+        <MudTextField @bind-Value="_subject" Label="Subject" Variant="Variant.Outlined" FullWidth="true" Class="mb-4" />
+        <MudTextField @bind-Value="_fromName" Label="From Name" Variant="Variant.Outlined" FullWidth="true" Class="mb-4" />
+        <MudTextField @bind-Value="_emailContent" Label="Email Content" Variant="Variant.Outlined" FullWidth="true" Lines="10" Class="mb-4" />
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SendEmail" Disabled="_isSending">
+            @if (_isSending)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Sending...</MudText>
+            }
+            else
+            {
+                <MudText>Send Email</MudText>
+            }
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    private string _subject = "Deze week op het grote scherm";
+    private string _fromName = "Cine.Net";
+    private string _emailContent = "Beste [Voornaam],\nBenieuwd naar wat er deze week draait? Wij hebben de nieuwste films en enkele klassiekers voor je geselecteerd, zodat je altijd iets vindt dat bij je past.\n\nFilm Highlights:\n\n[Filmnaam 1] – [Genre] | Vanaf [Datum]\nKort overzicht: [2–3 zinnen over de film].\nBekijk tijden & tickets →\n[Filmnaam 2] – [Genre] | Vanaf [Datum]\nKort overzicht: [2–3 zinnen over de film].\nBekijk tijden & tickets →\n[Filmnaam 3] – [Genre] | Vanaf [Datum]\nKort overzicht: [2–3 zinnen over de film].\nBekijk tijden & tickets →\n\nSpecials & Aanbiedingen:\n\n🥤 Popcorn deal van de week: [Beschrijving van de aanbieding]\n🎟️ Vroege vogel korting: Boek voor [dag/tijd] en ontvang [korting]\n\nAfsluiting:\nMis het niet! Reserveer je tickets vandaag nog en geniet van een onvergetelijke filmervaring bij [Bioscoopnaam].\n\nMet vriendelijke groet,\nHet team van [Bioscoopnaam]\n\nP.S. Volg ons op [Facebook], [Instagram] en [Twitter] voor het laatste bioscoopnieuws en exclusieve previews!";
+    private bool _isSending = false;
+
+    private async Task SendEmail()
+    {
+        if (string.IsNullOrWhiteSpace(_subject) || string.IsNullOrWhiteSpace(_fromName) || string.IsNullOrWhiteSpace(_emailContent))
+        {
+            Snackbar.Add("Please fill in all fields.", Severity.Warning);
+            return;
+        }
+
+        _isSending = true;
+        try
+        {
+            await MailApi.SendToSubscribedAsync(_subject, _fromName, _emailContent);
+            Snackbar.Add("Emails sent successfully!", Severity.Success);
+            
+            // Clear fields after success
+            _subject = string.Empty;
+            _fromName = string.Empty;
+            _emailContent = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error sending emails: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSending = false;
+        }
+    }
+}

@@ -53,7 +53,7 @@ public class MailApi : IMailApi
 
     public async Task SendToSubscribedAsync(string subject, string fromName, string emailContent)
     {
-        var res = await _http.PostAsJsonAsync("api/mail/send-to-subscribed", new { subject, fromName, emailContent });
+        var res = await _http.PostAsJsonAsync("api/mail/subscription/send", new { subject, fromName, emailContent });
 
         if (!res.IsSuccessStatusCode)
         {
