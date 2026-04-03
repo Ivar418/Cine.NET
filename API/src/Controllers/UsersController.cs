@@ -14,14 +14,7 @@ namespace API.Controllers
         {
             _userService = userService;
         }
-
-        /// <summary>
-        /// Retrieves all users.
-        /// </summary>
-        /// <returns>
-        /// An <see cref="IActionResult"/> containing all users when successful,
-        /// or an error response when retrieval fails.
-        /// </returns>
+        
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -41,15 +34,7 @@ namespace API.Controllers
             }
             
         }
-
-        /// <summary>
-        /// Retrieves a single user by its identifier.
-        /// </summary>
-        /// <param name="id">The user identifier.</param>
-        /// <returns>
-        /// An <see cref="IActionResult"/> containing the user when found,
-        /// or <c>404 Not Found</c> when the user does not exist.
-        /// </returns>
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
