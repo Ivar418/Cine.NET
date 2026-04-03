@@ -6,7 +6,13 @@ namespace API.Services.Implementations;
 
 public class TicketRuleService : ITicketRuleService
 {
-    
+    /// <summary>
+    /// Determines whether a ticket type is available for a showing at the provided evaluation time.
+    /// </summary>
+    /// <param name="type">The ticket type to evaluate.</param>
+    /// <param name="showing">The showing context used for rule checks.</param>
+    /// <param name="now">The current time used to evaluate date-based rules.</param>
+    /// <returns><c>true</c> when the ticket type is allowed; otherwise, <c>false</c>.</returns>
     public bool IsTicketTypeAvailable(TicketType type, Showing showing, DateTime now)
     {
         var isWeekday = DateTimeHelper.IsMaDiWoDo(now);
