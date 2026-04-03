@@ -421,7 +421,7 @@ else
                 .Where(s =>
                 {
                     var local = s.StartsAt.ToLocalTime();
-                    return s.StartsAt >= cutoff // 👈 dit is je nieuwe filter
+                    return s.StartsAt >= cutoff
                            && local.Date >= startDay
                            && local.Date < endDay;
                 })

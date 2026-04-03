@@ -181,8 +181,11 @@ else
             var allShowings = await ShowingApi.GetShowingDisplayAsync();
 
             var today = DateTime.Today;
+            
+            var cutoff = DateTime.Now.AddMinutes(-15);
+
             _showings = allShowings
-                .Where(s => s.StartsAt.ToLocalTime().Date == today)
+                .Where(s => s.StartsAt.ToLocalTime().Date == today && s.StartsAt.ToLocalTime() >= cutoff)
                 .OrderBy(s => s.StartsAt)
                 .ToList();
 
