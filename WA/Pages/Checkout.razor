@@ -269,7 +269,7 @@
                     <MudPaper Class="pa-4" Style="width:100%; cursor:pointer">
                         <MudStack AlignItems="AlignItems.Center" Spacing="2">
                             <MudIcon Icon="@paymentIcons[paymentMethod]" Size="Size.Large"/>
-                            <MudText>@paymentMethod</MudText>
+                            <MudText>@L[$"payment_method_{paymentMethod}"]</MudText>
                         </MudStack>
                     </MudPaper>
                 </MudButton>
@@ -282,7 +282,7 @@
         <MudPaper Class="pa-4 mb-4">
             <MudStack Spacing="2">
                 <MudText Typo="Typo.h6">@L["confirm_order"]</MudText>
-                <MudText Typo="Typo.body2">@L["payment_method"]: <strong>@selectedPaymentMethod</strong></MudText>
+                <MudText Typo="Typo.body2">@L["payment_method"]: <strong>@L[$"payment_method_{selectedPaymentMethod}"]</strong></MudText>
             </MudStack>
         </MudPaper>
 

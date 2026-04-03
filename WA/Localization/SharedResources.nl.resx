@@ -350,4 +350,22 @@ Voer ons adres in uw navigatie in of bekijk de kaart hieronder.</value>
   <data name="next" xml:space="preserve">
     <value>Volgende</value>
   </data>
+  <data name="payment_method_Ideal" xml:space="preserve">
+    <value>iDEAL</value>
+  </data>
+  <data name="payment_method_Pinnen" xml:space="preserve">
+    <value>Pinnen</value>
+  </data>
+  <data name="payment_method_Creditcard" xml:space="preserve">
+    <value>Creditcard</value>
+  </data>
+  <data name="payment_method_Creditcard Online" xml:space="preserve">
+    <value>Creditcard Online</value>
+  </data>
+  <data name="payment_method_Reserveren" xml:space="preserve">
+    <value>Reserveren</value>
+  </data>
+  <data name="payment_method_Cadeaubon" xml:space="preserve">
+    <value>Cadeaubon</value>
+  </data>
 </root>
