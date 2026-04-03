@@ -234,4 +234,208 @@
   <data name="contact how to find" xml:space="preserve">
     <value>How to find us</value>
   </data>
+  <data name="seat_choice" xml:space="preserve">
+    <value>Seat choice</value>
+  </data>
+  <data name="tickets" xml:space="preserve">
+    <value>Tickets</value>
+  </data>
+  <data name="overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="choose_payment_type" xml:space="preserve">
+    <value>Choose payment type</value>
+  </data>
+  <data name="payment" xml:space="preserve">
+    <value>Payment</value>
+  </data>
+  <data name="no_movies_found" xml:space="preserve">
+    <value>No movies found</value>
+  </data>
+  <data name="no_movies_available" xml:space="preserve">
+    <value>No movies available</value>
+  </data>
+  <data name="normal_seats" xml:space="preserve">
+    <value>NORMAL</value>
+  </data>
+  <data name="wheelchair_seats" xml:space="preserve">
+    <value>WHEELCHAIR</value>
+  </data>
+  <data name="search_seats" xml:space="preserve">
+    <value>Search {0} {1}</value>
+  </data>
+  <data name="seat" xml:space="preserve">
+    <value>seat</value>
+  </data>
+  <data name="seats" xml:space="preserve">
+    <value>seats</value>
+  </data>
+  <data name="cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="free_spots" xml:space="preserve">
+    <value>{0} free spots</value>
+  </data>
+  <data name="cannot_load_showing" xml:space="preserve">
+    <value>Cannot load showing.</value>
+  </data>
+  <data name="select_showing_to_start" xml:space="preserve">
+    <value>Select a showing to start</value>
+  </data>
+  <data name="confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="row" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="seat_label" xml:space="preserve">
+    <value>Seat</value>
+  </data>
+  <data name="booking_overview" xml:space="preserve">
+    <value>Booking Overview</value>
+  </data>
+  <data name="total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="choose_payment_method" xml:space="preserve">
+    <value>Choose a payment method</value>
+  </data>
+  <data name="confirm_order" xml:space="preserve">
+    <value>Confirm Order</value>
+  </data>
+  <data name="payment_method" xml:space="preserve">
+    <value>Payment method</value>
+  </data>
+  <data name="back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="processing" xml:space="preserve">
+    <value>Processing...</value>
+  </data>
+  <data name="confirm_reservation" xml:space="preserve">
+    <value>Confirm Reservation</value>
+  </data>
+  <data name="proceed_to_payment" xml:space="preserve">
+    <value>Proceed to payment</value>
+  </data>
+  <data name="price_info_standard" xml:space="preserve">
+    <value>Standard price: €8.50</value>
+  </data>
+  <data name="price_info_long_movie" xml:space="preserve">
+    <value>(+ €0.50 for movies >120 min)</value>
+  </data>
+  <data name="price_info_child" xml:space="preserve">
+    <value>Child discount: €1.50</value>
+  </data>
+  <data name="price_info_child_sub" xml:space="preserve">
+    <value>(up to 11 years, only Dutch-spoken children's films before 18:00)</value>
+  </data>
+  <data name="price_info_student" xml:space="preserve">
+    <value>Student discount: €1.50</value>
+  </data>
+  <data name="price_info_student_sub" xml:space="preserve">
+    <value>(Mon thru Thu on presentation of student card)</value>
+  </data>
+  <data name="price_info_senior" xml:space="preserve">
+    <value>65+ discount: €1.50</value>
+  </data>
+  <data name="price_info_senior_sub" xml:space="preserve">
+    <value>(Mon thru Thu, excluding holidays/public holidays)</value>
+  </data>
+  <data name="price_info_3d" xml:space="preserve">
+    <value>3D surcharge: €2.50</value>
+  </data>
+  <data name="next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="payment_method_Ideal" xml:space="preserve">
+    <value>iDEAL</value>
+  </data>
+  <data name="payment_method_Pinnen" xml:space="preserve">
+    <value>PIN</value>
+  </data>
+  <data name="payment_method_Creditcard" xml:space="preserve">
+    <value>Credit Card</value>
+  </data>
+  <data name="payment_method_Creditcard Online" xml:space="preserve">
+    <value>Credit Card Online</value>
+  </data>
+  <data name="payment_method_Reserveren" xml:space="preserve">
+    <value>Reserve</value>
+  </data>
+  <data name="payment_method_Cadeaubon" xml:space="preserve">
+    <value>Voucher</value>
+  </data>
+  <data name="ticket_type_Adult" xml:space="preserve">
+    <value>Adult</value>
+  </data>
+  <data name="ticket_type_Student" xml:space="preserve">
+    <value>Student</value>
+  </data>
+  <data name="ticket_type_Child" xml:space="preserve">
+    <value>Child</value>
+  </data>
+  <data name="ticket_type_Senior" xml:space="preserve">
+    <value>Senior</value>
+  </data>
+  <data name="payment_result_processing_reservation" xml:space="preserve">
+    <value>Processing reservation...</value>
+  </data>
+  <data name="payment_result_processing_payment" xml:space="preserve">
+    <value>Processing payment...</value>
+  </data>
+  <data name="payment_result_reservation_success" xml:space="preserve">
+    <value>Reservation successful!</value>
+  </data>
+  <data name="payment_result_payment_success" xml:space="preserve">
+    <value>Payment successful!</value>
+  </data>
+  <data name="payment_result_order_registered" xml:space="preserve">
+    <value>Order {0} has been registered.</value>
+  </data>
+  <data name="payment_result_order_confirmed" xml:space="preserve">
+    <value>Order {0} has been confirmed.</value>
+  </data>
+  <data name="payment_result_total_paid" xml:space="preserve">
+    <value>Total paid:</value>
+  </data>
+  <data name="payment_result_total_at_desk" xml:space="preserve">
+    <value>Total to pay at the desk:</value>
+  </data>
+  <data name="payment_result_reservation_downloaded" xml:space="preserve">
+    <value>Your reservation proof has been downloaded.</value>
+  </data>
+  <data name="payment_result_tickets_downloaded" xml:space="preserve">
+    <value>Your tickets will be downloaded automatically.</value>
+  </data>
+  <data name="payment_result_download_reservation" xml:space="preserve">
+    <value>Download reservation again</value>
+  </data>
+  <data name="payment_result_download_tickets" xml:space="preserve">
+    <value>Download tickets again</value>
+  </data>
+  <data name="payment_result_back_reservations" xml:space="preserve">
+    <value>Back to reservations</value>
+  </data>
+  <data name="payment_result_back_home" xml:space="preserve">
+    <value>Back to home</value>
+  </data>
+  <data name="payment_result_back_payment" xml:space="preserve">
+    <value>Back to payment</value>
+  </data>
+  <data name="payment_result_reservation_failed" xml:space="preserve">
+    <value>Reservation failed</value>
+  </data>
+  <data name="payment_result_payment_failed" xml:space="preserve">
+    <value>Payment failed</value>
+  </data>
+  <data name="payment_result_reservation_failed_body" xml:space="preserve">
+    <value>The reservation could not be completed.</value>
+  </data>
+  <data name="payment_result_payment_failed_body" xml:space="preserve">
+    <value>The payment was not successful or was cancelled.</value>
+  </data>
+  <data name="payment_result_auto_redirect" xml:space="preserve">
+    <value>You will be redirected automatically...</value>
+  </data>
 </root>
