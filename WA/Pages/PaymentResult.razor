@@ -1,18 +1,22 @@
 ﻿@page "/checkout/payment-result"
 @namespace WA.Pages
-@using SharedLibrary.DTOs.Responses
 @using WA.Services.Http
 @using WA.Services.Http.Interfaces
+@inherits LocalizedComponentBase
+@using WA.Layout
+@layout MainLayout
+@inject IStringLocalizer<WA.Localization.SharedResources> L
 @inject IOrderApi OrderApi
 @inject ISeatFinderApiClient SeatFinderApiClient
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
     @if (_loading)
     {
         <MudStack AlignItems="AlignItems.Center" Spacing="4">
             <MudProgressCircular Indeterminate="true" Size="Size.Large"/>
-            <MudText Typo="Typo.h6">@(Reservation ? "Reservering verwerken..." : "Betaling verwerken...")</MudText>
+            <MudText Typo="Typo.h6">@(Reservation ? L["payment_result_processing_reservation"] : L["payment_result_processing_payment"])</MudText>
         </MudStack>
     }
     else if (_success && _order is not null)
@@ -20,31 +24,28 @@
         <MudPaper Class="pa-6" Elevation="3">
             <MudStack AlignItems="AlignItems.Center" Spacing="3">
                 <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Style="font-size:4rem"/>
-                <MudText Typo="Typo.h5">@(Reservation ? "Reservering geslaagd!" : "Betaling geslaagd!")</MudText>
-                <MudText Typo="Typo.body1">Bestelling <strong>@_order.OrderCode</strong>
-                    is @(Reservation ? "geregistreerd" : "bevestigd").
+                <MudText Typo="Typo.h5">@(Reservation ? L["payment_result_reservation_success"] : L["payment_result_payment_success"])</MudText>
+                <MudText Typo="Typo.body1">
+                    @string.Format(Reservation ? L["payment_result_order_registered"] : L["payment_result_order_confirmed"], _order.OrderCode)
                 </MudText>
                 @if (!Reservation)
                 {
-                    <MudText Typo="Typo.body2">Totaal betaald: <strong>€@_order.TotalAmount.ToString("F2")</strong>
-                    </MudText>
+                    <MudText Typo="Typo.body2">@L["payment_result_total_paid"] <strong>€@_order.TotalAmount.ToString("F2")</strong></MudText>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2">Totaal te betalen aan de kassa:
-                        <strong>€@_order.TotalAmount.ToString("F2")</strong></MudText>
+                    <MudText Typo="Typo.body2">@L["payment_result_total_at_desk"] <strong>€@_order.TotalAmount.ToString("F2")</strong></MudText>
                 }
                 <MudDivider Class="my-2" Style="width:100%"/>
-                <MudText
-                    Typo="Typo.body2">@(Reservation ? "Uw reserveringsbewijs is gedownload." : "Uw tickets worden automatisch gedownload.")</MudText>
+                <MudText Typo="Typo.body2">@(Reservation ? L["payment_result_reservation_downloaded"] : L["payment_result_tickets_downloaded"])</MudText>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Download"
                            OnClick="DownloadAsync">
-                    @(Reservation ? "Reservering opnieuw downloaden" : "Tickets opnieuw downloaden")
+                    @(Reservation ? L["payment_result_download_reservation"] : L["payment_result_download_tickets"])
                 </MudButton>
                 <MudButton Variant="Variant.Outlined" Color="Color.Default"
                            OnClick="() => ReturnToProperPage()">
-                    @(FromAdmin ? "Terug naar reserveringen" : "Terug naar home")
+                    @(FromAdmin ? L["payment_result_back_reservations"] : L["payment_result_back_home"])
                 </MudButton>
             </MudStack>
         </MudPaper>
@@ -54,15 +55,14 @@
         <MudPaper Class="pa-6" Elevation="3">
             <MudStack AlignItems="AlignItems.Center" Spacing="3">
                 <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="font-size:4rem"/>
-                <MudText Typo="Typo.h5">@(Reservation ? "Reservering mislukt" : "Betaling mislukt")</MudText>
-                <MudText
-                    Typo="Typo.body1">@(Reservation ? "De reservering kon niet worden voltooid." : "De betaling is niet geslaagd of geannuleerd.")</MudText>
+                <MudText Typo="Typo.h5">@(Reservation ? L["payment_result_reservation_failed"] : L["payment_result_payment_failed"])</MudText>
+                <MudText Typo="Typo.body1">@(Reservation ? L["payment_result_reservation_failed_body"] : L["payment_result_payment_failed_body"])</MudText>
                 <MudText Typo="Typo.caption" Class="mt-1">
-                    U wordt automatisch teruggestuurd...
+                    @L["payment_result_auto_redirect"]
                 </MudText>
                 <MudButton Variant="Variant.Outlined" Color="Color.Default"
                            OnClick="ReturnToProperPage">
-                    @(FromAdmin ? "Terug naar reserveringen" : "Terug naar betaling")
+                    @(FromAdmin ? L["payment_result_back_reservations"] : L["payment_result_back_payment"])
                 </MudButton>
             </MudStack>
         </MudPaper>
@@ -77,7 +77,6 @@
     [Parameter, SupplyParameterFromQuery] public int ShowingId { get; set; }
     [Parameter, SupplyParameterFromQuery] public string? PaymentMethod { get; set; }
     [Parameter, SupplyParameterFromQuery] public Guid? ReservationId { get; set; } = null;
-
 
     private bool _loading = true;
     private bool _success = false;
@@ -99,30 +98,26 @@
             {
                 _order = order;
                 _success = true;
-                // Reservation PDF is already downloaded in Checkout.razor.cs, 
-                // but we can ensure it's available here too if needed.
             }
         }
         else if (Success)
         {
-            // Confirm payment on the backend
             var confirmed = await OrderApi.ConfirmPaymentAsync(OrderId);
             if (confirmed is not null)
             {
                 _order = confirmed;
                 _success = true;
-                // Auto-download tickets PDF
                 await DownloadAsync();
             }
         }
 
         _loading = false;
-        // Failed/cancelled/expired/open => auto return after short delay
+
         if (!_success && !_autoRedirectScheduled)
         {
             if (ReservationId != null)
             {
-               await SeatFinderApiClient.CancelAsync(ReservationId.Value); // best effort to free up reserved seats
+                await SeatFinderApiClient.CancelAsync(ReservationId.Value);
             }
             _autoRedirectScheduled = true;
             _ = AutoRedirectAfterFailureAsync();
@@ -175,7 +170,6 @@
 
     private async Task AutoRedirectAfterFailureAsync()
     {
-        // show failure popup for a few seconds
         await Task.Delay(3000);
 
         if (FromAdmin)
@@ -184,10 +178,8 @@
             return;
         }
 
-        // customer: go back to payment-choice step, keep chosen payment if available
         if (ShowingId > 0)
         {
-            var method = Uri.EscapeDataString(PaymentMethod ?? string.Empty);
             Nav.NavigateTo($"/checkout/{ShowingId}");
         }
         else
@@ -195,5 +187,4 @@
             Nav.NavigateTo("/");
         }
     }
-
 }

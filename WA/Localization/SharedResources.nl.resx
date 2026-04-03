@@ -380,4 +380,64 @@ Voer ons adres in uw navigatie in of bekijk de kaart hieronder.</value>
   <data name="ticket_type_Senior" xml:space="preserve">
     <value>Senior</value>
   </data>
+  <data name="payment_result_processing_reservation" xml:space="preserve">
+    <value>Reservering verwerken...</value>
+  </data>
+  <data name="payment_result_processing_payment" xml:space="preserve">
+    <value>Betaling verwerken...</value>
+  </data>
+  <data name="payment_result_reservation_success" xml:space="preserve">
+    <value>Reservering geslaagd!</value>
+  </data>
+  <data name="payment_result_payment_success" xml:space="preserve">
+    <value>Betaling geslaagd!</value>
+  </data>
+  <data name="payment_result_order_registered" xml:space="preserve">
+    <value>Bestelling {0} is geregistreerd.</value>
+  </data>
+  <data name="payment_result_order_confirmed" xml:space="preserve">
+    <value>Bestelling {0} is bevestigd.</value>
+  </data>
+  <data name="payment_result_total_paid" xml:space="preserve">
+    <value>Totaal betaald:</value>
+  </data>
+  <data name="payment_result_total_at_desk" xml:space="preserve">
+    <value>Totaal te betalen aan de kassa:</value>
+  </data>
+  <data name="payment_result_reservation_downloaded" xml:space="preserve">
+    <value>Uw reserveringsbewijs is gedownload.</value>
+  </data>
+  <data name="payment_result_tickets_downloaded" xml:space="preserve">
+    <value>Uw tickets worden automatisch gedownload.</value>
+  </data>
+  <data name="payment_result_download_reservation" xml:space="preserve">
+    <value>Reservering opnieuw downloaden</value>
+  </data>
+  <data name="payment_result_download_tickets" xml:space="preserve">
+    <value>Tickets opnieuw downloaden</value>
+  </data>
+  <data name="payment_result_back_reservations" xml:space="preserve">
+    <value>Terug naar reserveringen</value>
+  </data>
+  <data name="payment_result_back_home" xml:space="preserve">
+    <value>Terug naar home</value>
+  </data>
+  <data name="payment_result_back_payment" xml:space="preserve">
+    <value>Terug naar betaling</value>
+  </data>
+  <data name="payment_result_reservation_failed" xml:space="preserve">
+    <value>Reservering mislukt</value>
+  </data>
+  <data name="payment_result_payment_failed" xml:space="preserve">
+    <value>Betaling mislukt</value>
+  </data>
+  <data name="payment_result_reservation_failed_body" xml:space="preserve">
+    <value>De reservering kon niet worden voltooid.</value>
+  </data>
+  <data name="payment_result_payment_failed_body" xml:space="preserve">
+    <value>De betaling is niet geslaagd of geannuleerd.</value>
+  </data>
+  <data name="payment_result_auto_redirect" xml:space="preserve">
+    <value>U wordt automatisch teruggestuurd...</value>
+  </data>
 </root>

@@ -378,4 +378,64 @@
   <data name="ticket_type_Senior" xml:space="preserve">
     <value>Senior</value>
   </data>
+  <data name="payment_result_processing_reservation" xml:space="preserve">
+    <value>Processing reservation...</value>
+  </data>
+  <data name="payment_result_processing_payment" xml:space="preserve">
+    <value>Processing payment...</value>
+  </data>
+  <data name="payment_result_reservation_success" xml:space="preserve">
+    <value>Reservation successful!</value>
+  </data>
+  <data name="payment_result_payment_success" xml:space="preserve">
+    <value>Payment successful!</value>
+  </data>
+  <data name="payment_result_order_registered" xml:space="preserve">
+    <value>Order {0} has been registered.</value>
+  </data>
+  <data name="payment_result_order_confirmed" xml:space="preserve">
+    <value>Order {0} has been confirmed.</value>
+  </data>
+  <data name="payment_result_total_paid" xml:space="preserve">
+    <value>Total paid:</value>
+  </data>
+  <data name="payment_result_total_at_desk" xml:space="preserve">
+    <value>Total to pay at the desk:</value>
+  </data>
+  <data name="payment_result_reservation_downloaded" xml:space="preserve">
+    <value>Your reservation proof has been downloaded.</value>
+  </data>
+  <data name="payment_result_tickets_downloaded" xml:space="preserve">
+    <value>Your tickets will be downloaded automatically.</value>
+  </data>
+  <data name="payment_result_download_reservation" xml:space="preserve">
+    <value>Download reservation again</value>
+  </data>
+  <data name="payment_result_download_tickets" xml:space="preserve">
+    <value>Download tickets again</value>
+  </data>
+  <data name="payment_result_back_reservations" xml:space="preserve">
+    <value>Back to reservations</value>
+  </data>
+  <data name="payment_result_back_home" xml:space="preserve">
+    <value>Back to home</value>
+  </data>
+  <data name="payment_result_back_payment" xml:space="preserve">
+    <value>Back to payment</value>
+  </data>
+  <data name="payment_result_reservation_failed" xml:space="preserve">
+    <value>Reservation failed</value>
+  </data>
+  <data name="payment_result_payment_failed" xml:space="preserve">
+    <value>Payment failed</value>
+  </data>
+  <data name="payment_result_reservation_failed_body" xml:space="preserve">
+    <value>The reservation could not be completed.</value>
+  </data>
+  <data name="payment_result_payment_failed_body" xml:space="preserve">
+    <value>The payment was not successful or was cancelled.</value>
+  </data>
+  <data name="payment_result_auto_redirect" xml:space="preserve">
+    <value>You will be redirected automatically...</value>
+  </data>
 </root>
