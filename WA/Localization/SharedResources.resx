@@ -366,4 +366,16 @@
   <data name="payment_method_Cadeaubon" xml:space="preserve">
     <value>Voucher</value>
   </data>
+  <data name="ticket_type_Adult" xml:space="preserve">
+    <value>Adult</value>
+  </data>
+  <data name="ticket_type_Student" xml:space="preserve">
+    <value>Student</value>
+  </data>
+  <data name="ticket_type_Child" xml:space="preserve">
+    <value>Child</value>
+  </data>
+  <data name="ticket_type_Senior" xml:space="preserve">
+    <value>Senior</value>
+  </data>
 </root>

@@ -182,10 +182,10 @@
                     <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                         <MudText>@L["row"] @seat.Row @L["seat_label"] @seat.SeatNumber</MudText>
                         <MudSelect T="string" @bind-Value="seat.TicketType" Dense="true">
-                            <MudSelectItem Value=@("Adult") Disabled="@(!showing.Prices.Adult.IsAvailable)">Adult €@showing.Prices.Adult.Price</MudSelectItem>
-                            <MudSelectItem Value=@("Student") Disabled="@(!showing.Prices.Student.IsAvailable)">Student €@showing.Prices.Student.Price</MudSelectItem>
-                            <MudSelectItem Value=@("Child") Disabled="@(!showing.Prices.Child.IsAvailable)">Child €@showing.Prices.Child.Price</MudSelectItem>
-                            <MudSelectItem Value=@("Senior") Disabled="@(!showing.Prices.Senior.IsAvailable)">Senior €@showing.Prices.Senior.Price</MudSelectItem>
+                            <MudSelectItem Value=@("Adult") Disabled="@(!showing.Prices.Adult.IsAvailable)">@L["ticket_type_Adult"].Value €@showing.Prices.Adult.Price</MudSelectItem>
+                            <MudSelectItem Value=@("Student") Disabled="@(!showing.Prices.Student.IsAvailable)">@L["ticket_type_Student"].Value €@showing.Prices.Student.Price</MudSelectItem>
+                            <MudSelectItem Value=@("Child") Disabled="@(!showing.Prices.Child.IsAvailable)">@L["ticket_type_Child"].Value €@showing.Prices.Child.Price</MudSelectItem>
+                            <MudSelectItem Value=@("Senior") Disabled="@(!showing.Prices.Senior.IsAvailable)">@L["ticket_type_Senior"].Value €@showing.Prices.Senior.Price</MudSelectItem>
                         </MudSelect>
                         <MudText Typo="Typo.body1">€@GetSeatPrice(seat)</MudText>
                     </MudStack>
@@ -237,7 +237,7 @@
 
         @foreach (var seat in seats)
         {
-            <MudText>@L["row"] @seat.Row @L["seat_label"] @seat.SeatNumber - @seat.TicketType</MudText>
+            <MudText>@L["row"] @seat.Row @L["seat_label"] @seat.SeatNumber - @L[$"ticket_type_{seat.TicketType}"]</MudText>
         }
 
         <MudPaper Class="pa-4 mt-4">
@@ -292,7 +292,7 @@
             @foreach (var seat in seats)
             {
                 <MudText Typo="Typo.body2">
-                    @L["row"] @seat.Row · @L["seat_label"] @seat.SeatNumber · @seat.TicketType · €@GetSeatPrice(seat).ToString("F2")
+                    @L["row"] @seat.Row · @L["seat_label"] @seat.SeatNumber · @L[$"ticket_type_{seat.TicketType}"] · €@GetSeatPrice(seat).ToString("F2")
                 </MudText>
             }
             <MudDivider Class="my-3"/>

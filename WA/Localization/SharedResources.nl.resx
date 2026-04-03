@@ -368,4 +368,16 @@ Voer ons adres in uw navigatie in of bekijk de kaart hieronder.</value>
   <data name="payment_method_Cadeaubon" xml:space="preserve">
     <value>Cadeaubon</value>
   </data>
+  <data name="ticket_type_Adult" xml:space="preserve">
+    <value>Volwassene</value>
+  </data>
+  <data name="ticket_type_Student" xml:space="preserve">
+    <value>Student</value>
+  </data>
+  <data name="ticket_type_Child" xml:space="preserve">
+    <value>Kind</value>
+  </data>
+  <data name="ticket_type_Senior" xml:space="preserve">
+    <value>Senior</value>
+  </data>
 </root>
