@@ -236,4 +236,118 @@ Voer ons adres in uw navigatie in of bekijk de kaart hieronder.</value>
   <data name="contact how to find" xml:space="preserve">
     <value>Hoe u ons vindt</value>
   </data>
+  <data name="seat_choice" xml:space="preserve">
+    <value>Stoelkeuze</value>
+  </data>
+  <data name="tickets" xml:space="preserve">
+    <value>Tickets</value>
+  </data>
+  <data name="overview" xml:space="preserve">
+    <value>Overzicht</value>
+  </data>
+  <data name="choose_payment_type" xml:space="preserve">
+    <value>Kies betaalwijze</value>
+  </data>
+  <data name="payment" xml:space="preserve">
+    <value>Betaling</value>
+  </data>
+  <data name="no_movies_found" xml:space="preserve">
+    <value>Er zijn geen films gevonden</value>
+  </data>
+  <data name="no_movies_available" xml:space="preserve">
+    <value>Er zijn geen films beschikbaar</value>
+  </data>
+  <data name="normal_seats" xml:space="preserve">
+    <value>NORMAAL</value>
+  </data>
+  <data name="wheelchair_seats" xml:space="preserve">
+    <value>ROLSTOEL</value>
+  </data>
+  <data name="search_seats" xml:space="preserve">
+    <value>Zoek {0} {1}</value>
+  </data>
+  <data name="seat" xml:space="preserve">
+    <value>plek</value>
+  </data>
+  <data name="seats" xml:space="preserve">
+    <value>plekken</value>
+  </data>
+  <data name="cancel" xml:space="preserve">
+    <value>Annuleren</value>
+  </data>
+  <data name="free_spots" xml:space="preserve">
+    <value>{0} vrije plekken</value>
+  </data>
+  <data name="cannot_load_showing" xml:space="preserve">
+    <value>Kan voorstelling niet laden.</value>
+  </data>
+  <data name="select_showing_to_start" xml:space="preserve">
+    <value>Selecteer een voorstelling om te beginnen</value>
+  </data>
+  <data name="confirm" xml:space="preserve">
+    <value>Bevestigen</value>
+  </data>
+  <data name="row" xml:space="preserve">
+    <value>Rij</value>
+  </data>
+  <data name="seat_label" xml:space="preserve">
+    <value>Stoel</value>
+  </data>
+  <data name="booking_overview" xml:space="preserve">
+    <value>Boekingsoverzicht</value>
+  </data>
+  <data name="total" xml:space="preserve">
+    <value>Totaal</value>
+  </data>
+  <data name="choose_payment_method" xml:space="preserve">
+    <value>Kies een betaalmethode</value>
+  </data>
+  <data name="confirm_order" xml:space="preserve">
+    <value>Bevestig bestelling</value>
+  </data>
+  <data name="payment_method" xml:space="preserve">
+    <value>Betaalmethode</value>
+  </data>
+  <data name="back" xml:space="preserve">
+    <value>Terug</value>
+  </data>
+  <data name="processing" xml:space="preserve">
+    <value>Bezig...</value>
+  </data>
+  <data name="confirm_reservation" xml:space="preserve">
+    <value>Reservering bevestigen</value>
+  </data>
+  <data name="proceed_to_payment" xml:space="preserve">
+    <value>Doorgaan naar betaling</value>
+  </data>
+  <data name="price_info_standard" xml:space="preserve">
+    <value>Standaardprijs: €8,50</value>
+  </data>
+  <data name="price_info_long_movie" xml:space="preserve">
+    <value>(+ €0,50 bij films >120 min)</value>
+  </data>
+  <data name="price_info_child" xml:space="preserve">
+    <value>Kinderkorting: €1,50</value>
+  </data>
+  <data name="price_info_child_sub" xml:space="preserve">
+    <value>(t/m 11 jaar, alleen Nederlands gesproken kinderfilms vóór 18:00)</value>
+  </data>
+  <data name="price_info_student" xml:space="preserve">
+    <value>Studentenkorting: €1,50</value>
+  </data>
+  <data name="price_info_student_sub" xml:space="preserve">
+    <value>(van ma t/m do op vertoon van studentenkaart)</value>
+  </data>
+  <data name="price_info_senior" xml:space="preserve">
+    <value>65+ korting: €1,50</value>
+  </data>
+  <data name="price_info_senior_sub" xml:space="preserve">
+    <value>(van ma t/m do, exclusief vakanties/feestdagen)</value>
+  </data>
+  <data name="price_info_3d" xml:space="preserve">
+    <value>3D toeslag: €2,50</value>
+  </data>
+  <data name="next" xml:space="preserve">
+    <value>Volgende</value>
+  </data>
 </root>
