@@ -17,8 +17,9 @@ namespace API.Controllers
         /// search, creation, updating, and deletion of Showing records.
         /// </summary>
         private readonly IShowingRepository _ShowingRepository;
+
         private readonly IShowingService _showingService;
-        
+
         /// <summary>
         /// A controller for managing Showing-related operations, providing endpoints to retrieve,
         /// and manage Showing data.
@@ -54,7 +55,7 @@ namespace API.Controllers
                 return StatusCode(500, new { error = "An error occurred" });
             }
         }
-        
+
         /// <summary>
         /// Retrieves all showings including pricing information.
         /// </summary>
@@ -74,7 +75,7 @@ namespace API.Controllers
                 _ => StatusCode(500)
             };
         }
-        
+
         /// <summary>
         /// Retrieves a single showing including pricing information.
         /// </summary>
@@ -146,7 +147,8 @@ namespace API.Controllers
                 var result = await _ShowingRepository.DeleteShowingByIdAsync(ShowingId);
                 return result switch
                 {
-                    { IsFailure: true, Error: "Showing not found" } => NotFound($"Showing with TmdbId {ShowingId} not found"),
+                    { IsFailure: true, Error: "Showing not found" } => NotFound(
+                        $"Showing with TmdbId {ShowingId} not found"),
                     { IsSuccess: true } => Ok($"Showing with tmdbId {ShowingId} and title {result.Value} deleted"),
                     _ => StatusCode(500, new { error = "Unexpected result" })
                 };
@@ -197,14 +199,15 @@ namespace API.Controllers
         /// or an error response when creation fails.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> AddShowingById( 
+        public async Task<IActionResult> AddShowingById(
             [FromQuery] int movieId,
             [FromQuery] int auditoriumId,
             [FromQuery] DateTimeOffset startsAt)
-        { 
+        {
             try
             {
-                var result = await _ShowingRepository.AddShowingAsync(new CreateShowingRequest(movieId, auditoriumId, startsAt));
+                var result =
+                    await _ShowingRepository.AddShowingAsync(new CreateShowingRequest(movieId, auditoriumId, startsAt));
                 return Ok(result);
             }
             catch (Exception e)
@@ -212,7 +215,7 @@ namespace API.Controllers
                 return StatusCode(500, new { error = "An error occurred" });
             }
         }
-        
+
         /// <summary>
         /// Retrieves display-oriented details for a single showing.
         /// </summary>
@@ -241,7 +244,7 @@ namespace API.Controllers
                 return StatusCode(500, new { error = "An error occurred" });
             }
         }
-        
+
         /// <summary>
         /// Retrieves all upcoming showings for a specific movie, ordered by start time ascending.
         /// A showing is considered upcoming if it starts no more than 15 minutes before the current time,
@@ -265,7 +268,7 @@ namespace API.Controllers
                 _ => StatusCode(500, new { error = "Unexpected result" })
             };
         }
-        
+
         /// <summary>
         /// Retrieves display-oriented details for showings, optionally filtered by date.
         /// </summary>
@@ -281,6 +284,24 @@ namespace API.Controllers
 
             return result switch
             {
+                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500, new { error = "Unexpected result" })
+            };
+        }
+
+        /// <summary>
+        /// Retrieves a random showing with a specified minimum number of available seats.
+        /// </summary>
+        /// <param name="seatsNeededAmount">The minimum number of  seats required to be available for the showing.</param>
+        /// <return>Returns an IActionResult containing the details of the random showing if successful, or an error message in case of failure.</return>
+        [HttpGet("randomShowingWithSeatsAvailable")]
+        public async Task<IActionResult> GetRandomShowingWithAmountOfSeatsAvailable([FromQuery] int seatsNeededAmount)
+        {
+            var result = await _showingService.GetRandomShowingWithAmountOfSeatsAvailableAsync(seatsNeededAmount);
+            return result switch
+            {
+                {IsFailure: true, Error: "No Showings with enough seats available"} => NotFound(new { error = "No showings with enough seats available" }),
                 { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
                 { IsSuccess: true } => Ok(result.Value),
                 _ => StatusCode(500, new { error = "Unexpected result" })
