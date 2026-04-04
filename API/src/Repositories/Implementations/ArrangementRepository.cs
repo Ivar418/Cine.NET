@@ -18,6 +18,13 @@ public class ArrangementRepository : IArrangementRepository
         _db = db;
     }
 
+    /// <summary>
+    /// Retrieves all arrangements including their item collections.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the arrangement list on success,
+    /// or a failure result when the query cannot be completed.
+    /// </returns>
     public async Task<ResultOf<IReadOnlyList<Arrangement>>> GetAllAsync()
     {
         try
@@ -35,6 +42,14 @@ public class ArrangementRepository : IArrangementRepository
         }
     }
 
+    /// <summary>
+    /// Retrieves a single arrangement by identifier including its item collection.
+    /// </summary>
+    /// <param name="id">The arrangement identifier.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the arrangement when found,
+    /// or a failure result when the arrangement does not exist or retrieval fails.
+    /// </returns>
     public async Task<ResultOf<Arrangement?>> GetByIdAsync(int id)
     {
         try
@@ -55,6 +70,14 @@ public class ArrangementRepository : IArrangementRepository
         }
     }
 
+    /// <summary>
+    /// Persists a new arrangement and its related items.
+    /// </summary>
+    /// <param name="arrangement">The arrangement entity to create.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the persisted arrangement on success,
+    /// or a failure result when persistence fails.
+    /// </returns>
     public async Task<ResultOf<Arrangement>> CreateAsync(Arrangement arrangement)
     {
         try

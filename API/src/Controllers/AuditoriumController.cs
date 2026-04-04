@@ -26,13 +26,13 @@ namespace API.Controllers
             _AuditoriumService = auditoriumService;
         }
 
-
-        /// Retrieves a list of all Auditoriums from the repository.
-        /// The method attempts to fetch all Auditoriums using the injected repository.
-        /// If the operation fails, it will return an appropriate HTTP status code
-        /// indicating the error (e.g., 500 Internal Server Error). If successful,
-        /// it returns the list of Auditoriums.
-        /// <return>Returns an IActionResult containing a list of Auditoriums on success, or an error message on failure.</return>
+        /// <summary>
+        /// Retrieves all auditoriums.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing all auditoriums when successful,
+        /// or an error response when retrieval fails.
+        /// </returns>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -53,14 +53,13 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Deletes a Auditorium from the system based on its TmdbId.
+        /// Deletes an auditorium by its internal identifier.
         /// </summary>
-        /// <param name="tmdbId">The unique TmdbId of the Auditorium to be deleted.</param>
+        /// <param name="AuditoriumId">The unique auditorium identifier.</param>
         /// <returns>
-        /// An <see cref="IActionResult"/> indicating the result of the operation. Returns:
-        /// - <c>200 OK</c> if the Auditorium was successfully deleted.
-        /// - <c>404 Not Found</c> if the Auditorium with the specified TmdbId was not found.
-        /// - <c>500 Internal Server Error</c> if an unexpected error occurs.
+        /// An <see cref="IActionResult"/> indicating the result of the delete operation.
+        /// Returns <c>200 OK</c> on success, <c>404 Not Found</c> when no auditorium exists for the ID,
+        /// or <c>500 Internal Server Error</c> when an unexpected error occurs.
         /// </returns>
         [HttpDelete]
         [Route("{AuditoriumId:int}")]
@@ -82,10 +81,14 @@ namespace API.Controllers
             }
         }
 
-
-        /// Retrieves a Auditorium by its unique identifier.
+        /// <summary>
+        /// Retrieves an auditorium by its unique identifier.
+        /// </summary>
         /// <param name="id">The unique identifier of the Auditorium to retrieve.</param>
-        /// <returns>An IActionResult containing the Auditorium details if found, a 404 Not Found response if the Auditorium is not found, or a 500 Internal Server Error response if an unexpected error occurs.</returns>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing the auditorium details when found,
+        /// or an error response when not found or when retrieval fails.
+        /// </returns>
         [HttpGet]
         [Route("{id:int}")]
         public async Task<IActionResult> GetAuditoriumById(int id)
@@ -108,12 +111,13 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Adds a Auditorium to the database.
+        /// Creates a new auditorium.
         /// </summary>
-        /// <param name="name">The Auditorium name to be added. Must be a positive integer. that does not exist</param>
-        /// <param name="rows">The list of row configurations for the Auditorium. Each row configuration should specify the number of seats and wheelchair spaces.</param>
+        /// <param name="name">The name of the auditorium to create.</param>
+        /// <param name="rows">The row and seat configuration for the auditorium.</param>
         /// <returns>
-        /// Returns a status indicating the result of the operation:
+        /// An <see cref="IActionResult"/> containing the created auditorium data on success,
+        /// or an error response when creation fails.
         /// </returns>
         [HttpPost]
         public async Task<IActionResult> AddAuditoriumById( 
