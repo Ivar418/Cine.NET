@@ -14,4 +14,5 @@ public interface IShowingService
     Task<ResultOf<ShowingStateDto>> GetShowingStateAsync(int id);
     Task<ResultOf<IReadOnlyList<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId);
     Task<ResultOf<ICollection<ShowingDisplayResponse>>> GetShowingDisplayAsync(DateOnly? date = null);
+    Task<ResultOf<Showing>> GetRandomShowingWithAmountOfSeatsAvailableAsync(int seatsNeededAmount);
 }

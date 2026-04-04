@@ -1,3 +1,4 @@
+using System.Collections;
 using API.Domain.Common;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
@@ -119,7 +120,7 @@ public class ShowingService : IShowingService
 
         return ResultOf<List<ShowingsWithPricesResponse>>.Success(result);
     }
-    
+
     /// <summary>
     /// Retrieves all TicketTypes and maps them to the expected categories (Adult, Child, Student, Senior).
     /// </summary>
@@ -127,7 +128,8 @@ public class ShowingService : IShowingService
     /// A <see cref="ResultOf{T}"/> containing a tuple of TicketTypes on success.
     /// Returns a failure result if TicketTypes are missing or misconfigured.
     /// </returns>
-    private async Task<ResultOf<(TicketType adult, TicketType child, TicketType student, TicketType senior)>> GetTicketTypes()
+    private async Task<ResultOf<(TicketType adult, TicketType child, TicketType student, TicketType senior)>>
+        GetTicketTypes()
     {
         var result = await _ticketTypeService.GetAllAsync();
 
@@ -147,10 +149,11 @@ public class ShowingService : IShowingService
         }
         catch
         {
-            return ResultOf<(TicketType, TicketType, TicketType, TicketType)>.Failure("TicketTypes not configured correctly");
+            return ResultOf<(TicketType, TicketType, TicketType, TicketType)>.Failure(
+                "TicketTypes not configured correctly");
         }
     }
-    
+
     /// <summary>
     /// Builds a Showing response including calculated prices and availability per ticket type.
     /// </summary>
@@ -212,7 +215,7 @@ public class ShowingService : IShowingService
             return ResultOf<ShowingsWithPricesResponse>.Failure(ex.Message);
         }
     }
-    
+
     /// <summary>
     /// Retrieves upcoming Showings for a specific movie based on a cutoff time.
     /// </summary>
@@ -249,9 +252,11 @@ public class ShowingService : IShowingService
             return ResultOf<ShowingStateDto>.Failure("Showing not found");
 
         ShowingStateDto showingState = ShowingMapper.ToStateDto(showing, _reservationrepository);
-        return showingState == null ? ResultOf<ShowingStateDto>.Failure("ShowingState not found") : ResultOf<ShowingStateDto>.Success(showingState);
+        return showingState == null
+            ? ResultOf<ShowingStateDto>.Failure("ShowingState not found")
+            : ResultOf<ShowingStateDto>.Success(showingState);
     }
-    
+
     /// <summary>
     /// Retrieves Showing display data optionally filtered by date.
     /// </summary>
@@ -262,5 +267,37 @@ public class ShowingService : IShowingService
     public async Task<ResultOf<ICollection<ShowingDisplayResponse>>> GetShowingDisplayAsync(DateOnly? date = null)
     {
         return await _showingRepository.GetShowingDisplayAsync(date);
+    }
+
+    public async Task<ResultOf<Showing>> GetRandomShowingWithAmountOfSeatsAvailableAsync(int seatsNeededAmount)
+    {
+        var showings = await _showingRepository.GetShowingsAsync();
+        if (showings.IsSuccess && showings.Value.Count > 0)
+        {
+            var upcomingAndSeatsAvailable = showings.Value.Where(s => s.StartsAt > DateTimeOffset.UtcNow);
+            List<Showing> showingWithSeatsAvailable = new List<Showing>();
+            foreach (var showing in upcomingAndSeatsAvailable)
+            {
+                var showingState = await GetShowingStateAsync(showing.Id);
+                if (showingState.IsSuccess)
+                {
+                    var amountOfSeatsAvailable =
+                        showingState.Value.AllSeats.Count - showingState.Value.OccupiedKeys.Count;
+                    if (amountOfSeatsAvailable >= seatsNeededAmount) ;
+                    {
+                        showingWithSeatsAvailable.Add(showing);
+                    }
+                }
+            }
+
+            if (showingWithSeatsAvailable.Count > 0)
+            {
+                var random = new Random();
+                int index = random.Next(showingWithSeatsAvailable.Count);
+                return ResultOf<Showing>.Success(showingWithSeatsAvailable[index]);
+            }
+            return ResultOf<Showing>.Failure("No Showings with enough seats available");
+        }
+        return ResultOf<Showing>.Failure("An error occured");
     }
 }
