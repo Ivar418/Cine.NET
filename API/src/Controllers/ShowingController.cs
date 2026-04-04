@@ -268,7 +268,7 @@ public class ShowingController : ControllerBase
     /// <summary>
     /// Retrieves a random showing with a specified minimum number of available seats.
     /// </summary>
-    /// <param name="seatsNeededAmount">The minimum number of seats required to be available for the showing.</param>
+    /// <param name="seatsNeededAmount">The minimum number of  seats required to be available for the showing.</param>
     /// <return>Returns an IActionResult containing the details of the random showing if successful, or an error message in case of failure.</return>
     [HttpGet("randomShowingWithSeatsAvailable")]
     public async Task<IActionResult> GetRandomShowingWithAmountOfSeatsAvailable([FromQuery] int seatsNeededAmount)
