@@ -16,6 +16,15 @@ public class MovieService : IMovieService
         _movieRepository = movieRepository;
     }
 
+    /// <summary>
+    /// Adds a movie from TMDB for each requested information language and aggregates successful inserts.
+    /// </summary>
+    /// <param name="tmdbId">The TMDB movie identifier.</param>
+    /// <param name="informationLanguages">Optional set of language codes; defaults to <c>en</c> and <c>nl</c>.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the collection of successfully added movies.
+    /// Failures per language are logged and do not stop processing the remaining languages.
+    /// </returns>
     public async Task<ResultOf<IEnumerable<Movie>>> AddMovieAsyncForEachSpecifiedLanguage(int tmdbId,
         IEnumerable<string>? informationLanguages = null)
     {
@@ -69,6 +78,14 @@ public class MovieService : IMovieService
             language);
     }
 
+    /// <summary>
+    /// Fetches and saves all TMDB genres for each requested language, then returns genres currently stored in the database.
+    /// </summary>
+    /// <param name="language">Optional set of language codes; defaults to <c>en</c> and <c>nl</c>.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing all genres from the database after synchronization,
+    /// or a failure when reading the final persisted genre list fails.
+    /// </returns>
     public async Task<ResultOf<IEnumerable<Genre>>> FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb(
         IEnumerable<string>? language = null)
     {
@@ -87,6 +104,14 @@ public class MovieService : IMovieService
     }
 
 
+    /// <summary>
+    /// Retrieves a genre by TMDB genre ID and language, fetching and persisting it from TMDB when missing locally.
+    /// </summary>
+    /// <param name="tmdbGenreId">The TMDB genre identifier.</param>
+    /// <param name="language">The language code used to resolve the localized genre name.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the matching genre from local storage or fetched from TMDB.
+    /// </returns>
     public async Task<ResultOf<Genre>> FetchGenreByLanguage(int tmdbGenreId, string language)
     {
         var genres = await _movieRepository.GetAllGenresOnDb();

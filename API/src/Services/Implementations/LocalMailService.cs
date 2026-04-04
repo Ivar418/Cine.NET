@@ -28,6 +28,15 @@ public class LocalMailService : ILocalMailService
         _repository = repository;
     }
 
+    /// <summary>
+    /// Sends the provided email content to all currently subscribed email addresses.
+    /// </summary>
+    /// <param name="emailContent">The message body to send.</param>
+    /// <param name="fromName">The display name used as sender.</param>
+    /// <param name="subject">The email subject line.</param>
+    /// <returns>
+    /// A task that returns <c>true</c> after iterating through subscribers and attempting delivery.
+    /// </returns>
     public async Task<bool> SendEmailToSubscribersAsync(TextPart emailContent, string fromName, string subject)
     {
         var sendToList = await GetAllAsync();

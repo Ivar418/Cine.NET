@@ -20,6 +20,14 @@ public class OrderPdfService : IOrderPdfService
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
+    /// <summary>
+    /// Generates a reservation PDF for an order, including reservation code, QR code, and showing context when available.
+    /// </summary>
+    /// <param name="orderId">The order identifier.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the PDF bytes on success,
+    /// or a failure when the order cannot be found.
+    /// </returns>
     public async Task<ResultOf<byte[]>> GenerateReservationPdfAsync(int orderId)
     {
         var order = await _orderRepository.GetByIdWithTicketsAsync(orderId);
@@ -104,6 +112,14 @@ public class OrderPdfService : IOrderPdfService
         return ResultOf<byte[]>.Success(pdfBytes);
     }
 
+    /// <summary>
+    /// Generates a paid tickets PDF with one page per ticket, including ticket-specific QR codes.
+    /// </summary>
+    /// <param name="orderId">The order identifier.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the PDF bytes on success,
+    /// or a failure when the order is missing, unpaid, or has no tickets.
+    /// </returns>
     public async Task<ResultOf<byte[]>> GeneratePaidTicketsPdfAsync(int orderId)
     {
         var order = await _orderRepository.GetByIdWithTicketsAsync(orderId);
@@ -198,6 +214,11 @@ public class OrderPdfService : IOrderPdfService
         return ResultOf<byte[]>.Success(pdfBytes);
     }
 
+    /// <summary>
+    /// Generates a PNG QR code payload for the provided value.
+    /// </summary>
+    /// <param name="value">The value to encode in the QR code.</param>
+    /// <returns>A byte array containing PNG image data.</returns>
     private static byte[] GenerateQrPng(string value)
     {
         using var generator = new QRCodeGenerator();
