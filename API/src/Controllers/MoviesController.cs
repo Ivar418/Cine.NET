@@ -42,7 +42,7 @@ public class MoviesController : ControllerBase
     /// <summary>
     /// Retrieves a list of all movies from the repository.
     /// </summary>
-    /// <param name="language">Optional language parameter to specify the language of the movies. Defaults to "nl".</param>
+    /// <param name="language">Optional language parameter to filter localized movie data. Defaults to "all".</param>
     /// <returns>
     /// An <see cref="IActionResult"/> containing a list of movies on success,
     /// or an error message with appropriate HTTP status on failure.
@@ -138,7 +138,8 @@ public class MoviesController : ControllerBase
     /// <param name="include_adult">Optional. A value indicating whether to include adult content in the search results. Defaults to false.</param>
     /// <param name="language">Optional. The language in which the search results are returned. Defaults to "nl".</param>
     /// <returns>
-    /// An IActionResult containing the search results from TMDB or an error response in case of a failure.
+    /// An <see cref="IActionResult"/> containing TMDB search results on success,
+    /// or an error response when the search operation fails.
     /// </returns>
     [HttpGet]
     [Route("tmdb/search")]
