@@ -263,4 +263,40 @@ public class ShowingService : IShowingService
     {
         return await _showingRepository.GetShowingDisplayAsync(date);
     }
+    /// <summary>
+    /// Retrieves a random upcoming showing with a specified minimum number of available seats.
+    /// </summary>
+    /// <param name="seatsNeededAmount">The minimum number of seats required to be available for the showing.</param>
+    /// <returns>A result containing a random showing that meets the seat availability criteria if successful, or an error if no such showing exists or an error occurs.</returns>
+    public async Task<ResultOf<Showing>> GetRandomShowingWithAmountOfSeatsAvailableAsync(int seatsNeededAmount)
+    {
+        var showings = await _showingRepository.GetShowingsAsync();
+        if (showings.IsSuccess && showings.Value.Count > 0)
+        {
+            var upcomingAndSeatsAvailable = showings.Value.Where(s => s.StartsAt > DateTimeOffset.UtcNow);
+            List<Showing> showingWithSeatsAvailable = new List<Showing>();
+            foreach (var showing in upcomingAndSeatsAvailable)
+            {
+                var showingState = await GetShowingStateAsync(showing.Id);
+                if (showingState.IsSuccess)
+                {
+                    var amountOfSeatsAvailable =
+                        showingState.Value.AllSeats.Count - showingState.Value.OccupiedKeys.Count;
+                    if (amountOfSeatsAvailable >= seatsNeededAmount) ;
+                    {
+                        showingWithSeatsAvailable.Add(showing);
+                    }
+                }
+            }
+
+            if (showingWithSeatsAvailable.Count > 0)
+            {
+                var random = new Random();
+                int index = random.Next(showingWithSeatsAvailable.Count);
+                return ResultOf<Showing>.Success(showingWithSeatsAvailable[index]);
+            }
+            return ResultOf<Showing>.Failure("No Showings with enough seats available");
+        }
+        return ResultOf<Showing>.Failure("An error occured");
+    }
 }
