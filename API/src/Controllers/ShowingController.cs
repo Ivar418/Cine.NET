@@ -4,31 +4,30 @@ using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.DTOs.Models;
 
-namespace API.Controllers;
-
-[ApiController]
-[Route("api/showings")]
-public class ShowingController : ControllerBase
+namespace API.Controllers
 {
-    /// <summary>
-    /// Represents the repository responsible for providing data access functionalities
-    /// related to Showings. The repository abstracts interactions with the data sources,
-    /// such as databases or external APIs, to perform operations including retrieval,
-    /// search, creation, updating, and deletion of Showing records.
-    /// </summary>
-    private readonly IShowingRepository _ShowingRepository;
-
-    private readonly IShowingService _showingService;
-
-    /// <summary>
-    /// A controller for managing Showing-related operations, providing endpoints to retrieve,
-    /// and manage Showing data.
-    /// </summary>
-    public ShowingController(IShowingRepository showingRepository, IShowingService showingService)
+    [ApiController]
+    [Route("api/showings")]
+    public class ShowingController : ControllerBase
     {
-        _ShowingRepository = showingRepository;
-        _showingService = showingService;
-    }
+        /// <summary>
+        /// Represents the repository responsible for providing data access functionalities
+        /// related to Showings. The repository abstracts interactions with the data sources,
+        /// such as databases or external APIs, to perform operations including retrieval,
+        /// search, creation, updating, and deletion of Showing records.
+        /// </summary>
+        private readonly IShowingRepository _ShowingRepository;
+        private readonly IShowingService _showingService;
+        
+        /// <summary>
+        /// A controller for managing Showing-related operations, providing endpoints to retrieve,
+        /// and manage Showing data.
+        /// </summary>
+        public ShowingController(IShowingRepository showingRepository, IShowingService showingService)
+        {
+            _ShowingRepository = showingRepository;
+            _showingService = showingService;
+        }
 
         /// <summary>
         /// Retrieves all showings.
@@ -40,17 +39,20 @@ public class ShowingController : ControllerBase
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var Showings = await _ShowingRepository.GetShowingsAsync();
-            return Showings switch
+            try
             {
-                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                { IsSuccess: true } => Ok(Showings.Value),
-                _ => StatusCode(500, new { error = "Unexpected result" })
-            };
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, new { error = "An error occurred" });
+                var Showings = await _ShowingRepository.GetShowingsAsync();
+                return Showings switch
+                {
+                    { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                    { IsSuccess: true } => Ok(Showings.Value),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
         }
         
         /// <summary>
@@ -63,53 +65,13 @@ public class ShowingController : ControllerBase
         [HttpGet("with-prices")]
         public async Task<IActionResult> GetShowingsWithPrices()
         {
-            { IsFailure: true } => StatusCode(500, "An error occurred"),
-            { IsSuccess: true } => Ok(result.Value),
-            _ => StatusCode(500)
-        };
-    }
+            var result = await _showingService.GetShowingsAsync();
 
-    /**
-* Retrieves a Showing with pricing information by ID.
-*
-* @param id The Showing ID.
-* @response 200 OK Returns the Showing with prices.
-* @response 404 Not Found If the Showing does not exist.
-* @response 500 Internal Server Error If an unexpected error occurs.
-*/
-    [HttpGet("{id}/prices")]
-    public async Task<IActionResult> GetShowingWithPrices(int id)
-    {
-        var result = await _showingService.GetShowingAsync(id);
-
-        return result switch
-        {
-            { IsFailure: true, Error: "NotFound" } => NotFound("Not found"),
-            { IsFailure: true } => StatusCode(500, "An error occurred"),
-            { IsSuccess: true } => Ok(result.Value),
-            _ => StatusCode(500)
-        };
-    }
-
-    /**
-     * Retrieves the current state of a Showing.
-     *
-     * @param ShowingId The Showing ID.
-     * @response 200 OK Returns the Showing state.
-     * @response 500 Internal Server Error If an unexpected error occurs.
-     */
-    [HttpGet]
-    [Route("{ShowingId:int}/state")]
-    public async Task<IActionResult> GetShowingStateById(int ShowingId)
-    {
-        try
-        {
-            var result = await _showingService.GetShowingStateAsync(ShowingId);
             return result switch
             {
-                { IsFailure: true } => StatusCode(500, new { error = result.Error }),
+                { IsFailure: true } => StatusCode(500, "An error occurred"),
                 { IsSuccess: true } => Ok(result.Value),
-                _ => StatusCode(500, new { error = "Unexpected result" })
+                _ => StatusCode(500)
             };
         }
         
@@ -125,35 +87,14 @@ public class ShowingController : ControllerBase
         [HttpGet("{id}/prices")]
         public async Task<IActionResult> GetShowingWithPrices(int id)
         {
-            Console.WriteLine("Server error");
-            Console.WriteLine(ex);
-            return StatusCode(500, new { error = "An error occurred" });
-        }
-    }
+            var result = await _showingService.GetShowingAsync(id);
 
-    /// <summary>
-    /// Deletes a Showing from the system based on its TmdbId.
-    /// </summary>
-    /// <param name="tmdbId">The unique TmdbId of the Showing to be deleted.</param>
-    /// <returns>
-    /// An <see cref="IActionResult"/> indicating the result of the operation. Returns:
-    /// - <c>200 OK</c> if the Showing was successfully deleted.
-    /// - <c>404 Not Found</c> if the Showing with the specified TmdbId was not found.
-    /// - <c>500 Internal Server Error</c> if an unexpected error occurs.
-    /// </returns>
-    [HttpDelete]
-    [Route("{ShowingId:int}")]
-    public async Task<IActionResult> DeleteById(int ShowingId)
-    {
-        try
-        {
-            var result = await _ShowingRepository.DeleteShowingByIdAsync(ShowingId);
             return result switch
             {
-                { IsFailure: true, Error: "Showing not found" } => NotFound(
-                    $"Showing with TmdbId {ShowingId} not found"),
-                { IsSuccess: true } => Ok($"Showing with tmdbId {ShowingId} and title {result.Value} deleted"),
-                _ => StatusCode(500, new { error = "Unexpected result" })
+                { IsFailure: true, Error: "NotFound" } => NotFound("Not found"),
+                { IsFailure: true } => StatusCode(500, "An error occurred"),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500)
             };
         }
 
@@ -169,10 +110,23 @@ public class ShowingController : ControllerBase
         [Route("{ShowingId:int}/state")]
         public async Task<IActionResult> GetShowingStateById(int ShowingId)
         {
-            return StatusCode(500, new { error = "An error occurred" });
+            try
+            {
+                var result = await _showingService.GetShowingStateAsync(ShowingId);
+                return result switch
+                {
+                    { IsFailure: true } => StatusCode(500, new { error = result.Error }),
+                    { IsSuccess: true } => Ok(result.Value),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Server error");
+                Console.WriteLine(ex);
+                return StatusCode(500, new { error = "An error occurred" });
+            }
         }
-    }
-
 
         /// <summary>
         /// Deletes a showing by its internal identifier.
@@ -187,14 +141,20 @@ public class ShowingController : ControllerBase
         [Route("{ShowingId:int}")]
         public async Task<IActionResult> DeleteById(int ShowingId)
         {
-            var Showing = await _ShowingRepository.GetShowingAsync(id);
-            return Showing switch
+            try
             {
-                { IsFailure: true, Error: "Showing not found" } => NotFound(new { error = "Showing not found" }),
-                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-                { IsSuccess: true } => Ok(Showing.Value),
-                _ => StatusCode(500, new { error = "Unexpected result" })
-            };
+                var result = await _ShowingRepository.DeleteShowingByIdAsync(ShowingId);
+                return result switch
+                {
+                    { IsFailure: true, Error: "Showing not found" } => NotFound($"Showing with TmdbId {ShowingId} not found"),
+                    { IsSuccess: true } => Ok($"Showing with tmdbId {ShowingId} and title {result.Value} deleted"),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
         }
 
         /// <summary>
@@ -209,9 +169,22 @@ public class ShowingController : ControllerBase
         [Route("{id:int}")]
         public async Task<IActionResult> GetShowingById(int id)
         {
-            return StatusCode(500, new { error = "An error occurred" });
+            try
+            {
+                var Showing = await _ShowingRepository.GetShowingAsync(id);
+                return Showing switch
+                {
+                    { IsFailure: true, Error: "Showing not found" } => NotFound(new { error = "Showing not found" }),
+                    { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                    { IsSuccess: true } => Ok(Showing.Value),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
         }
-    }
 
         /// <summary>
         /// Creates a new showing.
@@ -252,9 +225,21 @@ public class ShowingController : ControllerBase
         [HttpGet("{id:int}/details")]
         public async Task<IActionResult> GetShowingDisplayById(int id)
         {
-            var result =
-                await _ShowingRepository.AddShowingAsync(new CreateShowingRequest(movieId, auditoriumId, startsAt));
-            return Ok(result);
+            try
+            {
+                var result = await _ShowingRepository.GetShowingDisplayByIdAsync(id);
+                return result switch
+                {
+                    { IsFailure: true, Error: "Showing not found" } => NotFound(new { error = "Showing not found" }),
+                    { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                    { IsSuccess: true } => Ok(result.Value),
+                    _ => StatusCode(500, new { error = "Unexpected result" })
+                };
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occurred" });
+            }
         }
         
         /// <summary>
@@ -271,19 +256,10 @@ public class ShowingController : ControllerBase
         [HttpGet("movie/{movieId:int}/upcoming")]
         public async Task<IActionResult> GetUpcomingShowingsByMovieId(int movieId)
         {
-            return StatusCode(500, new { error = "An error occurred" });
-        }
-    }
+            var result = await _showingService.GetUpcomingShowingsByMovieIdAsync(movieId);
 
-    [HttpGet("{id:int}/details")]
-    public async Task<IActionResult> GetShowingDisplayById(int id)
-    {
-        try
-        {
-            var result = await _ShowingRepository.GetShowingDisplayByIdAsync(id);
             return result switch
             {
-                { IsFailure: true, Error: "Showing not found" } => NotFound(new { error = "Showing not found" }),
                 { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
                 { IsSuccess: true } => Ok(result.Value),
                 _ => StatusCode(500, new { error = "Unexpected result" })
@@ -301,61 +277,14 @@ public class ShowingController : ControllerBase
         [HttpGet("details")]
         public async Task<IActionResult> GetShowingDisplay([FromQuery] DateOnly? date = null)
         {
-            return StatusCode(500, new { error = "An error occurred" });
+            var result = await _showingService.GetShowingDisplayAsync(date);
+
+            return result switch
+            {
+                { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
+                { IsSuccess: true } => Ok(result.Value),
+                _ => StatusCode(500, new { error = "Unexpected result" })
+            };
         }
-    }
-
-    /// <summary>
-    /// Retrieves all upcoming showings for a specific movie, ordered by start time ascending.
-    /// A showing is considered upcoming if it starts no more than 15 minutes before the current time,
-    /// allowing users to still book tickets shortly after a showing has started.
-    /// </summary>
-    /// <param name="movieId">The internal ID of the movie to retrieve upcoming showings for.</param>
-    /// <returns>
-    /// An <see cref="IActionResult"/> containing a list of <see cref="ShowingResponse"/> on success.
-    /// Returns an empty list if no upcoming showings are scheduled — this is not treated as a 404.
-    /// Returns <c>500 Internal Server Error</c> if an unexpected error occurs.
-    /// </returns>
-    [HttpGet("movie/{movieId:int}/upcoming")]
-    public async Task<IActionResult> GetUpcomingShowingsByMovieId(int movieId)
-    {
-        var result = await _showingService.GetUpcomingShowingsByMovieIdAsync(movieId);
-
-        return result switch
-        {
-            { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-            { IsSuccess: true } => Ok(result.Value),
-            _ => StatusCode(500, new { error = "Unexpected result" })
-        };
-    }
-
-    [HttpGet("details")]
-    public async Task<IActionResult> GetShowingDisplay([FromQuery] DateOnly? date = null)
-    {
-        var result = await _showingService.GetShowingDisplayAsync(date);
-
-        return result switch
-        {
-            { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-            { IsSuccess: true } => Ok(result.Value),
-            _ => StatusCode(500, new { error = "Unexpected result" })
-        };
-    }
-
-    /// <summary>
-    /// Retrieves a random showing with a specified minimum number of available seats.
-    /// </summary>
-    /// <param name="seatsNeededAmount">The minimum number of seats required to be available for the showing.</param>
-    /// <return>Returns an IActionResult containing the details of the random showing if successful, or an error message in case of failure.</return>
-    [HttpGet("randomShowingWithSeatsAvailable")]
-    public async Task<IActionResult> GetRandomShowingWithAmountOfSeatsAvailable([FromQuery] int seatsNeededAmount)
-    {
-        var result = await _showingService.GetRandomShowingWithAmountOfSeatsAvailableAsync(seatsNeededAmount);
-        return result switch
-        {
-            { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-            { IsSuccess: true } => Ok(result.Value),
-            _ => StatusCode(500, new { error = "Unexpected result" })
-        };
     }
 }
