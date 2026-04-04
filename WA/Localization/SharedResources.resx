@@ -438,4 +438,31 @@
   <data name="payment_result_auto_redirect" xml:space="preserve">
     <value>You will be redirected automatically...</value>
   </data>
+  <data name="MoviesToday error" xml:space="preserve">
+    <value>Failed to load data. Please try again.</value>
+  </data>
+  <data name="MoviesToday no showings" xml:space="preserve">
+    <value>No showings found for today.</value>
+  </data>
+  <data name="MovieToday no poster" xml:space="preserve">
+    <value>No poster</value>
+  </data>
+  <data name="MoviesToday language" xml:space="preserve">
+    <value>English with Dutch subtitles</value>
+  </data>
+  <data name="MoviesToday auditorium" xml:space="preserve">
+    <value>Auditorium</value>
+  </data>
+  <data name="MoviesToday runtime" xml:space="preserve">
+    <value>Runtime</value>
+  </data>
+  <data name="MoviesToday genres" xml:space="preserve">
+    <value>Genres</value>
+  </data>
+  <data name="MoviesToday movie detail btn" xml:space="preserve">
+    <value>Movie details</value>
+  </data>
+  <data name="MoviesToday order now" xml:space="preserve">
+    <value>Order now</value>
+  </data>
 </root>

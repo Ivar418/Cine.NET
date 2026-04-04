@@ -440,4 +440,31 @@ Voer ons adres in uw navigatie in of bekijk de kaart hieronder.</value>
   <data name="payment_result_auto_redirect" xml:space="preserve">
     <value>U wordt automatisch teruggestuurd...</value>
   </data>
+  <data name="MoviesToday error" xml:space="preserve">
+    <value>Het laden van de gegevens is mislukt. Probeer het nog eens.</value>
+  </data>
+  <data name="MoviesToday no showings" xml:space="preserve">
+    <value>Er zijn geen voorstellingen gevonden voor vandaag.</value>
+  </data>
+  <data name="MovieToday no poster" xml:space="preserve">
+    <value>Geen poster</value>
+  </data>
+  <data name="MoviesToday language" xml:space="preserve">
+    <value>Engels met Nederlandse ondertiteling</value>
+  </data>
+  <data name="MoviesToday auditorium" xml:space="preserve">
+    <value>Zaal</value>
+  </data>
+  <data name="MoviesToday runtime" xml:space="preserve">
+    <value>Duur</value>
+  </data>
+  <data name="MoviesToday genres" xml:space="preserve">
+    <value>Genres</value>
+  </data>
+  <data name="MoviesToday movie detail btn" xml:space="preserve">
+    <value>Film informatie</value>
+  </data>
+  <data name="MoviesToday order now" xml:space="preserve">
+    <value>Bestel nu</value>
+  </data>
 </root>
