@@ -438,4 +438,79 @@
   <data name="payment_result_auto_redirect" xml:space="preserve">
     <value>You will be redirected automatically...</value>
   </data>
+  <data name="MoviesToday error" xml:space="preserve">
+    <value>Failed to load data. Please try again.</value>
+  </data>
+  <data name="MoviesToday no showings" xml:space="preserve">
+    <value>No showings found for today.</value>
+  </data>
+  <data name="MovieToday no poster" xml:space="preserve">
+    <value>No poster</value>
+  </data>
+  <data name="MoviesToday language" xml:space="preserve">
+    <value>English with Dutch subtitles</value>
+  </data>
+  <data name="MoviesToday auditorium" xml:space="preserve">
+    <value>Auditorium</value>
+  </data>
+  <data name="MoviesToday runtime" xml:space="preserve">
+    <value>Runtime</value>
+  </data>
+  <data name="MoviesToday genres" xml:space="preserve">
+    <value>Genres</value>
+  </data>
+  <data name="MoviesToday movie detail btn" xml:space="preserve">
+    <value>Movie details</value>
+  </data>
+  <data name="MoviesToday order now" xml:space="preserve">
+    <value>Order now</value>
+  </data>
+  <data name="MoviesThisWeek page title" xml:space="preserve">
+    <value>Movies weekly</value>
+  </data>
+  <data name="MoviesThisWeek title" xml:space="preserve">
+    <value>This week</value>
+  </data>
+  <data name="MoviesThisWeek overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="MoviesThisWeek filters" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="MovieThisWeek active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="MovieThisWeek search" xml:space="preserve">
+    <value>Search by title....</value>
+  </data>
+  <data name="MovieThisWeek format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="MovieThisWeek all formats" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="MovieThisWeek genre" xml:space="preserve">
+    <value>Genre</value>
+  </data>
+  <data name="MovieThisWeek age rating" xml:space="preserve">
+    <value>Age rating</value>
+  </data>
+  <data name="MovieThisWeek language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="MovieThisWeek clear filters" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
+  <data name="MovieThisWeek error" xml:space="preserve">
+    <value>Failed to load data. Please try again.</value>
+  </data>
+  <data name="MovieThisWeek auditorium" xml:space="preserve">
+    <value>Auditorium</value>
+  </data>
+  <data name="MovieThisWeek no showings" xml:space="preserve">
+    <value>No showings</value>
+  </data>
+  <data name="MovieThisWeek no results for these filters" xml:space="preserve">
+    <value>No results for these filters</value>
+  </data>
 </root>
