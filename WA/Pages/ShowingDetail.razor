@@ -54,8 +54,8 @@
 
                     <MudDivider Class="my-4" />
                     <div class="white-text">
-                        <MudText><strong>@L["showingdetail date"]:</strong> @_showing?.StartsAt.ToString("dddd d MMMM yyyy")</MudText>
-                        <MudText><strong>@L["showingdetail start time"]:</strong> @_showing?.StartsAt.ToString("HH:mm")</MudText>
+                        <MudText><strong>@L["showingdetail date"]:</strong> @_showing?.StartsAt.ToLocalTime().ToString("dddd d MMMM yyyy")</MudText>
+                        <MudText><strong>@L["showingdetail start time"]:</strong> @_showing?.StartsAt.ToLocalTime().ToString("HH:mm")</MudText>
                         <MudText><strong>@L["showingdetail auditorium"]:</strong> @_showing?.AuditoriumName</MudText>
                         
                         <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1">
