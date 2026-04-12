@@ -3,6 +3,10 @@
 @inject IShowingApi ShowingApi
 @inject NavigationManager Nav
 @using WA.Services.Http.Interfaces
+@inject IStringLocalizer<WA.Localization.SharedResources> L
+@inherits LocalizedComponentBase
+@using WA.Layout
+@layout MainLayout
 <link href="css/movie-detail.css" rel="stylesheet" />
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
@@ -12,7 +16,7 @@
     }
     else if (_movie == null)
     {
-        <MudAlert Severity="Severity.Error">Movie not found.</MudAlert>
+        <MudAlert Severity="Severity.Error">@L["moviedetail not found"]</MudAlert>
     }
     else
     {
@@ -34,19 +38,19 @@
                         @_movie.Title
                     </MudText>
                     <div class="white-text">
-                        <MudText><strong>Runtime:</strong> @_movie.Runtime min</MudText>
-                        <MudText><strong>Release date:</strong> @_movie.ReleaseDate</MudText>
-                        <MudText><strong>Age indication:</strong> @(_movie.AgeIndication ?? "Unknown")</MudText>
-                        <MudText><strong>Language:</strong> @(_movie.SpokenLanguageName ?? "Unknown")</MudText>
-                        <MudText><strong>Genres:</strong> @(_genreNames.Any() ? string.Join(", ", _genreNames) : "Unknown")</MudText>
+                        <MudText><strong>@L["moviedetail runtime"]:</strong> @_movie.Runtime min</MudText>
+                        <MudText><strong>@L["moviedetail release date"]:</strong> @_movie.ReleaseDate</MudText>
+                        <MudText><strong>@L["moviedetail age indication"]:</strong> @(_movie.AgeIndication ?? @L["unknown"])</MudText>
+                        <MudText><strong>@L["moviedetail language"]:</strong> @(_movie.SpokenLanguageName ?? @L["unknown"])</MudText>
+                        <MudText><strong>@L["moviedetail genre"]:</strong> @(_genreNames.Any() ? string.Join(", ", _genreNames) : @L["unknown"])</MudText>
                     </div>
                     <MudText
                         Typo="Typo.h5"
                         Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
                         Class="mb-3 mt-10">
-                        Description
+                        @L["description"]
                     </MudText>
-                    <MudText class="white-text">@(_movie.About ?? "No description available.")</MudText>
+                    <MudText class="white-text">@(_movie.About ?? @L["no description available"])</MudText>
                 </MudItem>
             </MudGrid>
 
@@ -55,7 +59,7 @@
             @if (!string.IsNullOrWhiteSpace(TrailerUrl))
             {
                 <MudText Typo="Typo.h4" Style="color: var(--mud-palette-text-secondary); font-weight: 700;" Class="mb-3 mt-6">
-                    Trailer
+                    @L["moviedetail trailer"]
                 </MudText>
                 <div class="trailer-wrapper mb-6">
                     @if (_trailerPlaying)
@@ -90,16 +94,16 @@
             <MudText Typo="Typo.h4"
                      Style="color: var(--mud-palette-text-secondary); font-weight: 700;"
                      Class="mb-4">
-                Upcoming Showings
+                @L["moviedetail upcoming showings"]
             </MudText>
 
             @if (!_showings.Any())
             {
-                <MudText Class="white-text">No upcoming showings scheduled.</MudText>
+                <MudText Class="white-text">@L["moviedetail no upcoming showings scheduled"]</MudText>
             }
             else
             {
-                @foreach (var day in _showings.GroupBy(s => s.StartsAt.LocalDateTime.Date).OrderBy(g => g.Key))
+                @foreach (var day in _showings.GroupBy(s => s.StartsAt.ToLocalTime().Date).OrderBy(g => g.Key))
                 {
                     <MudText Typo="Typo.h6"
                              Class="mb-2 mt-4 white-text">
@@ -113,7 +117,7 @@
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
                                        OnClick="@(() => Nav.NavigateTo($"/showingdetail/{showing.MovieId}/{showing.Id}"))">
-                                @showing.StartsAt.ToString("HH:mm")
+                                @showing.StartsAt.ToLocalTime().ToString("HH:mm")
                             </MudButton>
                         }
                     </div>

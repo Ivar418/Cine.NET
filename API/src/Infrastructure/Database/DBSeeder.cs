@@ -40,7 +40,38 @@ namespace API.Infrastructure.Database
                 // 83533 = Avatar: Fire and Ash
                 // 1272837 = 28 Years Later: The Bone Temple
                 // 1242898 = Predator: Badlands
-                var MovieIdList = new List<int> { 285, 83533, 1272837, 1242898 };
+                var MovieIdList = new List<int>
+                {
+                    // Existing
+                    285, 83533, 1272837, 1242898,
+
+                    // Action
+                    76341, 284053, 299534,
+
+                    // Comedy
+                    505600, 93456,
+
+                    // Drama
+                    13, 497, 238,
+
+                    // Animation (kids)
+                    508943, 9806, 12,
+
+                    // Family (kids)
+                    11544, 672, 585,
+
+                    // Sci-Fi
+                    157336, 603, 11,
+
+                    // Horror
+                    694, 419430, 138843,
+
+                    // Romance
+                    597, 19995, 398818,
+
+                    // NL gesproken
+                    21872, 5497
+                };
                 foreach (var id in MovieIdList)
                 {
                     var movie = await movieService.AddMovieAsyncForEachSpecifiedLanguage(tmdbId: id);
@@ -158,32 +189,90 @@ namespace API.Infrastructure.Database
                     await auditoriumService.AddAuditoriumAsync(request);
                 }
             }
+            
+            // SEED SHOWINGS
+var movies = await db.Movies.ToListAsync();
+var auditoriums = await db.Auditoriums.ToListAsync();
 
+var random = new Random();
+var showings = new List<Showing>();
 
-            if (!await db.Showings.AnyAsync())
-            {
-                var movies = movieService.GetMoviesAsync("nl").Result.Value?.ToList();
-                var auditoriums = auditoriumService.GetAuditoriumsAsync().Result.Value?.ToList();
+var dutchMovies = movies
+    .Where(m => m.SpokenLanguageCodeIso6391 == "nl")
+    .ToList();
 
-                var showings = new List<Showing>();
-                var start = DateTimeOffset.UtcNow.Date.AddHours(18); // 18:00 start
+var kidsMovies = movies
+    .Where(m => int.TryParse(m.AgeIndication, out var age) && age < 12)
+    .ToList();
 
-                for (int i = 0; i < movies.Count; i++)
-                {
-                    showings.Add(new Showing
-                    {
-                        MovieId = movies[i].Id,
-                        AuditoriumId = auditoriums[i % auditoriums.Count].Id,
-                        StartsAt = start.AddHours(i * 2), // elke 2 uur
-                        IsThreeD = (i % 2 == 0), // om en om 3D
-                        AuditoriumLayoutSnapshot =
-                            auditoriums[i].RowConfigJson // Sla de auditorium layout op als JSON string in de showing
-                    });
-                }
+// vanaf vandaag, alleen toekomst (7 dagen)
+var startDate = DateTimeOffset.UtcNow.Date;
 
-                db.Showings.AddRange(showings);
-                await db.SaveChangesAsync(); // commit showings first so dummy order can reference one
-            }
+for (int day = 0; day < 7; day++)
+{
+    var currentDate = startDate.AddDays(day);
+
+    // tijdslots
+    var timeSlots = new List<DateTimeOffset>();
+    for (int hour = 10; hour <= 19; hour += 2)
+    {
+        timeSlots.Add(currentDate.AddHours(hour));
+    }
+
+    // 6 t/m 12 films
+    var dailyCount = random.Next(6, 7);
+
+    var selectedMovies = movies
+        .OrderBy(_ => random.Next())
+        .Take(dailyCount)
+        .ToList();
+
+    if (selectedMovies.Count == 0) continue;
+
+    // force NL
+    if (dutchMovies.Any())
+    {
+        var m = dutchMovies[random.Next(dutchMovies.Count)];
+        if (!selectedMovies.Any(x => x.Id == m.Id))
+        {
+            selectedMovies[0] = m;
+        }
+    }
+
+    // force kids
+    if (kidsMovies.Any())
+    {
+        var m = kidsMovies[random.Next(kidsMovies.Count)];
+        if (!selectedMovies.Any(x => x.Id == m.Id))
+        {
+            if (selectedMovies.Count > 1)
+                selectedMovies[1] = m;
+            else
+                selectedMovies[0] = m;
+        }
+    }
+
+    // maak showings
+    foreach (var movie in selectedMovies)
+    {
+        var auditorium = auditoriums[random.Next(auditoriums.Count)];
+        var time = timeSlots[random.Next(timeSlots.Count)];
+
+        showings.Add(new Showing
+        {
+            MovieId = movie.Id,
+            AuditoriumId = auditorium.Id,
+            StartsAt = time,
+            IsThreeD = random.Next(0, 2) == 0,
+            AuditoriumLayoutSnapshot = auditorium.RowConfigJson
+        });
+    }
+}
+
+// reset + opslaan
+db.Showings.RemoveRange(db.Showings);
+db.Showings.AddRange(showings);
+await db.SaveChangesAsync();
 
             // Dummy order for API testing when no orders exist
             if (!await db.Orders.AnyAsync())
@@ -235,6 +324,82 @@ namespace API.Infrastructure.Database
                     Price = 8.50m
                 });
             }
+            
+            if (!await db.Arrangements.AnyAsync())
+            {
+                var arr1 = new Arrangement
+                {
+                    Name = "Movie Deal - Popcorn & Cola",
+                    Price = 12.00m,
+                    IsActive = true
+                };
+
+                var arr2 = new Arrangement
+                {
+                    Name = "Movie Deal - M&M's & Fanta",
+                    Price = 12.00m,
+                    IsActive = true
+                };
+
+                db.Arrangements.AddRange(arr1, arr2);
+                await db.SaveChangesAsync();
+            }
+
+            if (!await db.ArrangementItems.AnyAsync())
+            {
+                var arr1 = await db.Arrangements.FirstAsync(a => a.Name.Contains("Popcorn"));
+                var arr2 = await db.Arrangements.FirstAsync(a => a.Name.Contains("M&M"));
+
+                db.ArrangementItems.AddRange(
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr1.Id,
+                        Type = ArrangementItemType.Ticket,
+                        Name = "Ticket",
+                        Quantity = 1
+                    },
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr1.Id,
+                        Type = ArrangementItemType.Food,
+                        Name = "Popcorn",
+                        Quantity = 1
+                    },
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr1.Id,
+                        Type = ArrangementItemType.Drink,
+                        Name = "Cola",
+                        Quantity = 1
+                    },
+
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr2.Id,
+                        Type = ArrangementItemType.Ticket,
+                        Name = "Ticket",
+                        Quantity = 1
+                    },
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr2.Id,
+                        Type = ArrangementItemType.Food,
+                        Name = "M&M's",
+                        Quantity = 1
+                    },
+                    new ArrangementItem
+                    {
+                        ArrangementId = arr2.Id,
+                        Type = ArrangementItemType.Drink,
+                        Name = "Fanta",
+                        Quantity = 1
+                    }
+                );
+
+                await db.SaveChangesAsync();
+            }
+            
+
             if (!await db.EmailSubscriptions.AnyAsync())
             {
                 await localMailService.AddAsync("TheBeeKeerIsAmazing@Badazz.yow");
@@ -253,6 +418,14 @@ CineNet."
             }
 
             await db.SaveChangesAsync();
+
+
+            
+
+
         }
     }
+    
+    
+    
 }

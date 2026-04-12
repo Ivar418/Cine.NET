@@ -23,6 +23,14 @@ public class OrderService : IOrderService
         _showingRepository = showingRepository;
     }
 
+    /// <summary>
+    /// Validates ticket and payment input, persists tickets and order data, and returns a composed order response.
+    /// </summary>
+    /// <param name="request">The order creation payload.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the created order response,
+    /// or a failure when validation or persistence cannot be completed.
+    /// </returns>
     public async Task<ResultOf<CreateOrderResponse>> CreateAsync(CreateOrderRequest request)
     {
         if (request.Tickets is null || request.Tickets.Count == 0)
@@ -111,6 +119,14 @@ public class OrderService : IOrderService
         return ResultOf<CreateOrderResponse>.Success(response);
     }
 
+    /// <summary>
+    /// Marks an order and its tickets as paid and activates QR usage for associated tickets.
+    /// </summary>
+    /// <param name="orderId">The order identifier.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the updated order response,
+    /// or a failure when the order is invalid or not found.
+    /// </returns>
     public async Task<ResultOf<CreateOrderResponse>> ConfirmPaymentAsync(int orderId)
     {
         if (orderId <= 0)
@@ -161,6 +177,14 @@ public class OrderService : IOrderService
         return ResultOf<CreateOrderResponse>.Success(response);
     }
 
+    /// <summary>
+    /// Retrieves a single order with tickets and maps it to the public order response shape.
+    /// </summary>
+    /// <param name="orderId">The order identifier.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the order response,
+    /// or a failure when the identifier is invalid or the order does not exist.
+    /// </returns>
     public async Task<ResultOf<CreateOrderResponse>> GetByIdAsync(int orderId)
     {
         if (orderId <= 0)
@@ -197,6 +221,50 @@ public class OrderService : IOrderService
         return ResultOf<CreateOrderResponse>.Success(response);
     }
 
+    /// <summary>
+    /// Retrieves all orders with tickets and maps each record to the public order response shape.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing all mapped order responses.
+    /// </returns>
+    public async Task<ResultOf<List<CreateOrderResponse>>> GetAllAsync()
+    {
+        var orders = await _orderRepository.GetAllWithTicketsAsync();
+
+        var responses = orders.Select(order => new CreateOrderResponse
+        {
+            OrderId = order.Id,
+            OrderCode = order.OrderCode,
+            OrderType = order.OrderType,
+            PaymentStatus = order.PaymentStatus,
+            PaymentMethod = order.PaymentMethod,
+            TotalAmount = order.TotalAmount,
+            CreatedAtUtc = order.CreatedAtUtc,
+            Tickets = order.OrderTickets
+                .Where(ot => ot.Ticket is not null)
+                .Select(ot => new CreatedOrderTicketResponse
+                {
+                    TicketId = ot.TicketId,
+                    ShowingId = ot.Ticket!.ShowingId,
+                    SeatNumber = ot.Ticket.SeatNumber,
+                    TicketType = ot.Ticket.TicketType,
+                    Price = ot.Ticket.Price,
+                    PaymentStatus = ot.Ticket.PaymentStatus,
+                    TicketCode = ot.Ticket.QrCodeGuid
+                }).ToList()
+        }).ToList();
+
+        return ResultOf<List<CreateOrderResponse>>.Success(responses);
+    }
+
+    /// <summary>
+    /// Resets an order and all related tickets back to pending payment state and deactivates ticket QR usage.
+    /// </summary>
+    /// <param name="orderId">The order identifier.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the updated order response,
+    /// or a failure when the identifier is invalid or the order does not exist.
+    /// </returns>
     public async Task<ResultOf<CreateOrderResponse>> ResetToPendingAsync(int orderId)
     {
         if (orderId <= 0)

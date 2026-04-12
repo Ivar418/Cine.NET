@@ -32,6 +32,14 @@ namespace API.Services.Implementations
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Computes the best available seat suggestion for a showing and stores it as a pending reservation.
+        /// </summary>
+        /// <param name="req">The reservation suggestion request containing showing and seat-count preferences.</param>
+        /// <returns>
+        /// A <see cref="SuggestResponse"/> containing reservation and seat suggestion data when successful,
+        /// or a response with <c>Success = false</c> when no suitable suggestion can be created.
+        /// </returns>
         async Task<SuggestResponse?> IReservationService.SuggestAsync(SuggestRequest req)
         {
             var showingResult = _showingService.GetFullShowingByIdAsync(req.ShowingId);
@@ -69,6 +77,26 @@ namespace API.Services.Implementations
         public async Task<HashSet<string>> GetOccupiedKeysAsync(int showingId)
         {
             return await _reservationRepository.GetOccupiedKeysAsync(showingId);
+        }
+
+        public Task<Reservation> UpdateReservationStatusAsync(Guid id, string status)
+        {
+            return _reservationRepository.UpdateReservationStatusAsync(id, status);
+        }
+
+        public Task<ResultOf<Reservation>> GetReservationByIdAsync(Guid id)
+        {
+            return _reservationRepository.GetReservationByIdAsync(id);
+        }
+
+        public Task<List<Reservation>> GetReservationByShowingAsync(int showtimeId)
+        {
+            return _reservationRepository.GetReservationByShowingAsync(showtimeId);
+        }
+
+        public Task<Reservation?> UpdateReservationSeatsAsync(Guid id, IEnumerable<SeatInfo> seats)
+        {
+            return _reservationRepository.UpdateReservationSeatsAsync(id, seats);
         }
     }
 }

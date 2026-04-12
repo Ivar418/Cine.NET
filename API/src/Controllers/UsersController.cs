@@ -14,8 +14,7 @@ namespace API.Controllers
         {
             _userService = userService;
         }
-
-        // ORM: async read via service → repository → EF Core
+        
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -35,7 +34,7 @@ namespace API.Controllers
             }
             
         }
-
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {

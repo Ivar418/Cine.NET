@@ -7,15 +7,17 @@
 @inject ISnackbar Snackbar
 @using WA.Layout
 @layout MainLayout
+@inherits LocalizedComponentBase
+@inject IStringLocalizer<WA.Localization.SharedResources> L
 
-<PageTitle>Movies Today</PageTitle>
+<PageTitle>@L["Movies Today"]</PageTitle>
 
 <HeadContent>
     <link rel="stylesheet" href="css/moviestoday.css" />
 </HeadContent>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
-    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">Movies Today</MudText>
+    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">@L["Movies Today"]</MudText>
     <MudText Typo="Typo.h6" Style="color: #03DAC6;">@DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm")</MudText>
 </MudStack>
 
@@ -25,11 +27,11 @@
 }
 else if (_loadError)
 {
-    <MudAlert Severity="Severity.Error">Failed to load data. Please try again.</MudAlert>
+    <MudAlert Severity="Severity.Error">@L["MoviesToday error"]</MudAlert>
 }
 else if (_showings.Count == 0)
 {
-    <MudAlert Severity="Severity.Info">No showings found for today.</MudAlert>
+    <MudAlert Severity="Severity.Info">@L["MoviesToday no showings"]</MudAlert>
 }
 else
 {
@@ -54,7 +56,7 @@ else
                         {
                             <div class="movie-poster-placeholder">
                                 <MudText Typo="Typo.caption" Align="Align.Center" Style="color: #666;">
-                                    No poster
+                                    @L["MovieToday no poster"]
                                 </MudText>
                             </div>
                         }
@@ -69,12 +71,12 @@ else
 
                         <div class="movie-meta">
                             <MudText Typo="Typo.body2" Style="color: #1b6aa5;">
-                                Engels/ Nederlandse ondertiteling
+                                @L["MoviesToday language"]
                             </MudText>
 
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mt-2">
                                 <MudText Typo="Typo.body2" Style="color: #1b6aa5;">
-                                    Zaal @showing.AuditoriumId
+                                    @L["MoviesToday auditorium"] @showing.AuditoriumId
                                 </MudText>
                                 <MudText Typo="Typo.body2" Style="color: #1b6aa5;">•</MudText>
                                 <MudText Typo="Typo.body2" Style="color: #1b6aa5;">
@@ -85,14 +87,14 @@ else
                             @if (runtime.HasValue)
                             {
                                 <MudText Typo="Typo.body2" Class="mt-2" Style="color: #1b6aa5;">
-                                    Duur: @runtime min
+                                    @L["MoviesToday runtime"]: @runtime min
                                 </MudText>
                             }
 
                             @if (genres.Any())
                             {
                                 <MudText Typo="Typo.body2" Class="mt-2" Style="color: #1b6aa5;">
-                                    Genres: @string.Join(", ", genres)
+                                    @L["MoviesToday genres"]: @string.Join(", ", genres)
                                 </MudText>
                             }
                         </div>
@@ -105,13 +107,21 @@ else
                                          Variant="Variant.Filled">
                                     @(showing.Is3D ? "3D" : "2D")
                                 </MudChip>
+                                <div>
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => NavigateToMovieDetail(showing.MovieId))">
+                                        @L["MoviesToday movie detail btn"]
+                                    </MudButton>
 
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           OnClick="@(() => NavigateToShowingDetail(showing.MovieId, showing.Id))">
-                                    Details
-                                </MudButton>
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => NavigateToShowingDetail(showing.MovieId, showing.Id))">
+                                        @L["MoviesToday order now"]
+                                    </MudButton>
+                                </div>
                             </MudStack>
                         </div>
                     </MudCardContent>
@@ -155,6 +165,11 @@ else
     {
         Navigation.NavigateTo($"/showingdetail/{movieId}/{showingId}");
     }
+    
+    private void NavigateToMovieDetail(int movieId)
+    {
+        Navigation.NavigateTo($"/moviedetail/{movieId}");
+    }
 
     private async Task LoadDataAsync()
     {
@@ -166,8 +181,11 @@ else
             var allShowings = await ShowingApi.GetShowingDisplayAsync();
 
             var today = DateTime.Today;
+            
+            var cutoff = DateTime.Now.AddMinutes(-15);
+
             _showings = allShowings
-                .Where(s => s.StartsAt.ToLocalTime().Date == today)
+                .Where(s => s.StartsAt.ToLocalTime().Date == today && s.StartsAt.ToLocalTime() >= cutoff)
                 .OrderBy(s => s.StartsAt)
                 .ToList();
 
