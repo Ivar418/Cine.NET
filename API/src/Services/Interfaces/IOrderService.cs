@@ -10,4 +10,5 @@ public interface IOrderService
     Task<ResultOf<CreateOrderResponse>> ConfirmPaymentAsync(int orderId);
     Task<ResultOf<CreateOrderResponse>> GetByIdAsync(int orderId);
     Task<ResultOf<CreateOrderResponse>> ResetToPendingAsync(int orderId);
+    Task<ResultOf<List<CreateOrderResponse>>> GetAllAsync();
 }

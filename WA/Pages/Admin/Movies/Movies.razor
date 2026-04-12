@@ -6,12 +6,13 @@
 @inject ISnackbar Snackbar
 @using WA.Layout
 @layout AdminLayout
+@inherits WA.Base.LocalizedComponentBase
 
-<PageTitle>Admin — Movies</PageTitle>
+<PageTitle>admin movies title</PageTitle>
 
 @* ── Page header ── *@
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h4" Style="color: var(--mud-palette-text-secondary);" >Movies</MudText>
+    <MudText Typo="Typo.h4" Style="color: var(--mud-palette-text-secondary);" >Admin movies</MudText>
     <MudButton Variant="Variant.Filled"
                Color="Color.Primary"
                StartIcon="@Icons.Material.Filled.Add"

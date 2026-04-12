@@ -17,6 +17,14 @@ public class MailSubscriptionController : ControllerBase
         _mailService = mailService;
     }
 
+    /// <summary>
+    /// Subscribes an email address to the mailing list.
+    /// </summary>
+    /// <param name="email">The email address to subscribe.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> indicating whether the subscription succeeded,
+    /// failed validation, or failed due to a server error.
+    /// </returns>
     [Route("subscribe")]
     [HttpPost]
     public async Task<IActionResult> Subscribe([FromQuery] string email)
@@ -39,6 +47,14 @@ public class MailSubscriptionController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Unsubscribes an email address from the mailing list.
+    /// </summary>
+    /// <param name="email">The email address to unsubscribe.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> indicating whether the unsubscription succeeded,
+    /// failed validation, or failed due to a server error.
+    /// </returns>
     [Route("unsubscribe")]
     [HttpDelete]
     public async Task<IActionResult> Unsubscribe([FromQuery] string email)
@@ -59,6 +75,14 @@ public class MailSubscriptionController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Sends an email message to all subscribed recipients.
+    /// </summary>
+    /// <param name="request">The email payload, including sender name, subject, and content.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> indicating whether the email dispatch completed successfully
+    /// or failed due to a server error.
+    /// </returns>
     [Route("send")]
     [HttpPost]
     public async Task<IActionResult> SendEmailToSubscribers([FromBody] EmailRequest request)

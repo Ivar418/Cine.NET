@@ -1,9 +1,115 @@
-<MudPaper Elevation="4" Class="pa-4 mt-8" Style="bottom:0; left:0; right:0; z-index:100;">
-
+@using WA.Services.Http.Interfaces
+@inject IMailApi MailApi
+<MudPaper Elevation="4" Class="pa-4 mt-8">
     <MudContainer MaxWidth="MaxWidth.Large">
-        <MudText Typo="Typo.caption">
-            Cine.net
-        </MudText>
-    </MudContainer>
 
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+
+            <MudText Typo="Typo.caption">
+                Cine.net
+            </MudText>
+
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudTextField @bind-Value="subscribeEmail"
+                              Label="Subscribe to our newsletter"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Email"
+                              InputType="InputType.Email"
+                              Margin="Margin.Dense"
+                              Placeholder="Enter your email"
+                              Style="max-width: 300px;"/>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="HandleSubscribe"
+                           Size="Size.Small">
+                    Subscribe
+                </MudButton>
+
+                <MudIconButton Icon="@Icons.Custom.Brands.Facebook"
+                               Href="https://www.facebook.com/pathecinemas/"
+                               Target="_blank"
+                               Color="Color.Inherit"
+                               Title="Facebook"/>
+
+                <MudIconButton Icon="@Icons.Custom.Brands.Instagram"
+                               Href="https://www.instagram.com/pathenederland/"
+                               Target="_blank"
+                               Color="Color.Inherit"
+                               Title="Instagram"/>
+
+                <MudIconButton Icon="@Icons.Custom.Brands.LinkedIn"
+                               Href="https://www.linkedin.com/company/pathe/"
+                               Target="_blank"
+                               Color="Color.Inherit"
+                               Title="LinkedIn"/>
+
+                <MudIconButton Icon="@Icons.Custom.Brands.TikTok"
+                               Href="@TikTokUrl"
+                               Target="_blank"
+                               Color="Color.Inherit"
+                               Title="TikTok"/>
+
+                <MudIconButton Icon="@Icons.Custom.Brands.YouTube"
+                               Href="@YoutubeUrl"
+                               Target="_blank"
+                               Color="Color.Inherit"
+                               Title="TikTok"/>
+            </MudStack>
+
+        </MudStack>
+
+    </MudContainer>
 </MudPaper>
+
+@code {
+    private const string TikTokUrl = "https://www.tiktok.com/@pathenederland";
+
+    private const string YoutubeUrl = "https://www.youtube.com/@pathenederland";
+
+    private string subscribeEmail = string.Empty;
+
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+
+    private async Task HandleSubscribe()
+    {
+        if (string.IsNullOrWhiteSpace(subscribeEmail))
+        {
+            Snackbar.Add("Email is required.", Severity.Warning);
+            return;
+        }
+
+        if (!IsValidEmail(subscribeEmail))
+        {
+            Snackbar.Add("Please enter a valid email address.", Severity.Error);
+            return;
+        }
+
+        var (success, error) = await MailApi.SubscribeAsync(subscribeEmail);
+
+        if (success)
+        {
+            Snackbar.Add("Successfully subscribed!", Severity.Success);
+            subscribeEmail = string.Empty;
+        }
+        else
+        {
+            Snackbar.Add(error ?? "Subscription failed.", Severity.Error);
+        }
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+}

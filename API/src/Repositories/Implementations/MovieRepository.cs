@@ -22,12 +22,22 @@ public class MovieRepository : IMovieRepository
         _db = db;
     }
 
+    /// <summary>
+    /// Retrieves a movie by internal identifier.
+    /// </summary>
+    /// <param name="id">The movie identifier.</param>
+    /// <returns>A success result with the movie, or a failure when no movie is found.</returns>
     public async Task<ResultOf<Movie>> GetMovieAsync(int id)
     {
         var movie = await _db.Movies.FindAsync(id);
         return movie == null ? ResultOf<Movie>.Failure("Movie not found") : ResultOf<Movie>.Success(movie);
     }
 
+    /// <summary>
+    /// Retrieves all stored movie records that share a TMDB identifier.
+    /// </summary>
+    /// <param name="tmdbId">The TMDB movie identifier.</param>
+    /// <returns>A success result with matching movies, or a failure when none are found.</returns>
     public async Task<ResultOf<IEnumerable<Movie>>> GetMoviesByTmdbIdAsync(int tmdbId)
     {
         var movies = await _db.Movies.Where(m => m.TmdbId == tmdbId).ToListAsync();
@@ -36,6 +46,14 @@ public class MovieRepository : IMovieRepository
             : ResultOf<IEnumerable<Movie>>.Success(movies);
     }
 
+    /// <summary>
+    /// Retrieves movies filtered by information language, or all movies when <c>all</c> is requested.
+    /// </summary>
+    /// <param name="informationLanguage">The information language filter value.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the filtered movie collection,
+    /// or a failure result when retrieval fails.
+    /// </returns>
     public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync(string informationLanguage)
     {
         try
@@ -58,6 +76,12 @@ public class MovieRepository : IMovieRepository
         }
     }
 
+    /// <summary>
+    /// Creates and persists a movie entity from TMDB details and derived metadata.
+    /// </summary>
+    /// <param name="movie">The TMDB movie details payload.</param>
+    /// <param name="informationLanguage">Optional language code used for stored metadata context.</param>
+    /// <returns>The persisted <see cref="Movie"/> entity.</returns>
     public async Task<Movie> AddMovieAsync(TmdbMovieDetailsResponse movie, string? informationLanguage = null)
     {
         var firstLanguage = movie.SpokenLanguages?.FirstOrDefault();
@@ -87,6 +111,15 @@ public class MovieRepository : IMovieRepository
         return result.Entity;
     }
 
+    /// <summary>
+    /// Adds a movie from TMDB for a given language when it does not already exist locally.
+    /// </summary>
+    /// <param name="tmdbId">The TMDB movie identifier.</param>
+    /// <param name="language">The metadata language code.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the persisted movie,
+    /// or a failure result when the movie exists already or cannot be fetched.
+    /// </returns>
     public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string language = "und")
     {
         try
@@ -111,6 +144,14 @@ public class MovieRepository : IMovieRepository
         }
     }
 
+    /// <summary>
+    /// Deletes all local movie records matching the provided TMDB identifier.
+    /// </summary>
+    /// <param name="tmdbId">The TMDB movie identifier.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing one of the deleted movie records,
+    /// or a failure result when no matching movies are found.
+    /// </returns>
     public async Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId)
     {
         var movies = await GetMoviesByTmdbIdAsync(tmdbId);
@@ -124,6 +165,14 @@ public class MovieRepository : IMovieRepository
         return ResultOf<Movie>.Success(movies.Value.First());
     }
 
+    /// <summary>
+    /// Retrieves the TMDB movie genre list for a specific language.
+    /// </summary>
+    /// <param name="language">The language code used by TMDB for localized genre names.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the TMDB genre payload,
+    /// or a failure result when the external request fails.
+    /// </returns>
     public async Task<ResultOf<GenreResultList>> GetAllGenresFromTmdb(string language = "und")
     {
         try
@@ -162,6 +211,11 @@ public class MovieRepository : IMovieRepository
         }
     }
 
+    /// <summary>
+    /// Persists a collection of genres to the database.
+    /// </summary>
+    /// <param name="genres">The genre entities to save.</param>
+    /// <returns>A success result containing the saved genre collection.</returns>
     public async Task<ResultOf<IEnumerable<Genre>>> SaveGenres(IEnumerable<Genre> genres)
     {
         _db.Genres.AddRange(genres);
@@ -169,6 +223,15 @@ public class MovieRepository : IMovieRepository
         return ResultOf<IEnumerable<Genre>>.Success(genres);
     }
 
+    /// <summary>
+    /// Fetches TMDB genres for a language, selects one genre by TMDB ID, and persists it.
+    /// </summary>
+    /// <param name="language">The language code used to fetch localized genre names.</param>
+    /// <param name="tmdbGenreId">The TMDB genre identifier to persist.</param>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing the saved genre entity sequence,
+    /// or a failure result when fetch, lookup, or save fails.
+    /// </returns>
     public async Task<ResultOf<IEnumerable<Genre>>> SaveGenreByTmdbGenreId(string language, int tmdbGenreId)
     {
         var genres = await GetAllGenresFromTmdb(language);
@@ -187,6 +250,12 @@ public class MovieRepository : IMovieRepository
         return ResultOf<IEnumerable<Genre>>.Success(savedGenre.Result.Value);
     }
 
+    /// <summary>
+    /// Retrieves a stored genre by TMDB genre identifier and language.
+    /// </summary>
+    /// <param name="tmdbGenreId">The TMDB genre identifier.</param>
+    /// <param name="language">The language code of the stored genre record.</param>
+    /// <returns>A success result with the genre, or a failure when no match exists.</returns>
     public async Task<ResultOf<Genre>> GetGenreByTmdbGenreId(int tmdbGenreId, string language)
     {
         var genreResult = await _db.Genres
@@ -195,6 +264,13 @@ public class MovieRepository : IMovieRepository
         return genreResult != null ? ResultOf<Genre>.Success(genreResult) : ResultOf<Genre>.Failure("Genre not found");
     }
 
+    /// <summary>
+    /// Retrieves all genre records currently stored in the database.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="ResultOf{T}"/> containing all stored genres,
+    /// or a failure result when retrieval fails.
+    /// </returns>
     public async Task<ResultOf<IEnumerable<Genre>>> GetAllGenresOnDb()
     {
         try
@@ -208,6 +284,14 @@ public class MovieRepository : IMovieRepository
         }
     }
 
+    /// <summary>
+    /// Retrieves detailed movie metadata from TMDB.
+    /// </summary>
+    /// <param name="id">The TMDB movie identifier.</param>
+    /// <param name="language">The language code for localized metadata.</param>
+    /// <returns>
+    /// The deserialized TMDB movie details response, or <c>null</c> when TMDB returns a non-success status.
+    /// </returns>
     public async Task<TmdbMovieDetailsResponse?> GetTmdbMovieDetailsAsync(int id, string language)
     {
         try
@@ -246,6 +330,11 @@ public class MovieRepository : IMovieRepository
         }
     }
 
+    /// <summary>
+    /// Retrieves movie release-date metadata for all countries from TMDB.
+    /// </summary>
+    /// <param name="id">The TMDB movie identifier.</param>
+    /// <returns>The deserialized release-date payload, or <c>null</c> on non-success responses.</returns>
     public async Task<MovieReleaseDatesDto> GetMovieReleaseDatesAllCountriesAsync(int id)
     {
         try
@@ -284,6 +373,11 @@ public class MovieRepository : IMovieRepository
         }
     }
 
+    /// <summary>
+    /// Retrieves the first Dutch release information entry for a TMDB movie.
+    /// </summary>
+    /// <param name="id">The TMDB movie identifier.</param>
+    /// <returns>The first Dutch release information record, or <c>null</c> when unavailable.</returns>
     public async Task<ReleaseInformationDto?> GetDutchMovieReleaseDatesAsync(int id)
     {
         var allReleaseInformation = await GetMovieReleaseDatesAllCountriesAsync(id);
@@ -297,6 +391,11 @@ public class MovieRepository : IMovieRepository
         return null;
     }
 
+    /// <summary>
+    /// Retrieves YouTube trailer videos for a TMDB movie, prioritized by official and publication date.
+    /// </summary>
+    /// <param name="tmdbId">The TMDB movie identifier.</param>
+    /// <returns>A sequence of filtered trailer video items, or an empty sequence when retrieval fails.</returns>
     public async Task<IEnumerable<VideoResultItem>> GetMovieYoutubeTrailerAsync(int tmdbId)
     {
         try
@@ -333,6 +432,15 @@ public class MovieRepository : IMovieRepository
         }
     }
 
+    /// <summary>
+    /// Searches TMDB movies using query filters and returns the deserialized search result payload.
+    /// </summary>
+    /// <param name="query">The free-text search query.</param>
+    /// <param name="primary_release_year">Optional primary release year filter.</param>
+    /// <param name="page">Optional result page number.</param>
+    /// <param name="include_adult">Whether adult titles should be included.</param>
+    /// <param name="language">Optional language code for localized results.</param>
+    /// <returns>The TMDB search response payload.</returns>
     public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(
         string query,
         string? primary_release_year,

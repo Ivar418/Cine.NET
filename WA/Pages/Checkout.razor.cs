@@ -1,12 +1,13 @@
 ﻿using MudBlazor;
 using SharedLibrary.DTOs.Models;
+using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
 
 namespace WA.Pages;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using SharedLibrary.Domain.Entities;
-using System.ComponentModel;
 using WA.Models;
 using WA.Services.Http;
 using WA.Services.Http.Interfaces;
@@ -15,16 +16,28 @@ public partial class Checkout
 {
     protected bool isLoading = true;
     protected string? errorMessage = null;
+    protected bool _orderBusy = false;
 
     [Inject] public IShowingApi ShowingApi { get; set; } = default!;
     [Inject] ISeatFinderApiClient Api { get; set; } = default!;
+    [Inject] IOrderApi OrderApi { get; set; } = default!;
+    [Inject] NavigationManager Nav { get; set; } = default!;
+    [Inject] IJSRuntime JS { get; set; } = default!;
 
     protected int step = 1;
+    protected string? selectedPaymentMethod = null;
+    protected CreateOrderResponse? createdOrder = null;
 
     protected List<SeatInfo> seatInfos = [];
 
     protected List<TicketSelection> seats = [];
     [Parameter] public int ShowingId { get; set; }
+    
+    [Parameter, SupplyParameterFromQuery(Name = "step")]
+    public int? ReturnStep { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "paymentMethod")]
+    public string? ReturnPaymentMethod { get; set; }
 
     protected ShowingsWithPricesResponse? showing;
 
@@ -35,13 +48,40 @@ public partial class Checkout
         Lines = seats,
         TotalPrice = seats.Sum(GetSeatPrice)
     };
-    
+
+    protected string[] paymentMethods = new[]
+    {
+        "Ideal",
+        "Pinnen",
+        "Creditcard",
+        "Creditcard Online",
+        "Reserveren",
+        "Cadeaubon"
+    };
+
+    protected Dictionary<string, string> paymentIcons = new()
+    {
+        { "Ideal", Icons.Material.Filled.AccountBalance },
+        { "Pinnen", Icons.Material.Filled.PointOfSale },
+        { "Creditcard", Icons.Material.Filled.CreditCard },
+        { "Creditcard Online", Icons.Material.Filled.Language },
+        { "Reserveren", Icons.Material.Filled.Schedule },
+        { "Cadeaubon", Icons.Material.Filled.CardGiftcard }
+    };
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             showing = await ShowingApi.GetShowingPricesAsync(ShowingId);
             await OnShowingChangedAsync(ShowingId);
+            
+            // Restore checkout flow after failed/cancelled payment
+            if (ReturnStep.HasValue && ReturnStep.Value is >= 1 and <= 5)
+                step = ReturnStep.Value;
+
+            if (!string.IsNullOrWhiteSpace(ReturnPaymentMethod))
+                selectedPaymentMethod = ReturnPaymentMethod;
         }
         catch (Exception ex)
         {
@@ -50,11 +90,11 @@ public partial class Checkout
         finally
         {
             isLoading = false;
-            
         }
     }
 
     [Inject] public ISnackbar Snackbar { get; set; } = default!;
+
     protected decimal GetSeatPrice(TicketSelection seat)
     {
         if (showing is null || string.IsNullOrWhiteSpace(seat.TicketType))
@@ -81,6 +121,11 @@ public partial class Checkout
     private HashSet<string> _suggestedKeys = [];
     private Guid? _pendingId;
     private Reservation? _confirmedReservation = null;
+
+    private void SetStep(int step)
+    {
+        this.step = step;
+    }
 
     // ── Showing selection ────────────────────────────────────────────────
     private async Task OnShowingChangedAsync(int id)
@@ -126,7 +171,8 @@ public partial class Checkout
                 _state.OccupiedKeys.Add(k);
 
         double avgCat = resp.Seats.Average(s => s.Category);
-        Snackbar.Add($"{resp.Seats.Count} plekken gevonden (gem. cat. {avgCat:F1}). Bevestig of annuleer.", Severity.Info);
+        Snackbar.Add($"{resp.Seats.Count} plekken gevonden (gem. cat. {avgCat:F1}). Bevestig of annuleer.",
+            Severity.Info);
     }
 
     // ── Confirm ───────────────────────────────────────────────────────────
@@ -134,7 +180,11 @@ public partial class Checkout
     {
         if (!_pendingId.HasValue) return;
         var res = await Api.ConfirmAsync(_pendingId.Value);
-        if (res is null) { Snackbar.Add("Bevestiging mislukt.", Severity.Error); return; }
+        if (res is null)
+        {
+            Snackbar.Add("Bevestiging mislukt.", Severity.Error);
+            return;
+        }
 
         _suggestedKeys = [];
         _confirmedReservation = res;
@@ -152,9 +202,6 @@ public partial class Checkout
             var col = seatInfo.Col + 1;
             seats.Add(new TicketSelection() { Row = row, SeatNumber = col });
         }
-
-        step++;
-
     }
 
     // ── Cancel ────────────────────────────────────────────────────────────
@@ -172,7 +219,86 @@ public partial class Checkout
         _suggestedKeys = [];
         step = 1;
         await InvokeAsync(StateHasChanged);
+    }
 
+    // Toggle a single seat as suggested or not. This updates local counts (_normalCount/_wcCount)
+    // and then requests an updated suggestion from the API so the reservation state stays in sync.
+    private async Task HandleSeatClickAsync(SeatInfo seat)
+    {
+        if (_state is null || !_ShowingId.HasValue) return;
+
+        var key = $"{seat.Row}-{seat.Col}";
+
+        // If the seat is occupied (and not currently part of our suggested set), ignore clicks
+        var occupied = _state.OccupiedKeys.Contains(key);
+        if (occupied && !_suggestedKeys.Contains(key))
+            return;
+
+        if (_suggestedKeys.Count() == 0)
+        {
+            _normalCount = 0;
+            _wcCount = 0;
+        }
+
+        // Toggle selection
+        if (_suggestedKeys.Contains(key))
+        {
+            _suggestedKeys.Remove(key);
+            if (seat.Type == SeatType.Wheelchair)
+                _wcCount = Math.Max(0, _wcCount - 1);
+            else
+                _normalCount = Math.Max(0, _normalCount - 1);
+        }
+        else
+        {
+            _suggestedKeys.Add(key);
+            if (seat.Type == SeatType.Wheelchair)
+                _wcCount++;
+            else
+                _normalCount++;
+        }
+
+        // If we have an active pending suggestion, update that reservation's seats on the server
+        // to add/remove the clicked seat while preserving the other suggested seats.
+        if (_pendingId.HasValue)
+        {
+            // Build the list of SeatInfo objects from the current _suggestedKeys
+            var seatsToSend = _suggestedKeys
+                .Select(k => {
+                    var parts = k.Split('-');
+                    if (parts.Length != 2) return null;
+                    if (!int.TryParse(parts[0], out var r)) return null;
+                    if (!int.TryParse(parts[1], out var c)) return null;
+                    return _state.AllSeats.FirstOrDefault(s => s.Row == r && s.Col == c);
+                })
+                .Where(s => s is not null)
+                .Select(s => s!)
+                .ToList();
+
+            var updated = await Api.UpdateReservationSeatsAsync(_pendingId.Value, seatsToSend);
+            if (updated is null)
+            {
+                Snackbar.Add("Bijwerken van reservering mislukt.", Severity.Error);
+                // As a fallback, cancel the pending suggestion locally
+                await CancelPendingAsync();
+            }
+            else
+            {
+                // Refresh the showing state so occupied keys are accurate
+                if (_ShowingId.HasValue)
+                    _state = await Api.GetShowingStateAsync(_ShowingId.Value);
+
+                Snackbar.Add("Reservering bijgewerkt.", Severity.Info);
+            }
+        }
+        else
+        {
+            // No pending suggestion yet -> ask server to suggest based on counts
+            var id = await Api.SuggestAsync(new SuggestRequest(_ShowingId.Value, _normalCount, _wcCount));
+            _pendingId = id.SuggestionId;
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     // ── Legend ────────────────────────────────────────────────────────────
@@ -181,6 +307,117 @@ public partial class Checkout
         ("1e keuze", "#f59e0b"), ("2e keuze", "#a3e635"), ("3e keuze", "#34d399"),
         ("4e keuze", "#60a5fa"), ("5e keuze", "#c084fc"), ("6e keuze", "#f87171"),
         ("Suggestie ★", "#fbbf24"), ("Bevestigd ✓", "#22c55e"),
-        ("Bezet", "#3f3f46"),    ("Rolstoel ♿", "#1d4ed8"),
+        ("Bezet", "#3f3f46"), ("Rolstoel ♿", "#1d4ed8"),
     ];
+
+    // ── Step 4: pick payment method and advance ───────────────────────────
+    protected void SelectPaymentMethod(string method)
+    {
+        selectedPaymentMethod = method;
+    }
+
+    // ── Step 5: build & submit order, then branch ─────────────────────────
+    protected async Task ProcessOrderAsync()
+    {
+        if (string.IsNullOrWhiteSpace(selectedPaymentMethod)) return;
+
+        _orderBusy = true;
+        StateHasChanged();
+
+        var ticketRequests = seats.Select(seat => new TicketRequest
+        {
+            ShowingId = ShowingId,
+            ShowDateTimeUtc = showing?.StartsAt ?? DateTimeOffset.UtcNow,
+            SeatNumber = $"{(char)('A' + seat.Row - 1)}{seat.SeatNumber}",
+            TicketType = seat.TicketType ?? "Adult",
+            Price = GetSeatPrice(seat)
+        }).ToList();
+
+        var apiPaymentMethod = selectedPaymentMethod switch
+        {
+            "IDEAL" => "IDEAL",
+            "Creditcard" => "CREDITCARD",
+            _ => "PIN"
+        };
+
+        var orderType = selectedPaymentMethod == "Reserveren" ? "Reserveren" : "Payment";
+
+        var request = new CreateOrderRequest
+        {
+            OrderType = orderType,
+            PaymentMethod = apiPaymentMethod,
+            Tickets = ticketRequests
+        };
+
+        var order = await OrderApi.CreateOrderAsync(request);
+        _orderBusy = false;
+
+        if (order is null)
+        {
+            Snackbar.Add("Aanmaken van bestelling mislukt. Probeer opnieuw.", Severity.Error);
+            return;
+        }
+
+        createdOrder = order;
+
+        if (selectedPaymentMethod == "Reserveren")
+        {
+            await HandleReservationAsync(order);
+        }
+        else
+        {
+            GoToPaymentMock(order);
+        }
+    }
+
+    // ── Reservation: download reservation PDF ────────────────────────────
+    private async Task HandleReservationAsync(CreateOrderResponse order)
+    {
+        var pdf = await OrderApi.GetReservationPdfAsync(order.OrderId);
+        if (pdf is not null)
+            await DownloadPdfAsync(pdf, $"reservering-{order.OrderCode}.pdf");
+        else
+            Snackbar.Add("Reservering aangemaakt maar PDF kon niet worden gegenereerd.", Severity.Warning);
+
+        Snackbar.Add($"Reservering {order.OrderCode} aangemaakt!", Severity.Success);
+        var url = $"/checkout/payment-result?orderId={order.OrderId}&reservation=true";
+        Nav.NavigateTo(url);
+    }
+
+    // ── Payment: redirect to iDeal mock with all required params ─────────
+    private void GoToPaymentMock(CreateOrderResponse order)
+    {
+        // var returnUrl = Uri.EscapeDataString($"/checkout/payment-result?orderId={order.OrderId}");
+        // // var url = $"/ideal-mock" +
+        // var url = $"/payment-mock" +
+        //           $"?reference={Uri.EscapeDataString(order.OrderCode)}" +
+        //           $"&amount={order.TotalAmount:F2}" +
+        //           $"&merchant={Uri.EscapeDataString("CineNet B.V.")}" +
+        //           $"&description={Uri.EscapeDataString("Bestelling " + order.OrderCode)}" +
+        //           $"&returnUrl={returnUrl}"+
+        //           $"&ChosenPaymentType={Uri.EscapeDataString(selectedPaymentMethod)}";
+        // Nav.NavigateTo(url);
+        var chosen = selectedPaymentMethod ?? "Ideal";
+        // Send enough context so PaymentResult can return customer to step 4 in checkout
+        var returnUrl = Uri.EscapeDataString(
+            $"/checkout/payment-result?orderId={order.OrderId}&showingId={ShowingId}&paymentMethod={Uri.EscapeDataString(chosen)}");
+
+        var url = $"/payment-mock" +
+                  $"?reference={Uri.EscapeDataString(order.OrderCode)}" +
+                  $"&amount={order.TotalAmount:F2}" +
+                  $"&merchant={Uri.EscapeDataString("CineNet B.V.")}" +
+                  $"&description={Uri.EscapeDataString("Bestelling " + order.OrderCode)}" +
+                  $"&returnUrl={returnUrl}" +
+                  $"&ChosenPaymentType={Uri.EscapeDataString(chosen)}"+
+                  $"&reservationId={_confirmedReservation?.Id.ToString()}";
+
+        Nav.NavigateTo(url);
+    }
+
+    // ── JS interop: trigger browser PDF download ──────────────────────────
+    private async Task DownloadPdfAsync(byte[] bytes, string fileName)
+    {
+        var base64 = Convert.ToBase64String(bytes);
+        await JS.InvokeVoidAsync("downloadBase64Pdf", base64, fileName);
+    }
 }

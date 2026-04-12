@@ -18,6 +18,12 @@ namespace API.Repositories.Implementations
         {
             _db = db;
         }
+
+        /// <summary>
+        /// Creates and persists a showing based on the provided creation request.
+        /// </summary>
+        /// <param name="showingRequest">The showing creation payload.</param>
+        /// <returns>The persisted <see cref="Showing"/> entity.</returns>
         async Task<Showing> IShowingRepository.AddShowingAsync(CreateShowingRequest showingRequest)
         {
             Console.WriteLine($"Adding Showing of movie: {showingRequest.MovieId}");
@@ -46,6 +52,14 @@ namespace API.Repositories.Implementations
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Retrieves a showing by identifier including related movie and auditorium data.
+        /// </summary>
+        /// <param name="id">The showing identifier.</param>
+        /// <returns>
+        /// A <see cref="ResultOf{T}"/> containing the showing when found,
+        /// or a failure result with <c>NotFound</c> when no matching showing exists.
+        /// </returns>
         public async Task<ResultOf<Showing>> GetShowingAsync(int id)
         {
             var showing = await _db.Showings
@@ -58,6 +72,13 @@ namespace API.Repositories.Implementations
                 : ResultOf<Showing>.Success(showing);
         }
 
+        /// <summary>
+        /// Retrieves all showings including related movie and auditorium data.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="ResultOf{T}"/> containing all showings on success,
+        /// or a failure result when retrieval fails.
+        /// </returns>
         public async Task<ResultOf<ICollection<Showing>>> GetShowingsAsync()
         {
             try
@@ -74,27 +95,19 @@ namespace API.Repositories.Implementations
                 return ResultOf<ICollection<Showing>>.Failure(e.Message);
             }
         }
-
-        /*
-         PSEUDOCODE / PLAN:
-         - Retrieve the showing by id (already done earlier).
-         - Ensure showing and showing.Movie runtime exist; return failure results if not.
-         - Get the auditorium layout snapshot via `showing.GetLayoutSnapshot()` which returns List<RowConfig>.
-         - Convert that list of RowConfig into a List<SeatInfo> (AllSeats):
-           - For each row (index), iterate seats from 0..row.Seats-1
-           - Create a SeatInfo for each seat with Row, Col, VirtualCol and sensible defaults for Type and Category.
-           - (We avoid inventing complex wheelchair-placement logic here; this produces a seat entry per seat count.)
-         - Build ShowingStateDto with Showing info, AllSeats, and OccupiedKeys (keeps the original occupied-keys extraction).
-         - Return a successful ResultOf<ShowingStateDto> with the constructed DTO.
-        */
-
         
-
         public async Task<Showing> UpdateShowingAsync(Showing Showing)
         {
             throw new NotImplementedException();
         }
-        
+        /// <summary>
+        /// Retrieves display data for a single showing.
+        /// </summary>
+        /// <param name="id">The showing identifier.</param>
+        /// <returns>
+        /// A <see cref="ResultOf{T}"/> containing the projected showing display response,
+        /// or a failure result when the showing does not exist or retrieval fails.
+        /// </returns>
         public async Task<ResultOf<ShowingDisplayResponse>> GetShowingDisplayByIdAsync(int id)
         {
             try
@@ -164,6 +177,14 @@ namespace API.Repositories.Implementations
             }
         }
 
+        /// <summary>
+        /// Retrieves showing display data, optionally filtered by calendar date.
+        /// </summary>
+        /// <param name="date">Optional date filter applied to showing start dates.</param>
+        /// <returns>
+        /// A <see cref="ResultOf{T}"/> containing projected showing display responses,
+        /// or a failure result when retrieval fails.
+        /// </returns>
         async Task<ResultOf<ICollection<ShowingDisplayResponse>>> IShowingRepository.GetShowingDisplayAsync(DateOnly? date)
         {
             try

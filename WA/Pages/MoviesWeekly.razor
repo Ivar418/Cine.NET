@@ -7,16 +7,18 @@
 @inject ISnackbar Snackbar
 @using WA.Layout
 @layout MainLayout
+@inherits LocalizedComponentBase
+@inject IStringLocalizer<WA.Localization.SharedResources> L
 
-<PageTitle>Movies Weekly</PageTitle>
+<PageTitle>@L["MoviesThisWeek page title"]Movies Weekly</PageTitle>
 
 <HeadContent>
     <link rel="stylesheet" href="css/moviesweekly.css" />
 </HeadContent>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
-    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">This Week</MudText>
-    <MudText Typo="Typo.h6" Style="color: #03DAC6;">Overview</MudText>
+    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #BB86FC;">@L["MoviesThisWeek title"]</MudText>
+    <MudText Typo="Typo.h6" Style="color: #03DAC6;">@L["MoviesThisWeek overview"]</MudText>
 </MudStack>
 
 @if (!_loading && !_loadError)
@@ -26,11 +28,11 @@
             <TitleContent>
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                     <MudIcon Icon="@Icons.Material.Filled.FilterList" Color="Color.Primary" />
-                    <MudText Typo="Typo.subtitle1">Filters</MudText>
+                    <MudText Typo="Typo.subtitle1">@L["MoviesThisWeek filters"]</MudText>
                     @if (IsFilterActive)
                     {
                         <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
-                            Active
+                            @L["MovieThisWeek active"]
                         </MudChip>
                     }
                 </MudStack>
@@ -39,7 +41,7 @@
 
                 @* Title search *@
                 <MudTextField @bind-Value="_titleSearch"
-                              Placeholder="Search by title..."
+                              Placeholder=@L["MovieThisWeek search"]
                               Adornment="Adornment.Start"
                               AdornmentIcon="@Icons.Material.Filled.Search"
                               Variant="Variant.Outlined"
@@ -49,12 +51,12 @@
                               Clearable="true" />
 
                 @* 3D / 2D *@
-                <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Format</MudText>
+                <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">@L["MovieThisWeek format"]</MudText>
                 <MudStack Row="true" Spacing="1" Class="mb-3">
                     <MudButton Variant="@(_formatFilter == null ? Variant.Filled : Variant.Outlined)"
                                Color="Color.Secondary"
                                Size="Size.Small"
-                               OnClick="@(() => _formatFilter = null)">All</MudButton>
+                               OnClick="@(() => _formatFilter = null)">@L["MovieThisWeek all formats"]</MudButton>
                     <MudButton Variant="@(_formatFilter == "3D" ? Variant.Filled : Variant.Outlined)"
                                Color="Color.Secondary"
                                Size="Size.Small"
@@ -68,7 +70,7 @@
                 @* Genre *@
                 @if (AvailableGenres.Any())
                 {
-                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Genre</MudText>
+                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">@L["MovieThisWeek genre"]Genre</MudText>
                     <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
                         @foreach (var genre in AvailableGenres)
                         {
@@ -84,7 +86,7 @@
                 @* Age rating *@
                 @if (AvailableAgeRatings.Any())
                 {
-                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Age Rating</MudText>
+                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">@L["MovieThisWeek age rating"]</MudText>
                     <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
                         @foreach (var age in AvailableAgeRatings)
                         {
@@ -100,7 +102,7 @@
                 @* Language *@
                 @if (AvailableLanguages.Any())
                 {
-                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">Language</MudText>
+                    <MudText Typo="Typo.caption" Style="color: #888;" Class="mb-1">@L["MovieThisWeek language"]</MudText>
                     <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
                         @foreach (var lang in AvailableLanguages)
                         {
@@ -121,7 +123,7 @@
                                StartIcon="@Icons.Material.Filled.FilterAltOff"
                                OnClick="ClearAllFilters"
                                Size="Size.Small">
-                        Clear filters
+                        @L["MovieThisWeek clear filters"]
                     </MudButton>
                 }
 
@@ -136,7 +138,7 @@
 }
 else if (_loadError)
 {
-    <MudAlert Severity="Severity.Error">Failed to load data. Please try again.</MudAlert>
+    <MudAlert Severity="Severity.Error">@L["MovieThisWeek error"]</MudAlert>
 }
 else
 {
@@ -212,7 +214,7 @@ else
                                     </MudChip>
 
                                     <MudText Typo="Typo.caption" Class="weekly-auditorium">
-                                        Zaal @showing.AuditoriumId
+                                        @L["MovieThisWeek auditorium"] @showing.AuditoriumId
                                     </MudText>
                                 </div>
 
@@ -244,7 +246,7 @@ else
                         @* No showings scheduled at all for this day *@
                         <div class="no-showings pa-4 d-flex align-center justify-center">
                             <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">
-                                Geen vertoningen
+                                @L["MovieThisWeek no showings"]
                             </MudText>
                         </div>
                     }
@@ -253,7 +255,7 @@ else
                         @* Showings exist but all filtered out *@
                         <div class="no-showings pa-4 d-flex align-center justify-center">
                             <MudText Typo="Typo.caption" Style="color: #555; font-style: italic;">
-                                Geen resultaten voor deze filters
+                                @L["MovieThisWeek no results for these filters"]
                             </MudText>
                         </div>
                     }
@@ -269,20 +271,20 @@ else
     private readonly Dictionary<int, string?> _posterUrlsByMovieId = new();
     private readonly Dictionary<int, int?> _runtimeByMovieId = new();
     private readonly Dictionary<int, List<string>> _genreNamesByMovieId = new();
-    private readonly Dictionary<int, string?> _ageByMovieId         = new();
-    private readonly Dictionary<int, string?> _languageByMovieId    = new();
-    
+    private readonly Dictionary<int, string?> _ageByMovieId = new();
+    private readonly Dictionary<int, string?> _languageByMovieId = new();
+
     private bool _loading = true;
     private bool _loadError;
 
     private string _titleSearch = string.Empty;
-    
+
     private string? _formatFilter = null;
-    
-    private HashSet<string> _selectedGenres     = new();
+
+    private HashSet<string> _selectedGenres = new();
     private HashSet<string> _selectedAgeRatings = new();
-    private HashSet<string> _selectedLanguages  = new();
-    
+    private HashSet<string> _selectedLanguages = new();
+
     private IEnumerable<string> AvailableGenres =>
         _genreNamesByMovieId.Values
             .SelectMany(g => g)
@@ -300,37 +302,37 @@ else
             .Where(l => !string.IsNullOrWhiteSpace(l))
             .Distinct()
             .Order()!;
-    
+
     private bool IsFilterActive =>
         !string.IsNullOrWhiteSpace(_titleSearch)
         || _formatFilter != null
         || _selectedGenres.Any()
         || _selectedAgeRatings.Any()
         || _selectedLanguages.Any();
-    
+
     private IEnumerable<ShowingDisplayResponse> ApplyFilters(
         IEnumerable<ShowingDisplayResponse> showings)
     {
         var result = showings;
-        
+
         if (!string.IsNullOrWhiteSpace(_titleSearch))
             result = result.Where(s =>
                 s.MovieTitle.Contains(_titleSearch, StringComparison.OrdinalIgnoreCase));
-        
+
         if (_formatFilter != null)
             result = result.Where(s => s.Is3D == (_formatFilter == "3D"));
-        
+
         if (_selectedGenres.Any())
             result = result.Where(s =>
                 GetGenreNames(s.MovieId).Intersect(_selectedGenres).Any());
-        
+
         if (_selectedAgeRatings.Any())
             result = result.Where(s =>
             {
                 var age = GetAgeIndication(s.MovieId);
                 return age != null && _selectedAgeRatings.Contains(age);
             });
-        
+
         if (_selectedLanguages.Any())
             result = result.Where(s =>
             {
@@ -343,13 +345,13 @@ else
 
     private void ClearAllFilters()
     {
-        _titleSearch        = string.Empty;
+        _titleSearch = string.Empty;
         _formatFilter = null;
-        _selectedGenres     = new HashSet<string>();
+        _selectedGenres = new HashSet<string>();
         _selectedAgeRatings = new HashSet<string>();
-        _selectedLanguages  = new HashSet<string>();
+        _selectedLanguages = new HashSet<string>();
     }
-    
+
     protected override async Task OnInitializedAsync()
     {
         InitializeWeekDays();
@@ -391,13 +393,13 @@ else
     {
         Navigation.NavigateTo($"/showingdetail/{movieId}/{showingId}");
     }
-    
+
     private string? GetAgeIndication(int movieId) =>
         _ageByMovieId.TryGetValue(movieId, out var age) ? age : null;
 
     private string? GetLanguage(int movieId) =>
         _languageByMovieId.TryGetValue(movieId, out var lang) ? lang : null;
-    
+
     private void ToggleSelection(HashSet<string> set, string value)
     {
         if (!set.Add(value))
@@ -406,7 +408,7 @@ else
 
     private async Task LoadDataAsync()
     {
-        _loading   = true;
+        _loading = true;
         _loadError = false;
 
         try
@@ -414,13 +416,16 @@ else
             var allShowings = await ShowingApi.GetShowingDisplayAsync();
 
             var startDay = _daysInWeek.First().Date;
-            var endDay   = _daysInWeek.Last().Date.AddDays(1);
+            var endDay = _daysInWeek.Last().Date.AddDays(1);
+            var cutoff = DateTimeOffset.UtcNow.AddMinutes(-15);
 
             _showings = allShowings
                 .Where(s =>
                 {
-                    var localDate = s.StartsAt.ToLocalTime().Date;
-                    return localDate >= startDay && localDate < endDay;
+                    var local = s.StartsAt.ToLocalTime();
+                    return s.StartsAt >= cutoff
+                           && local.Date >= startDay
+                           && local.Date < endDay;
                 })
                 .OrderBy(s => s.StartsAt)
                 .ToList();
@@ -432,9 +437,9 @@ else
             {
                 var movie = await MovieApi.GetMovieByIdAsync(movieId);
                 _posterUrlsByMovieId[movieId] = movie?.PosterPath;
-                _runtimeByMovieId[movieId]    = movie?.Runtime;
-                _ageByMovieId[movieId]        = movie?.AgeIndication;
-                _languageByMovieId[movieId]   = movie?.InformationLanguage;
+                _runtimeByMovieId[movieId] = movie?.Runtime;
+                _ageByMovieId[movieId] = movie?.AgeIndication;
+                _languageByMovieId[movieId] = movie?.InformationLanguage;
 
                 // ── Genre names also fetched in parallel per movie ──
                 var genreNames = new List<string>();
@@ -449,8 +454,9 @@ else
                             .Where(g => g != null)
                             .Select(g => g!.Name));
                 }
+
                 _genreNamesByMovieId[movieId] = genreNames;
-                
+
                 _languageByMovieId[movieId] = movie?.InformationLanguage;
                 Console.WriteLine($"Movie {movieId} language: {movie?.InformationLanguage}");
             }));
