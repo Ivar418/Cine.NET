@@ -2,7 +2,7 @@ name: Deploy API & Frontend ACC
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, New-kind-of-github-workflow]
 
 jobs:
   deploy:
