@@ -25,6 +25,8 @@ jobs:
             User ${{ secrets.JUMPHOST_USER }}
             IdentityFile ~/.ssh/id_rsa
             StrictHostKeyChecking no
+            HostKeyAlgorithms +ssh-ed25519,rsa-sha2-512,rsa-sha2-256
+            PubkeyAcceptedAlgorithms +ssh-ed25519,rsa-sha2-512,rsa-sha2-256
           
           Host target
             HostName ${{ secrets.VPS_IP }}
