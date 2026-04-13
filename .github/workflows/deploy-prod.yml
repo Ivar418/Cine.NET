@@ -1,4 +1,4 @@
-name: Deploy API PROD
+name: Deploy API & Frontend
 
 on:
   push:
@@ -10,21 +10,112 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
-
-      - name: Install Ansible
-        run: sudo apt update && sudo apt install -y ansible
-
-      - name: Add VPS to known_hosts
+      - name: Setup SSH with Jumphost
         run: |
           mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Add both jumphost and target server to known_hosts
+          ssh-keyscan -H ${{ secrets.JUMPHOST_IP }} >> ~/.ssh/known_hosts
           ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+          
+          # Configure SSH to use jumphost as proxy
+          cat >> ~/.ssh/config <<EOF
+          Host jumphost
+            HostName ${{ secrets.JUMPHOST_IP }}
+            User ${{ secrets.JUMPHOST_USER }}
+            IdentityFile ~/.ssh/id_rsa
+            StrictHostKeyChecking no
+          
+          Host target
+            HostName ${{ secrets.VPS_IP }}
+            User ${{ secrets.VPS_USER }}
+            IdentityFile ~/.ssh/id_rsa
+            ProxyJump jumphost
+            StrictHostKeyChecking no
+          EOF
 
-      - name: Run Ansible (PROD)
+      - name: Copy files to server
         run: |
-          ansible-playbook ansible/site-api.yml \
-            -i ansible/inventory/prod.ini \
-            --extra-vars "image_tag=prod tmdb_api_key_read_only=${{ secrets.TMDB_API_KEY_READ_ONLY }}"
+          # Create deployment directory on target server
+          ssh target "mkdir -p ~/deployment"
+          
+          # Copy all files via jumphost
+          rsync -avz --delete \
+            -e "ssh" \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'node_modules' \
+            --exclude 'bin' \
+            --exclude 'obj' \
+            ./ target:~/deployment/
+
+      - name: Build and run Docker containers with Traefik
+        run: |
+          ssh target << 'ENDSSH'
+            cd ~/deployment
+          
+            # Stop and remove old containers
+            docker stop api-backend frontend || true
+            docker rm api-backend frontend || true
+          
+            # Build API backend
+            docker build \
+              --build-arg DOTNET_SDK_VERSION=10.0 \
+              -t api-backend:latest \
+              -f API/Dockerfile \
+              .
+          
+            # Build frontend
+            docker build \
+              --build-arg DOTNET_SDK_VERSION=10.0 \
+              -t frontend:latest \
+              -f WA/Dockerfile \
+              .
+          
+            # Run API backend with Traefik labels
+            docker run -d \
+              --name api-backend \
+              --restart unless-stopped \
+              --network proxy \
+              -e ASPNETCORE_ENVIRONMENT=Production \
+              --label "traefik.enable=true" \
+              --label "traefik.http.routers.api.rule=Host(\`prod-cinenetapi.ivarvisser.nl\`)" \
+              --label "traefik.http.routers.api.entrypoints=external-https" \
+              --label "traefik.http.routers.api.tls=true" \
+              --label "traefik.http.routers.api.tls.certresolver=letsencrypt" \
+              --label "traefik.http.services.api.loadbalancer.server.port=8080" \
+              --label "traefik.http.routers.api-http.rule=Host(\`prod-cinenetapi.ivarvisser.nl\`)" \
+              --label "traefik.http.routers.api-http.entrypoints=web" \
+              --label "traefik.http.routers.api-http.middlewares=redirect-to-https" \
+              --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
+              api-backend:latest
+          
+            # Run frontend with Traefik labels
+            docker run -d \
+              --name frontend \
+              --restart unless-stopped \
+              --network proxy \
+              --label "traefik.enable=true" \
+              --label "traefik.http.routers.frontend.rule=Host(\`prod-cinenetwa.ivarvisser.nl\`)" \
+              --label "traefik.http.routers.frontend.entrypoints=external-https" \
+              --label "traefik.http.routers.frontend.tls=true" \
+              --label "traefik.http.routers.frontend.tls.certresolver=letsencrypt" \
+              --label "traefik.http.services.frontend.loadbalancer.server.port=80" \
+              --label "traefik.http.routers.frontend-http.rule=Host(\`prod-cinenetwa.ivarvisser.nl\`)" \
+              --label "traefik.http.routers.frontend-http.entrypoints=web" \
+              --label "traefik.http.routers.frontend-http.middlewares=redirect-to-https" \
+              frontend:latest
+          
+            # Wait for health check
+            echo "Waiting for API health check..."
+            sleep 5
+            docker exec api-backend curl --fail http://localhost:8080/health || echo "Health check failed"
+          
+            # Show running containers
+            docker ps
+          ENDSSH
+
+      - name: Deployment complete
+        run: echo "✅ Deployment successful!"
