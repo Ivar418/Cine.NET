@@ -2,7 +2,7 @@ name: Deploy API & Frontend ACC
 
 on:
   push:
-    branches: [develop, New-kind-of-github-workflow, FEAT/New-kind-of-github-workflow]
+    branches: [ develop, New-kind-of-github-workflow, FEAT/New-kind-of-github-workflow ]
 
 jobs:
   deploy:
@@ -22,52 +22,28 @@ jobs:
             Port 834
             User ${{ secrets.JUMPHOST_USER }}
             IdentityFile ~/.ssh/id_ed25519
+            StrictHostKeyChecking no
 
           Host target
             HostName ${{ secrets.VPS_IP }}
             User ${{ secrets.VPS_USER }}
             IdentityFile ~/.ssh/id_ed25519
             ProxyJump jumphost
+            StrictHostKeyChecking no
           EOF
 
-      - name: Copy files to server
-        run: |
-          ssh target "mkdir -p ~/deployment/acc"
-          rsync -avz --delete \
-            -e "ssh" \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude 'node_modules' \
-            --exclude 'bin' \
-            --exclude 'obj' \
-            ./ target:~/deployment/acc/
+      - name: Pull latest images from Github container registry
+          run: |
+            ssh target << 'ENDSSH'
+            docker pull ghcr.io/ivar418/cine.net/api:acc
+            docker pull ghcr.io/ivar418/cine.net/wa:acc
 
-      - name: Build and run Docker containers
-        run: |
-          ssh target << 'ENDSSH'
-            cd ~/deployment/acc
+          # Stop and remove old containers
 
-            # Stop and remove old containers
             docker stop acc-cinenet-api acc-cinenet-wa || true
             docker rm acc-cinenet-api acc-cinenet-wa || true
 
-            # Build API backend
-            echo "Building API backend..."
-            docker build \
-              --build-arg DOTNET_SDK_VERSION=10.0 \
-              -t acc-cinenet-api:latest \
-              -f API/Dockerfile \
-              .
-
-            # Build frontend
-            echo "Building frontend..."
-            docker build \
-              --build-arg DOTNET_SDK_VERSION=10.0 \
-              -t acc-cinenet-wa:latest \
-              -f WA/Dockerfile \
-              .
-
-            # Run API backend with Traefik labels
+          # Run API backend with Traefik labels
             echo "Starting API backend..."
             docker run -d \
               --name acc-cinenet-api \
