@@ -2,7 +2,7 @@ name: Build WA image on push to develop/main, check which branch is the source â
 
 on:
   push:
-    branches: [develop, main]
+    branches: [develop, main, New-kind-of-github-workflow, FEAT/New-kind-of-github-workflow]
 
 permissions:
   contents: read

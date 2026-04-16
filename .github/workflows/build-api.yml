@@ -2,7 +2,7 @@ name: Build API image on push to develop/main, check which branch is the source 
 
 on:
   push:
-    branches: [develop, main]
+    branches: [develop, main, New-kind-of-github-workflow, FEAT/New-kind-of-github-workflow]
 
 permissions:
   contents: read
@@ -26,5 +26,5 @@ jobs:
             TAG=prod
           fi
 
-          docker build -f API/Dockerfile -t ghcr.io/gielvangaal/cine.net/api:$TAG .
-          docker push ghcr.io/gielvangaal/cine.net/api:$TAG
+          docker build -f API/Dockerfile -t ghcr.io/ivar418/cine.net/api:$TAG .
+          docker push ghcr.io/ivar418/cine.net/api:$TAG
