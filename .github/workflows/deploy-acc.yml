@@ -33,17 +33,17 @@ jobs:
           EOF
 
       - name: Pull latest images from Github container registry
-          run: |
+        run: |
             ssh target << 'ENDSSH'
             docker pull ghcr.io/ivar418/cine.net/api:acc
             docker pull ghcr.io/ivar418/cine.net/wa:acc
 
-          # Stop and remove old containers
+        # Stop and remove old containers
 
             docker stop acc-cinenet-api acc-cinenet-wa || true
             docker rm acc-cinenet-api acc-cinenet-wa || true
 
-          # Run API backend with Traefik labels
+        # Run API backend with Traefik labels
             echo "Starting API backend..."
             docker run -d \
               --name acc-cinenet-api \
