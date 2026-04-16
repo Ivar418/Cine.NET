@@ -34,16 +34,16 @@ jobs:
 
       - name: Pull latest images from Github container registry
         run: |
-            ssh target << 'ENDSSH'
+         ssh target << 'ENDSSH'
             docker pull ghcr.io/ivar418/cine.net/api:acc
             docker pull ghcr.io/ivar418/cine.net/wa:acc
 
-        # Stop and remove old containers
+            # Stop and remove old containers
 
             docker stop acc-cinenet-api acc-cinenet-wa || true
             docker rm acc-cinenet-api acc-cinenet-wa || true
 
-        # Run API backend with Traefik labels
+            # Run API backend with Traefik labels
             echo "Starting API backend..."
             docker run -d \
               --name acc-cinenet-api \
@@ -60,7 +60,7 @@ jobs:
               --label "traefik.http.routers.acc-cinenet-api-http.entrypoints=web" \
               --label "traefik.http.routers.acc-cinenet-api-http.middlewares=redirect-to-https" \
               --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
-              acc-cinenet-api:latest
+              acc-cinenet-api:acc
 
             # Run frontend with Traefik labels
             echo "Starting frontend..."
@@ -77,7 +77,7 @@ jobs:
               --label "traefik.http.routers.acc-cinenet-wa-http.rule=Host(\`acc-cinenetwa.ivarvisser.nl\`)" \
               --label "traefik.http.routers.acc-cinenet-wa-http.entrypoints=web" \
               --label "traefik.http.routers.acc-cinenet-wa-http.middlewares=redirect-to-https" \
-              acc-cinenet-wa:latest
+              acc-cinenet-wa:acc
 
             # Wait for containers to start
             echo "Waiting for services to start..."
@@ -96,7 +96,7 @@ jobs:
             docker logs --tail=20 acc-cinenet-api
             echo "Frontend logs:"
             docker logs --tail=20 acc-cinenet-wa
-          ENDSSH
+ENDSSH
 
       - name: Deployment complete
         run: |
