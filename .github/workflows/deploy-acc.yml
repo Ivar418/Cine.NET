@@ -44,7 +44,9 @@ jobs:
 
             docker stop acc-cinenet-api acc-cinenet-wa || true
             docker rm acc-cinenet-api acc-cinenet-wa || true
-
+            
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
             # Run API backend with Traefik labels
             echo "Starting API backend..."
             docker run -d \
