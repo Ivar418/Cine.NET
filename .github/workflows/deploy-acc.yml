@@ -1,11 +1,36 @@
-name: Deploy API & Frontend ACC
+name: CI/CD ACC Pipeline
 
 on:
   push:
     branches: [ develop, New-kind-of-github-workflow, FEAT/New-kind-of-github-workflow ]
-
 jobs:
+  build-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build & push API
+        run: |
+          docker build -f API/Dockerfile -t ghcr.io/ivar418/cine.net/api:acc .
+          docker push ghcr.io/ivar418/cine.net/api:acc
+
+  build-wa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build & push WA
+        run: |
+          docker build -f WA/Dockerfile -t ghcr.io/ivar418/cine.net/wa:acc .
+          docker push ghcr.io/ivar418/cine.net/wa:acc
   deploy:
+    needs: [ build-api, build-wa ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,8 +67,8 @@ jobs:
             # Stop and remove old containers
             docker stop acc-cinenet-api acc-cinenet-wa || true
             docker rm acc-cinenet-api acc-cinenet-wa || true
-            
-            
+          
+          
             # Run API backend with Traefik labels
             echo "Starting API backend..."
             docker run -d \
@@ -61,7 +86,7 @@ jobs:
               --label "traefik.http.routers.acc-cinenet-api-http.entrypoints=web" \
               --label "traefik.http.routers.acc-cinenet-api-http.middlewares=redirect-to-https" \
               --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
-              api:acc
+              ghcr.io/ivar418/cine.net/api:acc
             # Run frontend with Traefik labels
             echo "Starting frontend..."
             docker run -d \
@@ -77,7 +102,7 @@ jobs:
               --label "traefik.http.routers.acc-cinenet-wa-http.rule=Host(\`acc-cinenetwa.ivarvisser.nl\`)" \
               --label "traefik.http.routers.acc-cinenet-wa-http.entrypoints=web" \
               --label "traefik.http.routers.acc-cinenet-wa-http.middlewares=redirect-to-https" \
-              wa:acc
+              ghcr.io/ivar418/cine.net/wa:acc
             # Wait for containers to start
             echo "Waiting for services to start..."
             sleep 5
