@@ -13,7 +13,9 @@ jobs:
       - name: Setup SSH with Jumphost
         run: |
           mkdir -p ~/.ssh
-          printf "%s" "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          cat > ~/.ssh/id_ed25519 << 'EOF'
+          ${{ secrets.VPS_SSH_KEY }}
+          EOF
           chmod 600 ~/.ssh/id_ed25519
           
           cat >> ~/.ssh/config <<EOF
@@ -23,7 +25,6 @@ jobs:
             User ${{ secrets.JUMPHOST_USER }}
             IdentityFile ~/.ssh/id_ed25519
             StrictHostKeyChecking no
-
           Host target
             HostName ${{ secrets.VPS_IP }}
             User ${{ secrets.VPS_USER }}
@@ -31,18 +32,17 @@ jobs:
             ProxyJump jumphost
             StrictHostKeyChecking no
           EOF
-
       - name: Pull latest images from Github container registry
         run: |
           ssh target << 'ENDSSH'
             docker pull ghcr.io/ivar418/cine.net/api:acc
             docker pull ghcr.io/ivar418/cine.net/wa:acc
-
             # Stop and remove old containers
-
             docker stop acc-cinenet-api acc-cinenet-wa || true
             docker rm acc-cinenet-api acc-cinenet-wa || true
-
+            
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
             # Run API backend with Traefik labels
             echo "Starting API backend..."
             docker run -d \
@@ -61,7 +61,6 @@ jobs:
               --label "traefik.http.routers.acc-cinenet-api-http.middlewares=redirect-to-https" \
               --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
               api:acc
-
             # Run frontend with Traefik labels
             echo "Starting frontend..."
             docker run -d \
@@ -78,26 +77,21 @@ jobs:
               --label "traefik.http.routers.acc-cinenet-wa-http.entrypoints=web" \
               --label "traefik.http.routers.acc-cinenet-wa-http.middlewares=redirect-to-https" \
               wa:acc
-
             # Wait for containers to start
             echo "Waiting for services to start..."
             sleep 5
-
             # Check API health
             echo "Checking API health..."
             docker exec acc-cinenet-api curl --fail http://localhost:8080/health || echo "⚠️  Health check failed"
-
             # Show running containers
             echo "Running containers:"
             docker ps | grep acc-cinenet
-
             # Show recent logs
             echo "API logs:"
             docker logs --tail=20 acc-cinenet-api
             echo "Frontend logs:"
             docker logs --tail=20 acc-cinenet-wa
           ENDSSH
-
       - name: Deployment complete
         run: |
           echo "✅ ACC Deployment successful!"
