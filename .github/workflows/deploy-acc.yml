@@ -34,7 +34,7 @@ jobs:
 
       - name: Pull latest images from Github container registry
         run: |
-         ssh target << 'ENDSSH'
+          ssh target << 'ENDSSH'
             docker pull ghcr.io/ivar418/cine.net/api:acc
             docker pull ghcr.io/ivar418/cine.net/wa:acc
 
