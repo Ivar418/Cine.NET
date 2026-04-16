@@ -78,12 +78,12 @@ jobs:
               -e ASPNETCORE_ENVIRONMENT=Acceptance \
               --label "traefik.enable=true" \
               --label "traefik.http.routers.acc-cinenet-api.rule=Host(\`acc-cinenetapi.ivarvisser.nl\`)" \
-              --label "traefik.http.routers.acc-cinenet-api.entrypoints=websecure" \
+              --label "traefik.http.routers.acc-cinenet-api.entrypoints=https-external" \
               --label "traefik.http.routers.acc-cinenet-api.tls=true" \
               --label "traefik.http.routers.acc-cinenet-api.tls.certresolver=letsencrypt" \
               --label "traefik.http.services.acc-cinenet-api.loadbalancer.server.port=8080" \
               --label "traefik.http.routers.acc-cinenet-api-http.rule=Host(\`acc-cinenetapi.ivarvisser.nl\`)" \
-              --label "traefik.http.routers.acc-cinenet-api-http.entrypoints=https-external" \
+              --label "traefik.http.routers.acc-cinenet-api-http.entrypoints=http-external" \
               --label "traefik.http.routers.acc-cinenet-api-http.middlewares=redirect-to-https" \
               --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
               ghcr.io/ivar418/cine.net/api:acc
@@ -95,12 +95,12 @@ jobs:
               --network proxy \
               --label "traefik.enable=true" \
               --label "traefik.http.routers.acc-cinenet-wa.rule=Host(\`acc-cinenetwa.ivarvisser.nl\`)" \
-              --label "traefik.http.routers.acc-cinenet-wa.entrypoints=websecure" \
+              --label "traefik.http.routers.acc-cinenet-wa.entrypoints=https-external" \
               --label "traefik.http.routers.acc-cinenet-wa.tls=true" \
               --label "traefik.http.routers.acc-cinenet-wa.tls.certresolver=letsencrypt" \
               --label "traefik.http.services.acc-cinenet-wa.loadbalancer.server.port=80" \
               --label "traefik.http.routers.acc-cinenet-wa-http.rule=Host(\`acc-cinenetwa.ivarvisser.nl\`)" \
-              --label "traefik.http.routers.acc-cinenet-wa-http.entrypoints=https-external" \
+              --label "traefik.http.routers.acc-cinenet-wa-http.entrypoints=http-external" \
               --label "traefik.http.routers.acc-cinenet-wa-http.middlewares=redirect-to-https" \
               ghcr.io/ivar418/cine.net/wa:acc
             # Wait for containers to start
