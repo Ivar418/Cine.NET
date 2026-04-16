@@ -13,25 +13,21 @@ jobs:
       - name: Setup SSH with Jumphost
         run: |
           mkdir -p ~/.ssh
-          printf "%s" "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
+          printf "%s" "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          
           cat >> ~/.ssh/config <<EOF
           Host jumphost
             HostName ${{ secrets.JUMPHOST_IP }}
             Port 834
             User ${{ secrets.JUMPHOST_USER }}
-            IdentityFile ~/.ssh/id_rsa
-            StrictHostKeyChecking no
-            HostKeyAlgorithms +ssh-ed25519,rsa-sha2-512,rsa-sha2-256
-            PubkeyAcceptedAlgorithms +ssh-ed25519,rsa-sha2-512,rsa-sha2-256
+            IdentityFile ~/.ssh/id_ed25519
 
           Host target
             HostName ${{ secrets.VPS_IP }}
             User ${{ secrets.VPS_USER }}
-            IdentityFile ~/.ssh/id_rsa
+            IdentityFile ~/.ssh/id_ed25519
             ProxyJump jumphost
-            StrictHostKeyChecking no
           EOF
 
       - name: Copy files to server
