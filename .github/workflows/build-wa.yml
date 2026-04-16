@@ -20,10 +20,10 @@ jobs:
 
       - name: Build & push WA image
         run: |
-          if [ "${{ github.ref_name }}" = "develop" ]; then
-            TAG=acc
-          else
+          if [ "${{ github.ref_name }}" != "develop" ]; then
             TAG=prod
+          else
+            TAG=acc
           fi
 
           docker build -f WA/Dockerfile -t ghcr.io/ivar418/cine.net/wa:$TAG .
