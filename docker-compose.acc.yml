@@ -6,6 +6,10 @@ services:
     networks:
       - proxy
       - internal
+
+    env_file:
+      - .env
+
     environment:
       ASPNETCORE_ENVIRONMENT: Acceptance
       ConnectionStrings__DefaultConnection: >
@@ -14,10 +18,11 @@ services:
         Database=${DB_NAME};
         User=${DB_USER};
         Password=${DB_PASSWORD};
-      TMDB_API_KEY_READ_ONLY: ${TMDB_API_KEY_READ_ONLY}
+
     depends_on:
       db:
         condition: service_healthy
+
     labels:
       - traefik.enable=true
       - traefik.http.routers.acc-cinenet-api.rule=Host(`acc-cinenetapi.ivarvisser.nl`)
@@ -37,6 +42,7 @@ services:
     restart: always
     networks:
       - proxy
+
     labels:
       - traefik.enable=true
       - traefik.http.routers.acc-cinenet-wa.rule=Host(`acc-cinenetwa.ivarvisser.nl`)
@@ -54,17 +60,21 @@ services:
     restart: always
     networks:
       - internal
+
+    env_file:
+      - .env
+
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
       retries: 10
-
 
 networks:
   proxy:
