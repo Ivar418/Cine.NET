@@ -15,7 +15,7 @@ jobs:
 
       - name: Build & push API
         run: |
-          docker build -f WA/Dockerfile --build-arg ENVIRONMENT=Production -t ghcr.io/ivar418/cine.net/api:acc .
+          docker build -f API/Dockerfile --build-arg ENVIRONMENT=Production -t ghcr.io/ivar418/cine.net/api:prod .
           docker push ghcr.io/ivar418/cine.net/api:prod
 
   build-wa:

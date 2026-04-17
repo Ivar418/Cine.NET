@@ -26,19 +26,19 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.MaxDisplayedSnackbars = 3;
     config.SnackbarConfiguration.PreventDuplicates = true;
 });
-builder.Configuration
-    .AddJsonFile("appsettings.json")
-    .AddJsonFile("appsettings.Development.json", optional: true)
-    .AddJsonFile("appsettings.Staging.json", optional: true)
-    .AddJsonFile("appsettings.Production.json", optional: true);
 
 // AUTH
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 
 var apiUrl = builder.Configuration["ApiUrl"];
+if (string.IsNullOrEmpty(apiUrl))
+{
+    // Fallback to local development URL if not found in configuration
+    apiUrl = "http://localhost:8080/";
+}
+Console.WriteLine($"Environment: {builder.HostEnvironment.Environment}");
 Console.WriteLine($"API URL: {apiUrl}");
-Console.WriteLine(builder.HostEnvironment.Environment);
 
 // HTTP
 builder.Services.AddScoped(sp =>

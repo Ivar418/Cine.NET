@@ -3,8 +3,6 @@ services:
     build:
       context: ..
       dockerfile: WA/Dockerfile
-      args:
-        ENVIRONMENT: Development
     environment:
       ASPNETCORE_ENVIRONMENT: Development
     ports:

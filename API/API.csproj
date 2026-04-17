@@ -21,4 +21,10 @@
 		<Folder Include="db\" />
 		<Folder Include="src\Utils\" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="..\.dockerignore">
+	    <Link>.dockerignore</Link>
+	  </Content>
+	</ItemGroup>
 </Project>

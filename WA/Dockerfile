@@ -1,13 +1,8 @@
 ARG DOTNET_SDK_VERSION=10.0
-ARG ENVIRONMENT
 
 # ===== Build stage =====
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_SDK_VERSION} AS build
 WORKDIR .
-
-ARG ENVIRONMENT
-RUN test -n "$ENVIRONMENT" || (echo "❌ ENVIRONMENT build-arg is required, try running with --build-arg ENVIRONMENT=Development OR add it to your build args" && exit 1)
-RUN echo "🔧 Building for environment: $ENVIRONMENT"
 
 # copy csproj first (sneller cachen)
 COPY WA/WA.csproj WA/
@@ -19,7 +14,6 @@ COPY WA/ WA/
 COPY SharedLibrary/ SharedLibrary/
 RUN dotnet publish WA/WA.csproj \
     -c Release \
-    -p:EnvironmentName=${ENVIRONMENT} \
     -o /app/out
 
 RUN ls -R /app/out/wwwroot
@@ -27,8 +21,14 @@ RUN ls -R /app/out/wwwroot
 # ===== Runtime stage =====
 FROM nginx:alpine
 
-COPY WA/nginx.conf /etc/nginx/conf.d/default.conf
+# The environment is set at build time, but can be overridden at runtime via blazor-environment header
+# We use a template for nginx.conf and envsubst to replace the environment name
+COPY WA/nginx.conf /etc/nginx/conf.d/default.conf.template
+
 COPY --from=build /app/out/wwwroot /usr/share/nginx/html
 
+# Default to Production if not set
+ENV ASPNETCORE_ENVIRONMENT=Production
+
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["sh", "-c", "envsubst '${ASPNETCORE_ENVIRONMENT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
