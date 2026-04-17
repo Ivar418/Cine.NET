@@ -1,0 +1,72 @@
+services:
+  api:
+    image: ghcr.io/ivar418/cine.net/api:acc
+    container_name: acc-cinenet-api
+    restart: always
+    networks:
+      - proxy
+      - internal
+    environment:
+      ASPNETCORE_ENVIRONMENT: Acceptance
+      ConnectionStrings__DefaultConnection: >
+        Server=db;
+        Port=3306;
+        Database=${DB_NAME};
+        User=${DB_USER};
+        Password=${DB_PASSWORD};
+      TMDB_API_KEY_READ_ONLY: ${TMDB_API_KEY_READ_ONLY}
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.acc-cinenet-api.rule=Host(`acc-cinenetapi.ivarvisser.nl`)
+      - traefik.http.routers.acc-cinenet-api.entrypoints=https-external
+      - traefik.http.routers.acc-cinenet-api.tls=true
+      - traefik.http.routers.acc-cinenet-api.tls.certresolver=letsencrypt
+      - traefik.http.services.acc-cinenet-api.loadbalancer.server.port=8080
+      - traefik.http.routers.acc-cinenet-api-http.rule=Host(`acc-cinenetapi.ivarvisser.nl`)
+      - traefik.http.routers.acc-cinenet-api-http.entrypoints=http-external
+      - traefik.http.routers.acc-cinenet-api-http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.docker.network=proxy
+
+  wa:
+    image: ghcr.io/ivar418/cine.net/wa:acc
+    container_name: acc-cinenet-wa
+    restart: always
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.acc-cinenet-wa.rule=Host(`acc-cinenetwa.ivarvisser.nl`)
+      - traefik.http.routers.acc-cinenet-wa.entrypoints=https-external
+      - traefik.http.routers.acc-cinenet-wa.tls=true
+      - traefik.http.routers.acc-cinenet-wa.tls.certresolver=letsencrypt
+      - traefik.http.services.acc-cinenet-wa.loadbalancer.server.port=80
+      - traefik.http.routers.acc-cinenet-wa-http.rule=Host(`acc-cinenetwa.ivarvisser.nl`)
+      - traefik.http.routers.acc-cinenet-wa-http.entrypoints=http-external
+      - traefik.http.routers.acc-cinenet-wa-http.middlewares=redirect-to-https
+
+  db:
+    image: mysql:8.4
+    container_name: acc-cinenet-db
+    restart: always
+    networks:
+      - internal
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+networks:
+  proxy:
+    external: true
+  internal:
