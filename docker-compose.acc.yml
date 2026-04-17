@@ -39,6 +39,8 @@ services:
   wa:
     image: ghcr.io/ivar418/cine.net/wa:acc
     container_name: acc-cinenet-wa
+    environment:
+        ASPNETCORE_ENVIRONMENT: Staging
     restart: always
     networks:
       - proxy

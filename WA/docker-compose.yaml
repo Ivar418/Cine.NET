@@ -3,6 +3,10 @@ services:
     build:
       context: ..
       dockerfile: WA/Dockerfile
+      args:
+        ENVIRONMENT: Development
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
     ports:
       - "5031:80"
     restart: unless-stopped

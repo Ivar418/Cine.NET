@@ -39,6 +39,8 @@ services:
   wa:
     image: ghcr.io/ivar418/cine.net/wa:prod
     container_name: prod-cinenet-wa
+    environment:
+        ASPNETCORE_ENVIRONMENT: Production
     restart: always
     networks:
       - proxy
