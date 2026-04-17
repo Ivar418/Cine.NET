@@ -142,11 +142,9 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "http://localhost:5031", // wa local
-                "https://p3api-acc.gielvangaal.dev", // api acc
-                "https://p3api-prod.gielvangaal.dev", // api prod
-                "https://cine.net-acc.gielvangaal.dev", // wa acc
-                "https://cine.net-prod.gielvangaal.dev" // wa prod
+                "https://acc-cinenetwa.ivarvisser.nl",
+                "https://prod-cinenetwa.ivarvisser.nl",
+                "http://localhost:5031" // local dev
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
@@ -207,7 +205,8 @@ using (var scope = app.Services.CreateScope())
     // Seed data
     try
     {
-        await DbSeeder.SeedAsync(db, movieService, showingService, ticketService, pricingService, auditoriumService, mailService);
+        await DbSeeder.SeedAsync(db, movieService, showingService, ticketService, pricingService, auditoriumService,
+            mailService);
     }
     catch (Exception ex)
     {

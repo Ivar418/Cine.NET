@@ -19,12 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
       <None Include="wwwroot\css\app.css" />
       <None Include="wwwroot\css\ideal-page.css" />
       <None Include="wwwroot\favicon.png" />

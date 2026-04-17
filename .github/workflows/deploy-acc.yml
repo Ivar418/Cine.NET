@@ -1,30 +1,102 @@
-name: Deploy API ACC
+name: CI/CD ACC Pipeline
 
 on:
-    push:
-        branches: [develop]
+  push:
+    branches: [ develop, New-kind-of-github-workflow, FEAT/New-kind-of-github-workflow ]
 
 jobs:
-  deploy:
+  build-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+      - name: Login GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Install Ansible
-        run: sudo apt update && sudo apt install -y ansible
+      - name: Build & push API
+        run: |
+           docker build -f API/Dockerfile --build-arg ENVIRONMENT=Staging -t ghcr.io/ivar418/cine.net/api:acc .
+           docker push ghcr.io/ivar418/cine.net/api:acc
 
-      - name: Add VPS to known_hosts
+  build-wa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Login GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build & push WA
+        run: |
+          docker build -f WA/Dockerfile -t ghcr.io/ivar418/cine.net/wa:acc . --build-arg ENVIRONMENT=Staging
+          docker push ghcr.io/ivar418/cine.net/wa:acc
+
+  deploy:
+    needs: [ build-api, build-wa ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup SSH with Jumphost
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
-          
-      - name: Run Ansible (API ACC)
+          cat > ~/.ssh/id_ed25519 << 'EOF'
+          ${{ secrets.VPS_SSH_KEY }}
+          EOF
+          chmod 600 ~/.ssh/id_ed25519
+
+          cat >> ~/.ssh/config <<EOF
+          Host jumphost
+            HostName ${{ secrets.JUMPHOST_IP }}
+            Port 834
+            User ${{ secrets.JUMPHOST_USER }}
+            IdentityFile ~/.ssh/id_ed25519
+            StrictHostKeyChecking no
+
+          Host target
+            HostName ${{ secrets.VPS_IP }}
+            User ${{ secrets.VPS_USER }}
+            IdentityFile ~/.ssh/id_ed25519
+            ProxyJump jumphost
+            StrictHostKeyChecking no
+          EOF
+
+      - name: Copy compose file to server
         run: |
-          ansible-playbook ansible/site-api.yml \
-            -i ansible/inventory/acc.ini \
-            --extra-vars "image_tag=acc tmdb_api_key_read_only=${{ secrets.TMDB_API_KEY_READ_ONLY }}"
+          scp docker-compose.acc.yml target:~/docker-compose.acc.yml
+
+      - name: Create .env on server
+        run: |
+          ssh target << 'ENDSSH'
+            cat > .env <<EOF
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
+            TMDB_API_KEY_READ_ONLY=${{ secrets.TMDB_API_KEY_READ_ONLY }}
+            EOF
+          ENDSSH
+
+      - name: Deploy via Docker Compose
+        run: |
+          ssh target << 'ENDSSH'
+
+            echo "${{ secrets.PACKAGE_READ_KEY }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            docker compose -f docker-compose.acc.yml pull
+            docker compose -f docker-compose.acc.yml down
+            docker compose -f docker-compose.acc.yml up -d --remove-orphans
+
+            docker ps | grep acc-cinenet || true
+
+            echo "API logs:"
+            docker logs --tail=20 acc-cinenet-api || true
+
+          ENDSSH
+
+      - name: Deployment complete
+        run: |
+          echo "✅ ACC Deployment successful!"
+          echo "🔗 API: https://acc-cinenetapi.ivarvisser.nl"
+          echo "🔗 Frontend: https://acc-cinenetwa.ivarvisser.nl"

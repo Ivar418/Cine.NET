@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Localization;
 using System.Globalization;
-
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using MudBlazor.Services;
@@ -32,11 +31,18 @@ builder.Services.AddMudServices(config =>
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 
+var apiUrl = builder.Configuration["ApiUrl"];
+if (string.IsNullOrEmpty(apiUrl))
+{
+    // Fallback to local development URL if not found in configuration
+    apiUrl = "http://localhost:8080/";
+}
+Console.WriteLine($"Environment: {builder.HostEnvironment.Environment}");
+Console.WriteLine($"API URL: {apiUrl}");
+
 // HTTP
 builder.Services.AddScoped(sp =>
-    new HttpClient { BaseAddress = new Uri("https://p3api-prod.gielvangaal.dev/") });
-    // new HttpClient { BaseAddress = new Uri("https://p3api-acc.gielvangaal.dev/") });
-    // new HttpClient { BaseAddress = new Uri("http://localhost:8080/") });
+    new HttpClient { BaseAddress = new Uri(apiUrl) });
 
 // WA API/SERVICES
 builder.Services.AddScoped<IUserApi, UserApi>();
