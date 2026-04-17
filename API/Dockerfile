@@ -14,7 +14,7 @@ COPY API/ API/
 COPY SharedLibrary/ SharedLibrary/
 
 RUN dotnet test API/API.csproj --no-restore
-RUN dotnet publish API/API.csproj -c Release -o /app/out /p:UseAppHost=false
+RUN dotnet publish API/API.csproj -c Release -o /app/out /p:UseAppHost=false --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_SDK_VERSION} AS runtime
 WORKDIR /app

@@ -14,9 +14,8 @@ COPY WA/ WA/
 COPY SharedLibrary/ SharedLibrary/
 RUN dotnet publish WA/WA.csproj \
     -c Release \
+    --no-restore \
     -o /app/out
-
-RUN ls -R /app/out/wwwroot
 
 # ===== Runtime stage =====
 FROM nginx:alpine
