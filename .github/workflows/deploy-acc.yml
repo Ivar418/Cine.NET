@@ -16,9 +16,9 @@ jobs:
       - name: Build & push API
         run: |
            docker build \
-           -f WA/Dockerfile \
+           -f API/Dockerfile \
            --build-arg ENVIRONMENT=Staging \
-           -t ghcr.io/ivar418/cine.net/wa:acc .
+           -t ghcr.io/ivar418/cine.net/api:acc .
            docker push ghcr.io/ivar418/cine.net/api:acc
 
   build-wa:
@@ -31,7 +31,10 @@ jobs:
 
       - name: Build & push WA
         run: |
-          docker build -f WA/Dockerfile -t ghcr.io/ivar418/cine.net/wa:acc .
+          docker build \
+          -f WA/Dockerfile \
+          -t ghcr.io/ivar418/cine.net/wa:acc . \
+          --build-arg ENVIRONMENT=Staging \
           docker push ghcr.io/ivar418/cine.net/wa:acc
 
   deploy:
