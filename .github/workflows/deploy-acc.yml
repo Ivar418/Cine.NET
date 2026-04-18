@@ -2,7 +2,7 @@ name: CI/CD ACC Pipeline
 
 on:
   push:
-    branches: [ develop, New-kind-of-github-workflow, FEAT/New-kind-of-github-workflow ]
+    branches: [ develop]
 
 jobs:
   build-api:
@@ -84,9 +84,9 @@ jobs:
 
             echo "${{ secrets.PACKAGE_READ_KEY }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            docker compose -f docker-compose.acc.yml pull
-            docker compose -f docker-compose.acc.yml down
-            docker compose -f docker-compose.acc.yml up -d --remove-orphans
+            docker compose -p cinenet-acc -f docker-compose.acc.yml pull
+            docker compose -p cinenet-acc -f docker-compose.acc.yml down
+            docker compose -p cinenet-acc -f docker-compose.acc.yml up -d --remove-orphans
 
             docker ps | grep acc-cinenet || true
 
