@@ -85,7 +85,7 @@ jobs:
             echo "${{ secrets.PACKAGE_READ_KEY }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             docker compose -p cinenet-prod -f docker-compose.prod.yml pull
-            docker compose -p cinenet-prod -f docker-compose.prod.yml down
+            docker compose -p cinenet-prod -f docker-compose.prod.yml down -v
             docker compose -p cinenet-prod -f docker-compose.prod.yml up -d --remove-orphans
             docker ps | grep prod-cinenet || true
 
