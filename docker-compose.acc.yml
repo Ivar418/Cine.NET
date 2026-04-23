@@ -28,7 +28,7 @@ services:
       - traefik.http.routers.acc-cinenet-api.rule=Host(`acc-cinenetapi.ivarvisser.nl`)
       - traefik.http.routers.acc-cinenet-api.entrypoints=https-external
       - traefik.http.routers.acc-cinenet-api.tls=true
-      - traefik.http.routers.acc-cinenet-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.acc-cinenet-api.tls.certresolver=cloudflare
       - traefik.http.services.acc-cinenet-api.loadbalancer.server.port=8080
       - traefik.http.routers.acc-cinenet-api-http.rule=Host(`acc-cinenetapi.ivarvisser.nl`)
       - traefik.http.routers.acc-cinenet-api-http.entrypoints=http-external
