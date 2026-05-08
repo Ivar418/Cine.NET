@@ -145,7 +145,7 @@ builder.Services.AddCors(options =>
                 "https://acc-cinenetwa.ivarvisser.nl",
                 "https://prod-cinenetwa.ivarvisser.nl",
                 "http://localhost:5031", // local dev
-                "http://localhost:8080" //Local dev KotlinMP
+                "http://localhost:8082" //Local dev KotlinMP
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
