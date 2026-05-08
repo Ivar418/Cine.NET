@@ -1,7 +1,7 @@
 # .NET build outputs
 bin/
 obj/
-
+https/
 # Rider IDE
 .idea/
 
