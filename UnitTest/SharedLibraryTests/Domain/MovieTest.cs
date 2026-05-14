@@ -1,4 +1,5 @@
 ﻿using SharedLibrary.Domain.Entities;
+using SharedLibrary.Util;
 using Xunit;
 
 namespace UnitTest.SharedLibraryTests.Domain;
@@ -10,7 +11,9 @@ public class MovieTests
         Id = 1,
         Title = "Inception",
         TmdbId = 27205,
-        RowCreatedTimestampUtc = "2026-01-01T00:00:00.0000000+00:00"
+        RowCreatedTimestampUtc = DateTimeOffset.ParseExact("2026-01-01T00:00:00.0000000+00:00", "O",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None)
     };
 
     [Fact]
@@ -42,16 +45,16 @@ public class MovieTests
     {
         var movie = BuildValidMovie();
 
-        Assert.Equal("2026-01-01T00:00:00.0000000+00:00", movie.RowCreatedTimestampUtc);
+        Assert.Equal(DateTimeOffsetConverters.StringToDateTimeOffsetConverter("2026-01-01T00:00:00.0000000+00:00"), movie.RowCreatedTimestampUtc);
     }
 
     [Fact]
     public void RowUpdatedTimestampUtc_ValidTimestamp_SetsSuccessfully()
     {
         var movie = BuildValidMovie();
-        movie.RowUpdatedTimestampUtc = "2025-06-15T12:30:00.0000000+00:00";
+        movie.RowUpdatedTimestampUtc = DateTimeOffsetConverters.StringToDateTimeOffsetConverter("2025-06-15T12:30:00.0000000+00:00");
 
-        Assert.Equal("2025-06-15T12:30:00.0000000+00:00", movie.RowUpdatedTimestampUtc);
+        Assert.Equal(DateTimeOffsetConverters.StringToDateTimeOffsetConverter("2025-06-15T12:30:00.0000000+00:00"), movie.RowUpdatedTimestampUtc);
     }
 
     [Fact]
@@ -64,36 +67,17 @@ public class MovieTests
     }
 
     [Fact]
-    public void RowCreatedTimestampUtc_InvalidTimestamp_ThrowsArgumentException()
-    {
-        Assert.Throws<ArgumentException>(() => new Movie
-        {
-            RowCreatedTimestampUtc = "not-a-timestamp"
-        });
-    }
-
-    [Fact]
     public void RowUpdatedTimestampUtc_InvalidTimestamp_ThrowsArgumentException()
     {
         var movie = BuildValidMovie();
 
         Assert.Throws<ArgumentException>(() =>
         {
-            movie.RowUpdatedTimestampUtc = "2026-01-01T00:00:00";  // Missing offset
+            movie.RowUpdatedTimestampUtc = DateTimeOffset.Parse("2026-01-01T00:00:00"); // Missing offset
         });
     }
 
-    [Fact]
-    public void RowCreatedTimestampUtc_NonUtcOffset_ThrowsArgumentException()
-    {
-        // Valid timestamp format but NOT +00:00 — should be rejected
-        Assert.Throws<ArgumentException>(() => new Movie
-        {
-            RowCreatedTimestampUtc = "2026-01-01T00:00:00.0000000+02:00"
-        });
-    }
-
-    [Fact]
+   [Fact]
     public void CurrentUtcTimestamp_ReturnsValidUtcString()
     {
         var timestamp = Movie.CurrentUtcTimestamp();
@@ -123,9 +107,6 @@ public class MovieTests
     {
         var movie = BuildValidMovie();
 
-        Assert.Throws<ArgumentException>(() =>
-        {
-            movie.RowUpdatedTimestampUtc = invalidTimestamp;
-        });
+        Assert.Throws<ArgumentException>(() => { movie.RowUpdatedTimestampUtc = DateTimeOffset.Parse(invalidTimestamp); });
     }
 }

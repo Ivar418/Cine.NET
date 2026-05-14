@@ -241,6 +241,13 @@ public class MovieController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Retrieves a list of movies that have scheduled future showings.
+    /// </summary>
+    /// <returns>
+    /// An IActionResult containing a successful result with the list of movies,
+    /// or a BadRequest result with an error description if the operation fails.
+    /// </returns>
     [HttpGet("future-showings")]
     public async Task<IActionResult> GetFutureMovies()
     {

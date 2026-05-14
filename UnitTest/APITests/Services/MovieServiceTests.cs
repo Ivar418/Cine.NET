@@ -5,6 +5,7 @@ using Moq;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses;
 using SharedLibrary.DTOs.Responses.TMDB.Genre;
+using SharedLibrary.Util;
 using Xunit;
 
 namespace UnitTest.APITests.Services;
@@ -27,7 +28,7 @@ public class MovieServiceTests
         Id = id,
         Title = "Test",
         TmdbId = 123,
-        RowCreatedTimestampUtc = "2026-01-01T00:00:00+00:00"
+        RowCreatedTimestampUtc = DateTimeOffsetConverters.StringToDateTimeOffsetConverter("2026-01-01T00:00:00+00:00")
     };
     
     // -------------------------------------------------------

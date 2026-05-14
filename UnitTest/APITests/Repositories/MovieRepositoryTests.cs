@@ -3,6 +3,7 @@ using SharedLibrary.Domain.Entities;
 using Xunit;
 using UnitTest.Helpers;
 using System.Linq;
+using SharedLibrary.Util;
 
 namespace UnitTest.APITests.Repositories;
 
@@ -16,7 +17,7 @@ public class MovieRepositoryTests
             Title = "Test Movie",
             TmdbId = tmdbId,
             InformationLanguage = "en",
-            RowCreatedTimestampUtc = "2026-01-01T00:00:00.0000000+00:00"
+            RowCreatedTimestampUtc = DateTimeOffsetConverters.StringToDateTimeOffsetConverter("2026-01-01T00:00:00.0000000+00:00")
         };
     }
 
