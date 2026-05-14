@@ -10,10 +10,13 @@ namespace API.Services.Implementations;
 public class MovieService : IMovieService
 {
     private readonly IMovieRepository _movieRepository;
+    private readonly IShowingRepository _showingsRepo;
 
-    public MovieService(IMovieRepository movieRepository)
+
+    public MovieService(IMovieRepository movieRepository, IShowingRepository showingsRepo)
     {
         _movieRepository = movieRepository;
+        _showingsRepo = showingsRepo;
     }
 
     /// <summary>
@@ -123,6 +126,22 @@ public class MovieService : IMovieService
                 return ResultOf<Genre>.Failure(fetchResult.Error);
             return ResultOf<Genre>.Success(fetchResult.Value.First());
         }
+
         return ResultOf<Genre>.Success(result);
+    }
+
+    public async Task<IEnumerable<Movie>> GetMoviesWithFutureShowingAsync(
+    )
+    {
+        // Filter at the database level via a specialized query if possible, 
+        // or at least filter the Showings query before fetching.
+        var result = await _showingsRepo.GetUpcomingShowingsAsync(DateTimeOffset.UtcNow);
+        
+        return result switch
+        {
+            { IsSuccess: true } => result.Value.Select(s => new Movie { Id = s.MovieId, Title = s.Movie.Title }).DistinctBy(m => m.Id),
+
+            { IsFailure: true } => Array.Empty<Movie>()
+        }
     }
 }

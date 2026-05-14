@@ -215,5 +215,10 @@ namespace API.Repositories.Implementations
                 return ResultOf<ICollection<ShowingDisplayResponse>>.Failure(e.Message);
             }
         }
+
+        public Task<ICollection<Showing>> GetUpcomingShowingsAsync(DateTimeOffset? cutoff)
+        {
+            var query = _db.Showings.where
+        }
     }
 }
