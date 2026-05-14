@@ -41,28 +41,27 @@
 </div>
 
 <!-- 1. Add autostart="false" -->
-<script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
-
+<script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 <!-- 2. Manually start and force environment from header -->
 <script>
-    async function startBlazor() {
-        try {
-            // Fetch current page headers to see what Nginx sent
-            const response = await fetch(window.location.href, { method: 'HEAD' });
-            const env = response.headers.get('Blazor-Environment') || 'Production';
-
-            console.log("Starting Blazor with forced environment:", env);
-
-            Blazor.start({
-                environment: env
-            });
-        } catch (e) {
-            console.error("Failed to fetch environment header, falling back to Production", e);
-            Blazor.start();
-        }
-    }
-
-    startBlazor();
+    // async function startBlazor() {
+    //     try {
+    //         // // Fetch current page headers to see what Nginx sent
+    //         // const response = await fetch(window.location.href, { method: 'HEAD' });
+    //         // const env = response.headers.get('Blazor-Environment') || 'Production';
+    //
+    //         // console.log("Starting Blazor with forced environment:", env);
+    //
+    //         Blazor.start({
+    //             // environment: env
+    //         });
+    //     } catch (e) {
+    //         console.error("Failed to fetch environment header, falling back to Production", e);
+    //         Blazor.start();
+    //     }
+    // }
+    //
+    // startBlazor();
 </script>
 </body>
 
