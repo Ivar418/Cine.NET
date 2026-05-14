@@ -216,9 +216,21 @@ namespace API.Repositories.Implementations
             }
         }
 
-        public Task<ICollection<Showing>> GetUpcomingShowingsAsync(DateTimeOffset? cutoff)
+        public async Task<ResultOf<ICollection<Showing>>> GetUpcomingShowingsAsync(DateTimeOffset? cutoff)
         {
-            var query = _db.Showings.where
+            try
+            {
+                var filterDate = cutoff ?? DateTimeOffset.UtcNow;
+                var showings = await _db.Showings
+                    .Include(s => s.Movie)
+                    .Where(s => s.StartsAt > filterDate)
+                    .ToListAsync();
+                return ResultOf<ICollection<Showing>>.Success(showings);
+            }
+            catch (Exception e)
+            {
+                return ResultOf<ICollection<Showing>>.Failure(e.Message);
+            }
         }
     }
 }

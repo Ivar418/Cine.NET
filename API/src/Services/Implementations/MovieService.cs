@@ -130,18 +130,19 @@ public class MovieService : IMovieService
         return ResultOf<Genre>.Success(result);
     }
 
-    public async Task<IEnumerable<Movie>> GetMoviesWithFutureShowingAsync(
-    )
+    public async Task<ResultOf<IEnumerable<Movie>>> GetMoviesWithFutureShowingAsync()
     {
-        // Filter at the database level via a specialized query if possible, 
-        // or at least filter the Showings query before fetching.
         var result = await _showingsRepo.GetUpcomingShowingsAsync(DateTimeOffset.UtcNow);
-        
+
         return result switch
         {
-            { IsSuccess: true } => result.Value.Select(s => new Movie { Id = s.MovieId, Title = s.Movie.Title }).DistinctBy(m => m.Id),
-
-            { IsFailure: true } => Array.Empty<Movie>()
-        }
+            { IsSuccess: true } => ResultOf<IEnumerable<Movie>>.Success(
+                result.Value
+                    .Select(s => new Movie { Id = s.MovieId, Title = s.Movie.Title })
+                    .DistinctBy(m => m.Id)
+            ),
+            { IsFailure: true } => ResultOf<IEnumerable<Movie>>.Failure(result.Error!),
+            _ => ResultOf<IEnumerable<Movie>>.Failure("Unknown error")
+        };
     }
 }

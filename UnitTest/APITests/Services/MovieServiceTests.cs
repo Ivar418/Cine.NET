@@ -12,12 +12,14 @@ namespace UnitTest.APITests.Services;
 public class MovieServiceTests
 {
     private readonly Mock<IMovieRepository> _repoMock;
+    private readonly Mock<IShowingRepository> _repoMock2;
     private readonly MovieService _sut;
 
     public MovieServiceTests()
     {
         _repoMock = new Mock<IMovieRepository>();
-        _sut = new MovieService(_repoMock.Object);
+        _repoMock2 = new Mock<IShowingRepository>();
+        _sut = new MovieService(_repoMock.Object, _repoMock2.Object);
     }
 
     private static Movie BuildMovie(int id = 1) => new Movie

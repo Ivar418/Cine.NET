@@ -8,14 +8,14 @@ using Xunit;
 
 namespace UnitTest.APITests.Controllers;
 
-public class MoviesControllerTests
+public class MovieControllerTests
 {
     private readonly Mock<IMovieService> _movieServiceMock;
-    private readonly MoviesController _sut;
-    public MoviesControllerTests()
+    private readonly MovieController _sut;
+    public MovieControllerTests()
     {
         _movieServiceMock = new Mock<IMovieService>();
-        _sut = new MoviesController(_movieServiceMock.Object);
+        _sut = new MovieController(_movieServiceMock.Object);
     }
     
     private static Movie BuildMovie(int id = 1, string title = "Inception") => new Movie
