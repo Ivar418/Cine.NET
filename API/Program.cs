@@ -197,15 +197,14 @@ app.MapHealthChecks("/health");
 app.MapControllers();
 
 // Database: apply pending migrations at startup and seed some mock data
-using (var scope = app.Services.CreateScope())
+_ = Task.Run(async () =>
 {
-    // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
-    // Since this is a school project which always destroys the database on recreation it does not matter
-    var services = scope.ServiceProvider;
-    var db = services.GetRequiredService<ApiDbContext>();
-    db.Database.EnsureCreated();
+    using var scope = app.Services.CreateScope();
 
-    //Get other required services for seeding
+    var services = scope.ServiceProvider;
+
+    var db = services.GetRequiredService<ApiDbContext>();
+
     var movieService = services.GetRequiredService<IMovieService>();
     var showingService = services.GetRequiredService<IShowingService>();
     var ticketService = services.GetRequiredService<ITicketService>();
@@ -213,18 +212,27 @@ using (var scope = app.Services.CreateScope())
     var auditoriumService = services.GetRequiredService<IAuditoriumService>();
     var mailService = services.GetRequiredService<ILocalMailService>();
 
-
-    // Seed data
     try
     {
-        await DbSeeder.SeedAsync(db, movieService, showingService, ticketService, pricingService, auditoriumService,
-            mailService);
+        await db.Database.EnsureCreatedAsync();
+
+        await DbSeeder.SeedAsync(
+            db,
+            movieService,
+            showingService,
+            ticketService,
+            pricingService,
+            auditoriumService,
+            mailService
+        );
+
+        Console.WriteLine("Database seeding completed.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine("Seeding produced an error: " + ex.Message);
+        Console.WriteLine("Seeding produced an error: " + ex);
     }
-}
+});
 
 // Runtime: start web application
 app.Run();

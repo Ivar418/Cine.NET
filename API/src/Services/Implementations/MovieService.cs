@@ -134,15 +134,17 @@ public class MovieService : IMovieService
     {
         var result = await _showingsRepo.GetUpcomingShowingsAsync(DateTimeOffset.UtcNow);
 
-        return result switch
-        {
-            { IsSuccess: true } => ResultOf<IEnumerable<Movie>>.Success(
-                result.Value
-                    .Select(s => new Movie { Id = s.MovieId, Title = s.Movie.Title })
-                    .DistinctBy(m => m.Id)
-            ),
-            { IsFailure: true } => ResultOf<IEnumerable<Movie>>.Failure(result.Error!),
-            _ => ResultOf<IEnumerable<Movie>>.Failure("Unknown error")
-        };
+        if (result.Value != null)
+            return result switch
+            {
+                { IsSuccess: true } => ResultOf<IEnumerable<Movie>>.Success(
+                    result.Value
+                        .Select(s => s.Movie)
+                        .DistinctBy(m => m.Id)
+                ),
+                { IsFailure: true } => ResultOf<IEnumerable<Movie>>.Failure(result.Error!),
+                _ => ResultOf<IEnumerable<Movie>>.Failure("Unknown error")
+            };
+        else return ResultOf<IEnumerable<Movie>>.Success(new List<Movie>());
     }
 }
