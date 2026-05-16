@@ -10,10 +10,13 @@ namespace API.Services.Implementations;
 public class MovieService : IMovieService
 {
     private readonly IMovieRepository _movieRepository;
+    private readonly IShowingRepository _showingsRepo;
 
-    public MovieService(IMovieRepository movieRepository)
+
+    public MovieService(IMovieRepository movieRepository, IShowingRepository showingsRepo)
     {
         _movieRepository = movieRepository;
+        _showingsRepo = showingsRepo;
     }
 
     /// <summary>
@@ -123,6 +126,23 @@ public class MovieService : IMovieService
                 return ResultOf<Genre>.Failure(fetchResult.Error);
             return ResultOf<Genre>.Success(fetchResult.Value.First());
         }
+
         return ResultOf<Genre>.Success(result);
+    }
+
+    public async Task<ResultOf<IEnumerable<Movie>>> GetMoviesWithFutureShowingAsync()
+    {
+        var result = await _showingsRepo.GetUpcomingShowingsAsync(DateTimeOffset.UtcNow);
+
+        return result switch
+        {
+            { IsSuccess: true } => ResultOf<IEnumerable<Movie>>.Success(
+                result.Value
+                    .Select(s => new Movie { Id = s.MovieId, Title = s.Movie.Title })
+                    .DistinctBy(m => m.Id)
+            ),
+            { IsFailure: true } => ResultOf<IEnumerable<Movie>>.Failure(result.Error!),
+            _ => ResultOf<IEnumerable<Movie>>.Failure("Unknown error")
+        };
     }
 }

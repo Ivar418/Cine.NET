@@ -15,5 +15,6 @@ namespace API.Repositories.Interfaces
         Task<ResultOf<ShowingDisplayResponse>> GetShowingDisplayByIdAsync(int id);
         Task<ResultOf<ICollection<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId, DateTimeOffset cutoff);
         Task<ResultOf<ICollection<ShowingDisplayResponse>>> GetShowingDisplayAsync(DateOnly? date = null);
+        Task<ResultOf<ICollection<Showing>>> GetUpcomingShowingsAsync(DateTimeOffset? cutoff);
     }
 }

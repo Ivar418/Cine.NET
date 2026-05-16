@@ -21,4 +21,5 @@ public interface IMovieService
         IEnumerable<string>? informationLanguages = null);
 
     Task<ResultOf<Genre>> FetchGenreByLanguage(int tmdbGenreId, string language);
+    Task<ResultOf<IEnumerable<Movie>>> GetMoviesWithFutureShowingAsync();
 }

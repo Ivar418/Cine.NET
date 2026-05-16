@@ -287,7 +287,7 @@ public class ShowingService : IShowingService
                 {
                     var amountOfSeatsAvailable =
                         showingState.Value.AllSeats.Count - showingState.Value.OccupiedKeys.Count;
-    
+
                     if (amountOfSeatsAvailable >= seatsNeededAmount)
                     {
                         showingsWithSeatsAvailable.Add(showing);

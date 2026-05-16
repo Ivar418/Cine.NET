@@ -17,7 +17,7 @@ namespace API.Controllers;
 /// </remarks>
 [ApiController]
 [Route("api/movies")]
-public class MoviesController : ControllerBase
+public class MovieController : ControllerBase
 {
     /// <summary>
     /// Provides access to movie-related operations and data retrieval logic.
@@ -33,7 +33,7 @@ public class MoviesController : ControllerBase
     /// Provides endpoints for retrieving, searching, and managing movie data,
     /// including integration with external APIs.
     /// </summary>
-    public MoviesController(IMovieService movieService)
+    public MovieController(IMovieService movieService)
     {
         _movieService = movieService;
     }
@@ -239,5 +239,20 @@ public class MoviesController : ControllerBase
         {
             return StatusCode(500, new { error = "An error occurred" });
         }
+    }
+
+    /// <summary>
+    /// Retrieves a list of movies that have scheduled future showings.
+    /// </summary>
+    /// <returns>
+    /// An IActionResult containing a successful result with the list of movies,
+    /// or a BadRequest result with an error description if the operation fails.
+    /// </returns>
+    [HttpGet("future-showings")]
+    public async Task<IActionResult> GetFutureMovies()
+    {
+        var result = await _movieService.GetMoviesWithFutureShowingAsync();
+        if (result.IsFailure) return BadRequest(result.Error);
+        return Ok(result.Value);
     }
 }
