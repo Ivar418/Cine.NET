@@ -12,9 +12,12 @@ RUN dotnet restore WA/WA.csproj
 # copy rest
 COPY WA/ WA/
 COPY SharedLibrary/ SharedLibrary/
+
+ARG ENVIRONMENT=Production
 RUN dotnet publish WA/WA.csproj \
     -c Release \
     --no-restore \
+    -p:PublishProfile=${ENVIRONMENT} \
     -o /app/out
 
 # ===== Runtime stage =====

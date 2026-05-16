@@ -8,11 +8,11 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/tickets")]
-    public class TicketsController : ControllerBase
+    public class TicketController : ControllerBase
     {
         private readonly ITicketService _ticketService;
 
-        public TicketsController(ITicketService ticketService)
+        public TicketController(ITicketService ticketService)
         {
             _ticketService = ticketService;
         }

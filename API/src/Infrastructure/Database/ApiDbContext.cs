@@ -43,7 +43,33 @@ public class ApiDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>().ToTable("users");
-        modelBuilder.Entity<Movie>().ToTable("movies");
+        modelBuilder.Entity<Movie>().ToTable("movies").Property(m => m.RowCreatedTimestampUtc).HasConversion(
+            v => v.ToString("O"), v =>
+                (DateTimeOffset)System.DateTimeOffset.ParseExact(
+                    v,
+                    "O", // Exact ISO 8601 round-trip format
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None));
+        modelBuilder.Entity<Movie>().Property(m => m.RowDeletedTimestampUtc).HasConversion(
+            v => v.HasValue ? v.Value.ToString("O") : null,
+            v => string.IsNullOrEmpty(v)
+                ? null
+                : DateTimeOffset.ParseExact(
+                    v,
+                    "O",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None
+                ));
+        modelBuilder.Entity<Movie>().Property(m => m.RowUpdatedTimestampUtc).HasConversion(
+            v => v.HasValue ? v.Value.ToString("O") : null,
+            v => string.IsNullOrEmpty(v)
+                ? null
+                : DateTimeOffset.ParseExact(
+                    v,
+                    "O",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None
+                ));
         modelBuilder.Entity<Photo>().ToTable("photos");
         modelBuilder.Entity<Ticket>().ToTable("tickets");
         modelBuilder.Entity<Auditorium>().ToTable("auditoriums");
@@ -96,7 +122,7 @@ public class ApiDbContext : DbContext
             .Property(p => p.PriceModifier)
             .HasPrecision(10, 2);
         modelBuilder.Entity<Genre>().ToTable("genres");
-        
+
         // Arrangement
         modelBuilder.Entity<Arrangement>().ToTable("arrangements");
 

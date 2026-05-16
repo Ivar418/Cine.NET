@@ -215,5 +215,22 @@ namespace API.Repositories.Implementations
                 return ResultOf<ICollection<ShowingDisplayResponse>>.Failure(e.Message);
             }
         }
+
+        public async Task<ResultOf<ICollection<Showing>>> GetUpcomingShowingsAsync(DateTimeOffset? cutoff)
+        {
+            try
+            {
+                var filterDate = cutoff ?? DateTimeOffset.UtcNow;
+                var showings = await _db.Showings
+                    .Include(s => s.Movie)
+                    .Where(s => s.StartsAt > filterDate)
+                    .ToListAsync();
+                return ResultOf<ICollection<Showing>>.Success(showings);
+            }
+            catch (Exception e)
+            {
+                return ResultOf<ICollection<Showing>>.Failure(e.Message);
+            }
+        }
     }
 }

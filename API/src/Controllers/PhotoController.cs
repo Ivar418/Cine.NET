@@ -7,11 +7,11 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/photos")]
-    public class PhotosController : ControllerBase
+    public class PhotoController : ControllerBase
     {
         private readonly IPhotoStorage _storage;
 
-        public PhotosController(IPhotoStorage storage)
+        public PhotoController(IPhotoStorage storage)
         {
             _storage = storage;
         }

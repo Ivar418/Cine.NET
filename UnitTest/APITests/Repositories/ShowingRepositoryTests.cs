@@ -2,6 +2,7 @@
 using API.Repositories.Interfaces;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Models;
+using SharedLibrary.Util;
 using Xunit;
 using UnitTest.Helpers;
 
@@ -23,7 +24,7 @@ public class ShowingRepositoryTests
             Id = 1,
             Title = "Test",
             TmdbId = 1,
-            RowCreatedTimestampUtc = "2026-01-01T00:00:00.0000000+00:00"
+            RowCreatedTimestampUtc = DateTimeOffsetConverters.StringToDateTimeOffsetConverter("2026-01-01T00:00:00.0000000+00:00")
         };
     }
 

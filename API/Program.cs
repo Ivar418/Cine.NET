@@ -136,17 +136,28 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
 });
 
 // CORS
+var allowedOrigins = new List<string>();
+if (builder.Environment.IsProduction())
+{
+    allowedOrigins.Add("https://prod-cinenetwa.ivarvisser.nl");
+}
+
+if (builder.Environment.IsDevelopment())
+{
+    allowedOrigins.AddRange(new[]
+    {
+        "https://acc-cinenetwa.ivarvisser.nl",
+        "http://localhost:5031", // Blazor WASM local dev
+        "http://localhost:8082" // KotlinMP local dev
+    });
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorWasm", policy =>
     {
         policy
-            .WithOrigins(
-                "https://acc-cinenetwa.ivarvisser.nl",
-                "https://prod-cinenetwa.ivarvisser.nl",
-                "http://localhost:5031", // local dev
-                "http://localhost:8082" //Local dev KotlinMP
-            )
+            .WithOrigins(allowedOrigins.ToArray())
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

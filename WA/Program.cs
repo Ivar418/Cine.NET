@@ -13,6 +13,7 @@ using WA.Services.Http.Implementation;
 using WA.Services.Http.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
@@ -30,13 +31,10 @@ builder.Services.AddMudServices(config =>
 // AUTH
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
-
 var apiUrl = builder.Configuration["ApiUrl"];
-if (string.IsNullOrEmpty(apiUrl))
-{
-    // Fallback to local development URL if not found in configuration
-    apiUrl = "http://localhost:8080/";
-}
+var env = builder.HostEnvironment.Environment;
+Console.WriteLine(env);
+
 Console.WriteLine($"Environment: {builder.HostEnvironment.Environment}");
 Console.WriteLine($"API URL: {apiUrl}");
 
