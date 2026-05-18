@@ -141,8 +141,7 @@ if (builder.Environment.IsProduction())
 {
     allowedOrigins.Add("https://prod-cinenetwa.ivarvisser.nl");
 }
-
-if (builder.Environment.IsDevelopment())
+else
 {
     allowedOrigins.AddRange(new[]
     {
