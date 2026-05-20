@@ -68,5 +68,5 @@ if ($LASTEXITCODE -ne 0)
     Write-Host "==> Failed to bring up compose stack."
     exit $LASTEXITCODE
 }
-Start-Process "http://localhost:8080/swagger/"
+#Start-Process "http://localhost:8080/swagger/"
 Write-Host "==> Done."
