@@ -178,7 +178,7 @@ public class ShowingService : IShowingService
         {
             var priceResult = await _pricingService.CalculatePriceAsync(
                 showing.Movie,
-                showing.IsThreeD,
+                showing.Is3D,
                 type);
 
             if (priceResult.IsFailure)
@@ -220,19 +220,19 @@ public class ShowingService : IShowingService
     /// </summary>
     /// <param name="movieId">The Movie ID.</param>
     /// <returns>
-    /// A <see cref="ResultOf{T}"/> containing a list of <see cref="ShowingResponse"/> on success.
+    /// A <see cref="ResultOf{T}"/> containing a list of <see cref="Showing"/> on success.
     /// Returns a failure result if the repository query fails.
     /// </returns>
-    public async Task<ResultOf<IReadOnlyList<ShowingResponse>>> GetUpcomingShowingsByMovieIdAsync(int movieId)
+    public async Task<ResultOf<IReadOnlyList<Showing>>> GetUpcomingShowingsByMovieIdAsync(int movieId)
     {
         var cutoff = DateTimeOffset.UtcNow.AddMinutes(-15);
 
         var result = await _showingRepository.GetUpcomingShowingsByMovieIdAsync(movieId, cutoff);
 
         if (result.IsFailure)
-            return ResultOf<IReadOnlyList<ShowingResponse>>.Failure(result.Error!);
+            return ResultOf<IReadOnlyList<Showing>>.Failure(result.Error!);
 
-        return ResultOf<IReadOnlyList<ShowingResponse>>.Success(result.Value!.ToList());
+        return ResultOf<IReadOnlyList<Showing>>.Success(result.Value!.ToList());
     }
 
     /// <summary>
