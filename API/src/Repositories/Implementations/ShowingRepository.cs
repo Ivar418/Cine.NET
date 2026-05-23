@@ -160,8 +160,11 @@ namespace API.Repositories.Implementations
         {
             try
             {
+                //.Include movie and auditorium data since the service layer may need it for business rules (e.g. checking movie runtime against showing start time)
                 var showings = await _db.Showings
                     .Where(s => s.Movie.Id == movieId && s.StartsAt > cutoff)
+                    .Include(s => s.Movie)
+                    .Include(s => s.Auditorium)
                     .OrderBy(s => s.StartsAt)
                     .ToListAsync();
 
