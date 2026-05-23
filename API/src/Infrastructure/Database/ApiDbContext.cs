@@ -7,12 +7,9 @@ using System;
 using System.Collections.Generic;
 using SharedLibrary.Domain.Entities;
 
-public class ApiDbContext : DbContext
-{
+public class ApiDbContext : DbContext {
     public ApiDbContext(DbContextOptions<ApiDbContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
 
 
     public DbSet<User> Users => Set<User>();
@@ -38,8 +35,7 @@ public class ApiDbContext : DbContext
     // Email related entities
     public DbSet<EmailSubscription> EmailSubscriptions => Set<EmailSubscription>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
+    protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>().ToTable("users");
@@ -74,6 +70,17 @@ public class ApiDbContext : DbContext
         modelBuilder.Entity<Ticket>().ToTable("tickets");
         modelBuilder.Entity<Auditorium>().ToTable("auditoriums");
         modelBuilder.Entity<Showing>().ToTable("showings");
+        modelBuilder.Entity<Showing>()
+            .HasOne(s => s.Movie)
+            .WithMany()
+            .HasForeignKey(s => s.MovieId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Showing>()
+            .HasOne(s => s.Auditorium)
+            .WithMany()
+            .HasForeignKey(s => s.AuditoriumId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<Reservation>().ToTable("reservations");
         modelBuilder.Entity<Order>().ToTable("orders");
         modelBuilder.Entity<Order>()
