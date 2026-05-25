@@ -1,15 +1,13 @@
 using API.Infrastructure.Database;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
-using API.Services;
+using API.Services.Background.Implementations;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.src.Repositories.Implementations;
-using API.Storage;
 using API.Storage.Implementations;
 using API.Storage.Interfaces;
 using DotNetEnv;
-using MailKit;
 using Microsoft.EntityFrameworkCore;
 
 Env.Load();
@@ -72,6 +70,9 @@ builder.Services.AddScoped<ILocalMailService, LocalMailService>();
 // Arrangement
 builder.Services.AddScoped<IArrangementService, ArrangementService>();
 builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
+
+// Background jobs: extend mock showings once per day
+builder.Services.AddHostedService<DailyShowingsGeneratorService>();
 
 
 // Monitoring: health check endpoint
