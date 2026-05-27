@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using API.Domain.Model;
 using API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
@@ -289,10 +290,61 @@ CineNet."
                 }
             }
 
+            if (!await db.Users.AnyAsync()) {
+                db.Users.AddRange(
+                    new User(
+                        userName: "admin",
+                        firstName: "System",
+                        lastName: "Administrator",
+                        email: "admin@example.com"
+                    ),
+                    new User(
+                        userName: "testuser",
+                        firstName: "Test",
+                        lastName: "User",
+                        email: "testuser@example.com"
+                    ),
+                    new User(
+                        userName: "johndoe",
+                        firstName: "John",
+                        lastName: "Doe",
+                        email: "john.doe@example.com"
+                    ),
+                    new User(
+                        userName: "janesmith",
+                        firstName: "Jane",
+                        lastName: "Smith",
+                        email: "jane.smith@example.com"
+                    )
+                );
+                db.SaveChanges();
+                await foreach (var user in db.Users) {
+                    if (user.UserName == "admin") {
+                        await db.AddAsync(new UserCredential(
+                            userId: user.Id,
+                            passwordHash: authService.PasswordHasher("admin")
+                        ));
+                        continue;
+                    }
+
+                    var password =
+                        Random.Shared.GetString(
+                            "!@#$%^&*()_+-=?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12);
+                    Console.WriteLine($"Creating credentials for user {user.UserName} with ID {user.Id}");
+                    Console.WriteLine($"Password: {password}");
+                    await db.AddAsync(new UserCredential(
+                            userId: user.Id,
+                            passwordHash: authService.PasswordHasher(password)
+                        )
+                    );
+                }
+            }
+
             await db.SaveChangesAsync();
         }
 
-        public static async Task GenerateNextDayShowingsAsync(ApiDbContext db, CancellationToken cancellationToken = default) {
+        public static async Task GenerateNextDayShowingsAsync(ApiDbContext db,
+            CancellationToken cancellationToken = default) {
             await GenerateShowingsAsync(db, 1, appendAfterLatest: true, cancellationToken);
         }
 
