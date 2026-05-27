@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using SharedLibrary.DTOs.Responses;
 using System.Text.Json;
+using API.Domain.Model;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
@@ -20,16 +21,8 @@ namespace API.Infrastructure.Database {
     public static class DbSeeder {
         public static async Task SeedAsync(ApiDbContext db, IMovieService movieService, IShowingService showingService,
             ITicketService ticketService, IPricingService pricingService, IAuditoriumService auditoriumService,
-            ILocalMailService localMailService) {
+            ILocalMailService localMailService, IAuthService authService) {
             var movieEntities = new List<Movie>();
-            if (!await db.Users.AnyAsync()) {
-                db.Users.AddRange(
-                    new User("Admin"),
-                    new User("TestUser"),
-                    new User("John Doe"),
-                    new User("Jane Smith")
-                );
-            }
 
             if (!await db.Movies.AnyAsync()) {
                 // 285 = Pirates of the Caribbean: At World's End
@@ -376,6 +369,57 @@ CineNet."
                     if (e is not SocketException) {
                         throw;
                     }
+                }
+            }
+
+
+            if (!await db.Users.AnyAsync()) {
+                db.Users.AddRange(
+                    new User(
+                        userName: "admin",
+                        firstName: "System",
+                        lastName: "Administrator",
+                        email: "admin@example.com"
+                    ),
+                    new User(
+                        userName: "testuser",
+                        firstName: "Test",
+                        lastName: "User",
+                        email: "testuser@example.com"
+                    ),
+                    new User(
+                        userName: "johndoe",
+                        firstName: "John",
+                        lastName: "Doe",
+                        email: "john.doe@example.com"
+                    ),
+                    new User(
+                        userName: "janesmith",
+                        firstName: "Jane",
+                        lastName: "Smith",
+                        email: "jane.smith@example.com"
+                    )
+                );
+                db.SaveChanges();
+                await foreach (var user in db.Users) {
+                    if (user.UserName == "admin") {
+                        await db.AddAsync(new UserCredential(
+                            userId: user.Id,
+                            passwordHash: authService.PasswordHasher("admin")
+                        ));
+                        continue;
+                    }
+
+                    var password =
+                        Random.Shared.GetString(
+                            "!@#$%^&*()_+-=?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12);
+                    Console.WriteLine($"Creating credentials for user {user.UserName} with ID {user.Id}");
+                    Console.WriteLine($"Password: {password}");
+                    await db.AddAsync(new UserCredential(
+                            userId: user.Id,
+                            passwordHash: authService.PasswordHasher(password)
+                        )
+                    );
                 }
             }
 

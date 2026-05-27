@@ -73,6 +73,9 @@ builder.Services.AddScoped<ILocalMailService, LocalMailService>();
 builder.Services.AddScoped<IArrangementService, ArrangementService>();
 builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
 
+// Authentication
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();
@@ -210,6 +213,7 @@ _ = Task.Run(async () =>
     var pricingService = services.GetRequiredService<IPricingService>();
     var auditoriumService = services.GetRequiredService<IAuditoriumService>();
     var mailService = services.GetRequiredService<ILocalMailService>();
+    var authService = services.GetRequiredService<IAuthService>();
 
     try
     {
@@ -222,7 +226,8 @@ _ = Task.Run(async () =>
             ticketService,
             pricingService,
             auditoriumService,
-            mailService
+            mailService,
+            authService
         );
 
         Console.WriteLine("Database seeding completed.");

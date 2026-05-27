@@ -13,6 +13,7 @@ public class ApiDbContext : DbContext {
 
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserCredential> AuthUsers => Set<UserCredential>();
     public DbSet<Movie> Movies => Set<Movie>();
     public DbSet<Photo> Photos => Set<Photo>();
     public DbSet<Genre> Genres => Set<Genre>();
@@ -39,11 +40,20 @@ public class ApiDbContext : DbContext {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>().ToTable("users");
+        modelBuilder.Entity<User>().Property(u => u.CreatedAt).HasConversion(
+            v => v.ToString("O"), // Convert to ISO 8601 string for storage
+            v => DateTimeOffset.ParseExact(
+                v,
+                "O", // Exact ISO 8601 round-trip format
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None
+            )
+        );
         modelBuilder.Entity<Movie>().ToTable("movies").Property(m => m.RowCreatedTimestampUtc).HasConversion(
             v => v.ToString("O"), v =>
                 (DateTimeOffset)System.DateTimeOffset.ParseExact(
                     v,
-                    "O", // Exact ISO 8601 round-trip format
+                    "O",
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.None));
         modelBuilder.Entity<Movie>().Property(m => m.RowDeletedTimestampUtc).HasConversion(
