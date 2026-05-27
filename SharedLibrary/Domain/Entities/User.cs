@@ -3,16 +3,17 @@
 namespace SharedLibrary.Domain.Entities;
 
 public class User {
-    public int Id { get; private set; } // EF Core can set this
+    public int Id { get; private set; }
 
-    public string UserName { get; private set; }
+    public string UserName { get; private set; } = null!;
 
     public string? PhotoId { get; private set; }
     public Photo? Photo { get; private set; }
-    public string FirstName { get; private set; }
-    public string LastName { get; private set; }
-    public string Email { get; private set; }
+    public string FirstName { get; private set; } = null!;
+    public string LastName { get; private set; } = null!;
+    public string Email { get; private set; } = null!;
     public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset UpdatedAt { get; private set; }
 
 
     public User(
@@ -25,9 +26,50 @@ public class User {
         SetLastName(lastName);
         SetEmail(email);
         CreatedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = CreatedAt;
     }
 
     protected User() { }
+
+    public void ChangeName(string firstName, string lastName) {
+        var normalisedFirstName = firstName.Trim();
+        var normalisedLastName = lastName.Trim();
+        if (normalisedFirstName == FirstName && normalisedLastName == LastName) {
+            return;
+        }
+
+        SetFirstName(firstName);
+        SetLastName(lastName);
+        RefreshUpdatedAt();
+    }
+
+    public void ChangeEmail(string email) {
+        var normalised = new MailAddress(email).Address;
+        if (normalised == Email) {
+            return;
+        }
+
+        SetEmail(email);
+        RefreshUpdatedAt();
+    }
+
+    public void ChangeUserName(string username) {
+        var normalized = username.Trim();
+        if (normalized == UserName) {
+            return;
+        }
+
+        SetUserName(username);
+        RefreshUpdatedAt();
+    }
+
+    public void ChangePhoto(Photo? photo) {
+        if (PhotoId == photo?.Id)
+            return;
+
+        SetPhoto(photo);
+        RefreshUpdatedAt();
+    }
 
     private void SetUserName(string userName) {
         if (string.IsNullOrWhiteSpace(userName))
@@ -62,8 +104,16 @@ public class User {
         }
     }
 
+    private void SetCreated() {
+        CreatedAt = DateTimeOffset.UtcNow;
+    }
+
+    private void RefreshUpdatedAt() {
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     private void SetPhoto(Photo? photo) {
-        PhotoId = photo.Id;
         Photo = photo;
+        PhotoId = photo?.Id;
     }
 }
