@@ -15,15 +15,7 @@ public class AuthService : IAuthService {
         return BCrypt.Net.BCrypt.Verify(password, passwordHash);
     }
 
-    public void LoginUser(string userName, string password) {
-        throw new NotImplementedException();
-    }
-
-    public void refreshAuth(string refreshToken) {
-        throw new NotImplementedException();
-    }
-
-    public void generateAccessKey(User user) {
+    public Task<User?> LoginUser(string userName, string password) {
         throw new NotImplementedException();
     }
 }

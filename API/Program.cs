@@ -1,3 +1,5 @@
+using System.Text;
+using API.Domain.Model;
 using API.Infrastructure.Database;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
@@ -8,7 +10,9 @@ using API.src.Repositories.Implementations;
 using API.Storage.Implementations;
 using API.Storage.Interfaces;
 using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 Env.Load();
 // App setup: create builder + dependency container
@@ -30,6 +34,7 @@ builder.Services.AddSwaggerGen();
  * Scoped: A single instance is provided per request.
  * Singleton: A single instance is created and shared throughout the application's lifetime.
  */
+
 
 //Users
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -73,6 +78,10 @@ builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
 
 // Authentication
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("JwtSettings"));
 
 // Background jobs: extend mock showings once per day
 builder.Services.AddHostedService<DailyShowingsGeneratorService>();
@@ -82,13 +91,11 @@ builder.Services.AddHostedService<DailyShowingsGeneratorService>();
 builder.Services.AddHealthChecks();
 
 // ORM: configure EF Core with MySQL
-builder.Services.AddDbContextPool<ApiDbContext>(options =>
-{
+builder.Services.AddDbContextPool<ApiDbContext>(options => {
     // Try to get connection string from environment/Docker
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-    if (string.IsNullOrEmpty(connectionString))
-    {
+    if (string.IsNullOrEmpty(connectionString)) {
         var database = Environment.GetEnvironmentVariable("DB_NAME") ?? "my_local_db";
         var user = Environment.GetEnvironmentVariable("DB_USER") ?? "root";
         var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "secret";
@@ -97,8 +104,7 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
         Console.WriteLine("DefaultConnection not found in environment. Using local MySQL connection.");
         connectionString = $"Server=localhost;Port=3306;Database={database};User={user};Password={password};";
     }
-    else
-    {
+    else {
         Console.WriteLine("Using DefaultConnection from environment.");
     }
 
@@ -108,14 +114,11 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     const int maxRetries = 10;
     var delay = TimeSpan.FromSeconds(5);
 
-    while (serverVersion == null && retries < maxRetries)
-    {
-        try
-        {
+    while (serverVersion == null && retries < maxRetries) {
+        try {
             serverVersion = ServerVersion.AutoDetect(connectionString);
         }
-        catch (MySqlConnector.MySqlException)
-        {
+        catch (MySqlConnector.MySqlException) {
             retries++;
             Console.WriteLine($"MySQL not ready yet. Retry {retries}/{maxRetries} in {delay.TotalSeconds} seconds...");
             Thread.Sleep(delay);
@@ -128,8 +131,7 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     options.UseMySql(
         connectionString,
         serverVersion,
-        mySqlOptions =>
-        {
+        mySqlOptions => {
             mySqlOptions.EnableRetryOnFailure(
                 maxRetryCount: 5,
                 maxRetryDelay: TimeSpan.FromSeconds(5),
@@ -139,26 +141,55 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     );
 });
 
+
+// JWT configuration
+var jwtSettings = builder.Configuration
+    .GetSection("JwtSettings")
+    .Get<JwtSettings>() ?? new JwtSettings {
+    Key = Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new Exception("JWT_KEY missing"),
+    Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? throw new Exception("JWT_ISSUER missing"),
+    Audience =
+        Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? throw new Exception("JWT_AUDIENCE missing"),
+    ExpiryMinutes = int.TryParse(Environment.GetEnvironmentVariable("JWT_EXPIRY_MINUTES"), out var expiry)
+        ? expiry
+        : throw new Exception("JWT_EXPIRY_MINUTES missing or invalid format or type")
+};
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options => {
+        options.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings.Issuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings.Key)),
+
+            ValidateLifetime = true,
+
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
 // CORS
 var allowedOrigins = new List<string>();
-if (builder.Environment.IsProduction())
-{
+if (builder.Environment.IsProduction()) {
     allowedOrigins.Add("https://prod-cinenetwa.ivarvisser.nl");
 }
-else
-{
-    allowedOrigins.AddRange(new[]
-    {
+else {
+    allowedOrigins.AddRange(new[] {
         "https://acc-cinenetwa.ivarvisser.nl",
         "http://localhost:5031", // Blazor WASM local dev
         "http://localhost:8082" // KotlinMP local dev
     });
 }
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("BlazorWasm", policy =>
-    {
+builder.Services.AddCors(options => {
+    options.AddPolicy("BlazorWasm", policy => {
         policy
             .WithOrigins(allowedOrigins.ToArray())
             .AllowAnyHeader()
@@ -170,15 +201,13 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Network: configure HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
+if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 // Security: redirect HTTP to HTTPS
-if (!app.Environment.IsDevelopment())
-{
+if (!app.Environment.IsDevelopment()) {
     app.UseHttpsRedirection();
 }
 
@@ -190,6 +219,10 @@ app.UseRouting();
 // Security: CORS
 app.UseCors("BlazorWasm");
 
+// Add jwt
+app.UseAuthentication();
+app.UseAuthorization();
+
 // Security: authorization middleware
 app.UseAuthorization();
 
@@ -200,8 +233,7 @@ app.MapHealthChecks("/health");
 app.MapControllers();
 
 // Database: apply pending migrations at startup and seed some mock data
-_ = Task.Run(async () =>
-{
+_ = Task.Run(async () => {
     using var scope = app.Services.CreateScope();
 
     var services = scope.ServiceProvider;
@@ -216,8 +248,7 @@ _ = Task.Run(async () =>
     var mailService = services.GetRequiredService<ILocalMailService>();
     var authService = services.GetRequiredService<IAuthService>();
 
-    try
-    {
+    try {
         await db.Database.EnsureCreatedAsync();
 
         await DbSeeder.SeedAsync(
@@ -233,8 +264,7 @@ _ = Task.Run(async () =>
 
         Console.WriteLine("Database seeding completed.");
     }
-    catch (Exception ex)
-    {
+    catch (Exception ex) {
         Console.WriteLine("Seeding produced an error: " + ex);
     }
 });
