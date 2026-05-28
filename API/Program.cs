@@ -1,3 +1,5 @@
+using System.Text;
+using API.Domain.Model;
 using API.Infrastructure.Database;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
