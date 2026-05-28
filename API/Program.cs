@@ -78,6 +78,21 @@ builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
 // Authentication
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+
+// Get JWT variables or set them from .env
+builder.Configuration["JwtSettings:Key"] ??=
+    Environment.GetEnvironmentVariable("JWT_KEY");
+
+builder.Configuration["JwtSettings:Issuer"] ??=
+    Environment.GetEnvironmentVariable("JWT_ISSUER");
+
+builder.Configuration["JwtSettings:Audience"] ??=
+    Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+
+builder.Configuration["JwtSettings:ExpiryMinutes"] ??=
+    Environment.GetEnvironmentVariable("JWT_EXPIRY_MINUTES");
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
@@ -143,16 +158,9 @@ builder.Services.AddDbContextPool<ApiDbContext>(options => {
 
 // JWT configuration
 var jwtSettings = builder.Configuration
-    .GetSection("JwtSettings")
-    .Get<JwtSettings>() ?? new JwtSettings {
-    Key = Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new Exception("JWT_KEY missing"),
-    Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? throw new Exception("JWT_ISSUER missing"),
-    Audience =
-        Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? throw new Exception("JWT_AUDIENCE missing"),
-    ExpiryMinutes = int.TryParse(Environment.GetEnvironmentVariable("JWT_EXPIRY_MINUTES"), out var expiry)
-        ? expiry
-        : throw new Exception("JWT_EXPIRY_MINUTES missing or invalid format or type")
-};
+                      .GetSection("JwtSettings")
+                      .Get<JwtSettings>()
+                  ?? throw new Exception("JwtSettings missing");
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -220,7 +228,6 @@ app.UseCors("BlazorWasm");
 
 // Add jwt
 app.UseAuthentication();
-app.UseAuthorization();
 
 // Security: authorization middleware
 app.UseAuthorization();

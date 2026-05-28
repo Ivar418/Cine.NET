@@ -42,14 +42,19 @@ public class JwtService : IJwtService {
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public string GenerateRefreshToken() {
+    public RefreshToken GenerateRefreshToken(User user) {
         var randomBytes = new byte[64];
 
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomBytes);
 
-        return Convert.ToBase64String(randomBytes);
+        return new RefreshToken(
+            token: Convert.ToBase64String(randomBytes),
+            expiresAt: DateTimeOffset.UtcNow.AddDays(30),
+            user: user
+        );
     }
+
 
     public bool ValidateAccessToken(string token) {
         var tokenHandler = new JwtSecurityTokenHandler();

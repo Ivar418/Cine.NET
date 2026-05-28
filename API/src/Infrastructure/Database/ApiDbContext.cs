@@ -13,7 +13,8 @@ public class ApiDbContext : DbContext {
 
 
     public DbSet<User> Users => Set<User>();
-    public DbSet<UserCredential> AuthUsers => Set<UserCredential>();
+    public DbSet<UserCredential> UserCredentials => Set<UserCredential>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Movie> Movies => Set<Movie>();
     public DbSet<Photo> Photos => Set<Photo>();
     public DbSet<Genre> Genres => Set<Genre>();
@@ -76,6 +77,7 @@ public class ApiDbContext : DbContext {
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.None
                 ));
+        modelBuilder.Entity<RefreshToken>().ToTable("refresh_tokens");
         modelBuilder.Entity<Photo>().ToTable("photos");
         modelBuilder.Entity<Ticket>().ToTable("tickets");
         modelBuilder.Entity<Auditorium>().ToTable("auditoriums");
