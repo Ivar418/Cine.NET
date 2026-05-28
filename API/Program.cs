@@ -1,5 +1,3 @@
-using System.Text;
-using API.Domain.Model;
 using API.Infrastructure.Database;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
@@ -34,7 +32,6 @@ builder.Services.AddSwaggerGen();
  * Scoped: A single instance is provided per request.
  * Singleton: A single instance is created and shared throughout the application's lifetime.
  */
-
 
 //Users
 builder.Services.AddScoped<IUserRepository, UserRepository>();
