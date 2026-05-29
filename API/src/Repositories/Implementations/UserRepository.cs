@@ -1,4 +1,5 @@
 ﻿using API.Domain.Common;
+using API.Domain.Model;
 using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using API.Infrastructure.Database;
@@ -6,35 +7,28 @@ using API.Repositories.Interfaces;
 
 namespace API.Repositories.Implementations;
 
-public class UserRepository : IUserRepository
-{
+public class UserRepository : IUserRepository {
     private readonly ApiDbContext _db;
 
-    public UserRepository(ApiDbContext db)
-    {
+    public UserRepository(ApiDbContext db) {
         _db = db;
     }
 
-    public async Task<ResultOf<IReadOnlyList<User>>> GetAllAsync()
-    {
-        try
-        {
+    public async Task<ResultOf<IReadOnlyList<User>>> GetAllAsync() {
+        try {
             var users = await _db.Users
                 .AsNoTracking()
                 .ToListAsync();
 
             return ResultOf<IReadOnlyList<User>>.Success(users);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return ResultOf<IReadOnlyList<User>>.Failure(ex.Message);
         }
     }
 
-    public async Task<ResultOf<User?>> GetByIdAsync(int id)
-    {
-        try
-        {
+    public async Task<ResultOf<User?>> GetByIdAsync(int id) {
+        try {
             var user = await _db.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id);
@@ -44,9 +38,31 @@ public class UserRepository : IUserRepository
 
             return ResultOf<User?>.Success(user);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return ResultOf<User?>.Failure(ex.Message);
+        }
+    }
+
+    public async Task<ResultOf<User?>> GetByUserNameAsync(string userName) {
+        try {
+            var user = await _db.Users.Where(u => u.UserName == userName).FirstOrDefaultAsync();
+            if (user == null) return ResultOf<User?>.Failure("User not found");
+            return ResultOf<User?>.Success(user);
+        }
+        catch (Exception ex) {
+            return ResultOf<User?>.Failure(ex.Message);
+        }
+    }
+
+    public async Task<ResultOf<UserCredential?>> GetCredentialsByUserId(int id) {
+        try {
+            var credentials = await _db.UserCredentials.Where(c => c.UserId == id).FirstOrDefaultAsync();
+            return credentials == null
+                ? ResultOf<UserCredential?>.Failure("Credentials not found")
+                : ResultOf<UserCredential?>.Success(credentials);
+        }
+        catch (Exception ex) {
+            return ResultOf<UserCredential?>.Failure(ex.Message);
         }
     }
 }

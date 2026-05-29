@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using API.Domain.Model;
 using API.Services.Interfaces;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
 using SharedLibrary.DTOs.Models;
@@ -320,9 +321,12 @@ CineNet."
                 db.SaveChanges();
                 await foreach (var user in db.Users) {
                     if (user.UserName == "admin") {
+                        var adminPassword = Env.GetString("ADMIN_PASSWORD");
+                        if (string.IsNullOrWhiteSpace(adminPassword)) continue;
+
                         await db.AddAsync(new UserCredential(
                             userId: user.Id,
-                            passwordHash: authService.PasswordHasher("admin")
+                            passwordHash: authService.PasswordHasher(adminPassword)
                         ));
                         continue;
                     }

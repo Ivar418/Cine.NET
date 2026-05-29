@@ -1,11 +1,13 @@
-﻿using SharedLibrary.Domain.Entities;
+﻿using API.Domain.Model;
+using SharedLibrary.Domain.Entities;
+using SharedLibrary.DTOs.Requests;
+using SharedLibrary.DTOs.Responses;
 
 namespace API.Services.Interfaces;
 
 public interface IAuthService {
     public string PasswordHasher(string password);
     public bool VerifyPassword(string password, string passwordHash);
-    public void LoginUser(string userName, string password);
-    public void refreshAuth(string refreshToken);
-    public void generateAccessKey(User user);
+    public Task<AuthResponse?> LoginUser(string userName, string password);
+    public Task<AuthResponse?> NewRefreshToken(RefreshRequest request);
 }
