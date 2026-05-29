@@ -1,4 +1,10 @@
 <Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Development" />
+    <BuildType Name="Production" />
+    <BuildType Name="Release" />
+  </Configurations>
   <Project Path="API/API.csproj" />
   <Project Path="SharedLibrary/SharedLibrary.csproj" Id="30dfd035-f228-42c4-a048-eea6779dc50a" />
   <Project Path="UnitTest/UnitTest.csproj" />

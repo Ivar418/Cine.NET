@@ -29,4 +29,20 @@ Each project contains its own detailed README:
 - See the `/WA` folder for frontend details  
 - See the `/SharedLibrary` folder for shared model information  
 
+### Publishing & Environments (WA)
+
+To publish the Blazor WebAssembly project with a specific environment, use the `PublishProfile` property. This will automatically set the `WasmApplicationEnvironmentName` for the build.
+
+**Command line:**
+```bash
+dotnet publish WA/WA.csproj -p:PublishProfile=Staging
+# OR
+dotnet publish WA/WA.csproj -p:WasmApplicationEnvironmentName=Staging
+```
+
+Available profiles in `WA.csproj`:
+- `Development` (Default)
+- `Staging`
+- `Production`
+
 Refer to those individual READMEs for configuration, Docker usage, and project-specific documentation.

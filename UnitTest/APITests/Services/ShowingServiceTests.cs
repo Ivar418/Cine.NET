@@ -42,7 +42,7 @@ public class ShowingServiceTests
         Id = 1,
         Movie = new Movie { Title = "Test" },
         StartsAt = DateTime.Now.AddHours(1),
-        IsThreeD = false
+        Is3D = false
     };
 
     private static List<TicketType> BuildTicketTypes() => new()

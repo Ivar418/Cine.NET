@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses;
 using WA.Services.Http.Interfaces;
 
@@ -42,13 +43,13 @@ public class ShowingApi : IShowingApi
     /// </summary>
     /// <param name="id">The Showing ID.</param>
     /// <returns>
-    /// A <see cref="ShowingResponse"/> if found; otherwise null.
+    /// A <see cref="Showing"/> if found; otherwise null.
     /// </returns>
-    public async Task<ShowingResponse?> GetShowingByIdAsync(int id)
+    public async Task<Showing?> GetShowingByIdAsync(int id)
     {
         try
         {
-            return await _http.GetFromJsonAsync<ShowingResponse>($"{BasePath}/{id}");
+            return await _http.GetFromJsonAsync<Showing>($"{BasePath}/{id}");
         }
         catch (Exception ex)
         {
@@ -125,14 +126,14 @@ public class ShowingApi : IShowingApi
     /// </summary>
     /// <param name="movieId">The Movie ID.</param>
     /// <returns>
-    /// A read-only list of <see cref="ShowingResponse"/>.
+    /// A read-only list of <see cref="Showing"/>.
     /// Returns an empty list if no data is found or an error occurs.
     /// </returns>
-    public async Task<IReadOnlyList<ShowingResponse>> GetUpcomingShowingsByMovieIdAsync(int movieId)
+    public async Task<IReadOnlyList<Showing>> GetUpcomingShowingsByMovieIdAsync(int movieId)
     {
         try
         {
-            var result = await _http.GetFromJsonAsync<List<ShowingResponse>>(
+            var result = await _http.GetFromJsonAsync<List<Showing>>(
                 $"{BasePath}/movie/{movieId}/upcoming"
             );
             return result ?? [];

@@ -6,12 +6,12 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/orders")]
-    public class OrdersController : ControllerBase
+    public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
         private readonly IOrderPdfService _orderPdfService;
 
-        public OrdersController(IOrderService orderService, IOrderPdfService orderPdfService)
+        public OrderController(IOrderService orderService, IOrderPdfService orderPdfService)
         {
             _orderService = orderService;
             _orderPdfService = orderPdfService;

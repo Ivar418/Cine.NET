@@ -7,15 +7,14 @@ using System;
 using System.Collections.Generic;
 using SharedLibrary.Domain.Entities;
 
-public class ApiDbContext : DbContext
-{
+public class ApiDbContext : DbContext {
     public ApiDbContext(DbContextOptions<ApiDbContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
 
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserCredential> UserCredentials => Set<UserCredential>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Movie> Movies => Set<Movie>();
     public DbSet<Photo> Photos => Set<Photo>();
     public DbSet<Genre> Genres => Set<Genre>();
@@ -38,16 +37,63 @@ public class ApiDbContext : DbContext
     // Email related entities
     public DbSet<EmailSubscription> EmailSubscriptions => Set<EmailSubscription>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
+    protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>().ToTable("users");
-        modelBuilder.Entity<Movie>().ToTable("movies");
+        modelBuilder.Entity<User>().Property(u => u.CreatedAt).HasConversion(
+            v => v.ToString("O"), // Convert to ISO 8601 string for storage
+            v => DateTimeOffset.ParseExact(
+                v,
+                "O", // Exact ISO 8601 round-trip format
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None
+            )
+        );
+        modelBuilder.Entity<Movie>().ToTable("movies").Property(m => m.RowCreatedTimestampUtc).HasConversion(
+            v => v.ToString("O"), v =>
+                (DateTimeOffset)System.DateTimeOffset.ParseExact(
+                    v,
+                    "O",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None));
+        modelBuilder.Entity<Movie>().Property(m => m.RowDeletedTimestampUtc).HasConversion(
+            v => v.HasValue ? v.Value.ToString("O") : null,
+            v => string.IsNullOrEmpty(v)
+                ? null
+                : DateTimeOffset.ParseExact(
+                    v,
+                    "O",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None
+                ));
+        modelBuilder.Entity<Movie>().Property(m => m.RowUpdatedTimestampUtc).HasConversion(
+            v => v.HasValue ? v.Value.ToString("O") : null,
+            v => string.IsNullOrEmpty(v)
+                ? null
+                : DateTimeOffset.ParseExact(
+                    v,
+                    "O",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None
+                ));
+        modelBuilder.Entity<UserCredential>().ToTable("user_credentials");
+        modelBuilder.Entity<RefreshToken>().ToTable("refresh_tokens");
         modelBuilder.Entity<Photo>().ToTable("photos");
         modelBuilder.Entity<Ticket>().ToTable("tickets");
         modelBuilder.Entity<Auditorium>().ToTable("auditoriums");
         modelBuilder.Entity<Showing>().ToTable("showings");
+        modelBuilder.Entity<Showing>()
+            .HasOne(s => s.Movie)
+            .WithMany()
+            .HasForeignKey(s => s.MovieId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Showing>()
+            .HasOne(s => s.Auditorium)
+            .WithMany()
+            .HasForeignKey(s => s.AuditoriumId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<Reservation>().ToTable("reservations");
         modelBuilder.Entity<Order>().ToTable("orders");
         modelBuilder.Entity<Order>()
@@ -96,7 +142,7 @@ public class ApiDbContext : DbContext
             .Property(p => p.PriceModifier)
             .HasPrecision(10, 2);
         modelBuilder.Entity<Genre>().ToTable("genres");
-        
+
         // Arrangement
         modelBuilder.Entity<Arrangement>().ToTable("arrangements");
 

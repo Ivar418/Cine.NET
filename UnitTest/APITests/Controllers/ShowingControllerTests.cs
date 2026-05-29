@@ -354,13 +354,13 @@ namespace UnitTest.APITests.Controllers
         [Fact]
         public async Task GetUpcomingShowingsByMovieId_WhenServiceSucceeds_ReturnsOkWithList()
         {
-            IReadOnlyList<ShowingResponse> upcoming = new List<ShowingResponse>
+            IReadOnlyList<Showing> upcoming = new List<Showing>
             {
-                new ShowingResponse(), new ShowingResponse()
+                new Showing(), new Showing()
             };
             _serviceMock
                 .Setup(s => s.GetUpcomingShowingsByMovieIdAsync(5))
-                .ReturnsAsync(ResultOf<IReadOnlyList<ShowingResponse>>.Success(upcoming));
+                .ReturnsAsync(ResultOf<IReadOnlyList<Showing>>.Success(upcoming));
             
             var actionResult = await _sut.GetUpcomingShowingsByMovieId(5);
 
@@ -373,7 +373,7 @@ namespace UnitTest.APITests.Controllers
         {
             _serviceMock
                 .Setup(s => s.GetUpcomingShowingsByMovieIdAsync(It.IsAny<int>()))
-                .ReturnsAsync(ResultOf<IReadOnlyList<ShowingResponse>>.Failure("error"));
+                .ReturnsAsync(ResultOf<IReadOnlyList<Showing>>.Failure("error"));
             
             var actionResult = await _sut.GetUpcomingShowingsByMovieId(5);
             

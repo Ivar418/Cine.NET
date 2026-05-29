@@ -5,6 +5,7 @@ using Moq;
 using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Responses;
 using SharedLibrary.DTOs.Responses.TMDB.Genre;
+using SharedLibrary.Util;
 using Xunit;
 
 namespace UnitTest.APITests.Services;
@@ -12,12 +13,14 @@ namespace UnitTest.APITests.Services;
 public class MovieServiceTests
 {
     private readonly Mock<IMovieRepository> _repoMock;
+    private readonly Mock<IShowingRepository> _repoMock2;
     private readonly MovieService _sut;
 
     public MovieServiceTests()
     {
         _repoMock = new Mock<IMovieRepository>();
-        _sut = new MovieService(_repoMock.Object);
+        _repoMock2 = new Mock<IShowingRepository>();
+        _sut = new MovieService(_repoMock.Object, _repoMock2.Object);
     }
 
     private static Movie BuildMovie(int id = 1) => new Movie
@@ -25,7 +28,7 @@ public class MovieServiceTests
         Id = id,
         Title = "Test",
         TmdbId = 123,
-        RowCreatedTimestampUtc = "2026-01-01T00:00:00+00:00"
+        RowCreatedTimestampUtc = DateTimeOffsetConverters.StringToDateTimeOffsetConverter("2026-01-01T00:00:00+00:00")
     };
     
     // -------------------------------------------------------

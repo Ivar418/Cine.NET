@@ -7,10 +7,16 @@ services:
       dockerfile: API/Dockerfile
     ports:
       - "8080:8080"
+      - "7172:7172"
     env_file:
       - .env
+    volumes:
+      - ./https:/https:ro
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080;https://+:7172"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "${KESTREL_CERT_PASSWORD}"
       ConnectionStrings__DefaultConnection: >
         Server=${DB_HOST};
         Port=${DB_PORT};
@@ -18,6 +24,10 @@ services:
         User=${DB_USER};
         Password=${DB_PASSWORD};
       TMDB_API_KEY_READ_ONLY: ${TMDB_API_KEY_READ_ONLY}
+      JwtSettings__Key: ${JWT_KEY}
+      JwtSettings__Issuer: ${JWT_ISSUER}
+      JwtSettings__Audience: ${JWT_AUDIENCE}
+      JwtSettings__ExpiryMinutes: ${JWT_EXPIRY_MINUTES}
     depends_on:
       - db
     labels:

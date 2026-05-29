@@ -1,16 +1,18 @@
+using System.Text;
+using API.Domain.Model;
 using API.Infrastructure.Database;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
-using API.Services;
+using API.Services.Background.Implementations;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.src.Repositories.Implementations;
-using API.Storage;
 using API.Storage.Implementations;
 using API.Storage.Interfaces;
 using DotNetEnv;
-using MailKit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 Env.Load();
 // App setup: create builder + dependency container
@@ -73,18 +75,41 @@ builder.Services.AddScoped<ILocalMailService, LocalMailService>();
 builder.Services.AddScoped<IArrangementService, ArrangementService>();
 builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
 
+// Authentication
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+
+// Get JWT variables or set them from .env
+builder.Configuration["JwtSettings:Key"] ??=
+    Environment.GetEnvironmentVariable("JWT_KEY");
+
+builder.Configuration["JwtSettings:Issuer"] ??=
+    Environment.GetEnvironmentVariable("JWT_ISSUER");
+
+builder.Configuration["JwtSettings:Audience"] ??=
+    Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+
+builder.Configuration["JwtSettings:ExpiryMinutes"] ??=
+    Environment.GetEnvironmentVariable("JWT_EXPIRY_MINUTES");
+
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("JwtSettings"));
+
+// Background jobs: extend mock showings once per day
+builder.Services.AddHostedService<DailyShowingsGeneratorService>();
+
 
 // Monitoring: health check endpoint
 builder.Services.AddHealthChecks();
 
 // ORM: configure EF Core with MySQL
-builder.Services.AddDbContextPool<ApiDbContext>(options =>
-{
+builder.Services.AddDbContextPool<ApiDbContext>(options => {
     // Try to get connection string from environment/Docker
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-    if (string.IsNullOrEmpty(connectionString))
-    {
+    if (string.IsNullOrEmpty(connectionString)) {
         var database = Environment.GetEnvironmentVariable("DB_NAME") ?? "my_local_db";
         var user = Environment.GetEnvironmentVariable("DB_USER") ?? "root";
         var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "secret";
@@ -93,8 +118,7 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
         Console.WriteLine("DefaultConnection not found in environment. Using local MySQL connection.");
         connectionString = $"Server=localhost;Port=3306;Database={database};User={user};Password={password};";
     }
-    else
-    {
+    else {
         Console.WriteLine("Using DefaultConnection from environment.");
     }
 
@@ -104,14 +128,11 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     const int maxRetries = 10;
     var delay = TimeSpan.FromSeconds(5);
 
-    while (serverVersion == null && retries < maxRetries)
-    {
-        try
-        {
+    while (serverVersion == null && retries < maxRetries) {
+        try {
             serverVersion = ServerVersion.AutoDetect(connectionString);
         }
-        catch (MySqlConnector.MySqlException)
-        {
+        catch (MySqlConnector.MySqlException) {
             retries++;
             Console.WriteLine($"MySQL not ready yet. Retry {retries}/{maxRetries} in {delay.TotalSeconds} seconds...");
             Thread.Sleep(delay);
@@ -124,8 +145,7 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     options.UseMySql(
         connectionString,
         serverVersion,
-        mySqlOptions =>
-        {
+        mySqlOptions => {
             mySqlOptions.EnableRetryOnFailure(
                 maxRetryCount: 5,
                 maxRetryDelay: TimeSpan.FromSeconds(5),
@@ -135,17 +155,53 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     );
 });
 
+
+// JWT configuration
+var jwtSettings = builder.Configuration
+                      .GetSection("JwtSettings")
+                      .Get<JwtSettings>()
+                  ?? throw new Exception("JwtSettings missing");
+// Validate if the key is up to JWT requirements
+jwtSettings.Validate();
+
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options => {
+        options.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings.Issuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings.Key)),
+
+            ValidateLifetime = true,
+
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
 // CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("BlazorWasm", policy =>
-    {
+var allowedOrigins = new List<string>();
+if (builder.Environment.IsProduction()) {
+    allowedOrigins.Add("https://prod-cinenetwa.ivarvisser.nl");
+}
+else {
+    allowedOrigins.AddRange(new[] {
+        "https://acc-cinenetwa.ivarvisser.nl",
+        "http://localhost:5031", // Blazor WASM local dev
+        "http://localhost:8082" // KotlinMP local dev
+    });
+}
+
+builder.Services.AddCors(options => {
+    options.AddPolicy("BlazorWasm", policy => {
         policy
-            .WithOrigins(
-                "https://acc-cinenetwa.ivarvisser.nl",
-                "https://prod-cinenetwa.ivarvisser.nl",
-                "http://localhost:5031" // local dev
-            )
+            .WithOrigins(allowedOrigins.ToArray())
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -155,15 +211,13 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Network: configure HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
+if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 // Security: redirect HTTP to HTTPS
-if (!app.Environment.IsDevelopment())
-{
+if (!app.Environment.IsDevelopment()) {
     app.UseHttpsRedirection();
 }
 
@@ -175,6 +229,9 @@ app.UseRouting();
 // Security: CORS
 app.UseCors("BlazorWasm");
 
+// Add jwt
+app.UseAuthentication();
+
 // Security: authorization middleware
 app.UseAuthorization();
 
@@ -185,34 +242,41 @@ app.MapHealthChecks("/health");
 app.MapControllers();
 
 // Database: apply pending migrations at startup and seed some mock data
-using (var scope = app.Services.CreateScope())
-{
-    // Ensure the database and tables are there. This is not production-ready, but it simplifies development and testing.
-    // Since this is a school project which always destroys the database on recreation it does not matter
-    var services = scope.ServiceProvider;
-    var db = services.GetRequiredService<ApiDbContext>();
-    db.Database.EnsureCreated();
+_ = Task.Run(async () => {
+    using var scope = app.Services.CreateScope();
 
-    //Get other required services for seeding
+    var services = scope.ServiceProvider;
+
+    var db = services.GetRequiredService<ApiDbContext>();
+
     var movieService = services.GetRequiredService<IMovieService>();
     var showingService = services.GetRequiredService<IShowingService>();
     var ticketService = services.GetRequiredService<ITicketService>();
     var pricingService = services.GetRequiredService<IPricingService>();
     var auditoriumService = services.GetRequiredService<IAuditoriumService>();
     var mailService = services.GetRequiredService<ILocalMailService>();
+    var authService = services.GetRequiredService<IAuthService>();
 
+    try {
+        await db.Database.EnsureCreatedAsync();
 
-    // Seed data
-    try
-    {
-        await DbSeeder.SeedAsync(db, movieService, showingService, ticketService, pricingService, auditoriumService,
-            mailService);
+        await DbSeeder.SeedAsync(
+            db,
+            movieService,
+            showingService,
+            ticketService,
+            pricingService,
+            auditoriumService,
+            mailService,
+            authService
+        );
+
+        Console.WriteLine("Database seeding completed.");
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine("Seeding produced an error: " + ex.Message);
+    catch (Exception ex) {
+        Console.WriteLine("Seeding produced an error: " + ex);
     }
-}
+});
 
 // Runtime: start web application
 app.Run();

@@ -13,13 +13,13 @@ namespace UnitTest.APITests.Controllers
     {
         private readonly Mock<IOrderService>    _orderServiceMock;
         private readonly Mock<IOrderPdfService> _orderPdfServiceMock;
-        private readonly OrdersController       _sut;
+        private readonly OrderController       _sut;
 
         public OrdersControllerTests()
         {
             _orderServiceMock    = new Mock<IOrderService>();
             _orderPdfServiceMock = new Mock<IOrderPdfService>();
-            _sut = new OrdersController(_orderServiceMock.Object, _orderPdfServiceMock.Object);
+            _sut = new OrderController(_orderServiceMock.Object, _orderPdfServiceMock.Object);
         }
         
         private static CreateOrderRequest ValidOrderRequest() => new CreateOrderRequest

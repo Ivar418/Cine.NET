@@ -7,8 +7,20 @@
         <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+		<Configurations>Debug;Release;Production;Development</Configurations>
+		<Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(PublishProfile)' == ''">
+        <WasmApplicationEnvironmentName>Development</WasmApplicationEnvironmentName>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(PublishProfile)' == 'Production'">
+        <WasmApplicationEnvironmentName>Production</WasmApplicationEnvironmentName>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(PublishProfile)' == 'Staging'">
+        <WasmApplicationEnvironmentName>Staging</WasmApplicationEnvironmentName>
+    </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.3" />

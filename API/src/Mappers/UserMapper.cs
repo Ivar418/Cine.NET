@@ -7,7 +7,7 @@ namespace API.Mappers
     {
         public static UserResponse ToResponse(User user)
         {
-            return new UserResponse(user.Id, user.Name);
+            return new UserResponse(user.Id, user.UserName);
         }
 
         public static IEnumerable<UserResponse> ToResponses(IEnumerable<User> users)

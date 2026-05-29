@@ -18,7 +18,11 @@ services:
         Database=${DB_NAME};
         User=${DB_USER};
         Password=${DB_PASSWORD};
-
+      TMDB_API_KEY_READ_ONLY: ${TMDB_API_KEY_READ_ONLY}
+      JwtSettings__Key: ${JWT_KEY}
+      JwtSettings__Issuer: ${JWT_ISSUER}
+      JwtSettings__Audience: ${JWT_AUDIENCE}
+      JwtSettings__ExpiryMinutes: ${JWT_EXPIRY_MINUTES}
     depends_on:
       db:
         condition: service_healthy
@@ -50,7 +54,7 @@ services:
       - traefik.http.routers.acc-cinenet-wa.rule=Host(`acc-cinenetwa.ivarvisser.nl`)
       - traefik.http.routers.acc-cinenet-wa.entrypoints=https-external
       - traefik.http.routers.acc-cinenet-wa.tls=true
-      - traefik.http.routers.acc-cinenet-wa.tls.certresolver=letsencrypt
+      - traefik.http.routers.acc-cinenet-wa.tls.certresolver=cloudflare
       - traefik.http.services.acc-cinenet-wa.loadbalancer.server.port=80
       - traefik.http.routers.acc-cinenet-wa-http.rule=Host(`acc-cinenetwa.ivarvisser.nl`)
       - traefik.http.routers.acc-cinenet-wa-http.entrypoints=http-external

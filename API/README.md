@@ -172,9 +172,9 @@ This will:
 - Start phpMyAdmin on port 8081 (for database inspection)
 - Initialize the database with seed data if available
 
-The API will be available at: **http://localhost:8080**
+The API will be available at: **http://localhost:8080** or **https://localhost:7172**
 
-Be aware! 8080 will not show anything, you'll have to navigate to a endpoint to
+Be aware! 8080/7172 will not show anything, you'll have to navigate to a endpoint to
 see the response. For example: **http://localhost:8080/api/users**
 
 
@@ -191,7 +191,7 @@ If you modify the application code:
 docker compose up --build
 ```
 
-Or use the provided PowerShell script:
+Or use the provided PowerShell script which also checks for TLS certificates:
 
 ```powershell
 .\rebuild.docker.ps1
@@ -208,6 +208,33 @@ To also remove database volumes (clean slate):
 ```bash
 docker compose down -v
 ```
+
+### HTTPS / TLS Support
+
+The API supports HTTPS in Docker for local development.
+
+#### 1. Generate a self-signed certificate
+If you don't have a certificate yet, you can generate one using the following command:
+
+```powershell
+dotnet dev-certs https -ep ./https/aspnetapp.pfx -p yourpassword
+```
+
+> **Note:** Ensure the password matches the one in your `.env` file.
+
+#### 2. Trust the certificate
+To trust the certificate on your local machine:
+```powershell
+dotnet dev-certs https --trust
+```
+
+#### 3. Configuration
+The certificate is mounted into the container and configured via environment variables in `docker-compose.yml`.
+
+| Variable | Description |
+| :--- | :--- |
+| `ASPNETCORE_URLS` | Configured to listen on both `8080` (HTTP) and `7172` (HTTPS). |
+| `KESTREL_CERT_PASSWORD` | The password for your `.pfx` file (set in `.env`). |
 
 ## API Endpoints
 
