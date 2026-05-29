@@ -77,6 +77,7 @@ public class ApiDbContext : DbContext {
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.None
                 ));
+        modelBuilder.Entity<UserCredential>().ToTable("user_credentials");
         modelBuilder.Entity<RefreshToken>().ToTable("refresh_tokens");
         modelBuilder.Entity<Photo>().ToTable("photos");
         modelBuilder.Entity<Ticket>().ToTable("tickets");

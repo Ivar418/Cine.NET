@@ -2,11 +2,10 @@
 
 namespace API.Repositories.Interfaces;
 
-    public interface IRefreshTokenRepository {
-        Task<RefreshToken?> GetByTokenAsync(string token);
+public interface IRefreshTokenRepository {
+    Task<RefreshToken?> GetByTokenAsync(string token);
 
-        Task AddAsync(RefreshToken refreshToken);
+    Task AddAsync(RefreshToken refreshToken);
 
-        Task SaveChangesAsync();
-
+    Task SaveChangesAsync();
 }

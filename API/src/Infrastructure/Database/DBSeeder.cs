@@ -321,9 +321,12 @@ CineNet."
                 db.SaveChanges();
                 await foreach (var user in db.Users) {
                     if (user.UserName == "admin") {
+                        var adminPassword = Env.GetString("ADMIN_PASSWORD");
+                        if (string.IsNullOrWhiteSpace(adminPassword)) continue;
+
                         await db.AddAsync(new UserCredential(
                             userId: user.Id,
-                            passwordHash: authService.PasswordHasher(Env.GetString("ADMIN_PASSWORD"))
+                            passwordHash: authService.PasswordHasher(adminPassword)
                         ));
                         continue;
                     }

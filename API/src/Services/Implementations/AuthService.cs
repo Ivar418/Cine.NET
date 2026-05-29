@@ -38,16 +38,14 @@ public class AuthService : IAuthService {
 
         var authUser = await _userService.GetCredentialsByUserId(user.Value.Id);
         if (authUser.IsFailure || authUser.Value == null) return null;
+        if (VerifyPassword(password, authUser.Value.PasswordHash) == false) return null;
         var refreshToken = _jwtService.GenerateRefreshToken(user.Value);
-
         await _refreshTokenRepository.AddAsync(refreshToken);
-        return VerifyPassword(password, authUser.Value.PasswordHash)
-            ? new AuthResponse {
-                AccessToken = _jwtService.GenerateAccessToken(user.Value),
-                RefreshToken = refreshToken.Token,
-                User = user.Value
-            }
-            : null;
+        return new AuthResponse {
+            AccessToken = _jwtService.GenerateAccessToken(user.Value),
+            RefreshToken = refreshToken.Token,
+            User = user.Value
+        };
     }
 
 
@@ -61,9 +59,6 @@ public class AuthService : IAuthService {
             return null;
 
         if (!refreshToken.IsActive())
-            return null;
-
-        if (refreshToken.UserId != request.UserId)
             return null;
 
         var user = refreshToken.User;

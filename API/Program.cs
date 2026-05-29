@@ -161,6 +161,9 @@ var jwtSettings = builder.Configuration
                       .GetSection("JwtSettings")
                       .Get<JwtSettings>()
                   ?? throw new Exception("JwtSettings missing");
+// Validate if the key is up to JWT requirements
+jwtSettings.Validate();
+
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
