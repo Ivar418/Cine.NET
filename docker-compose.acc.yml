@@ -18,7 +18,11 @@ services:
         Database=${DB_NAME};
         User=${DB_USER};
         Password=${DB_PASSWORD};
-
+      TMDB_API_KEY_READ_ONLY: ${TMDB_API_KEY_READ_ONLY}
+      JwtSettings__Key: ${JWT_KEY}
+      JwtSettings__Issuer: ${JWT_ISSUER}
+      JwtSettings__Audience: ${JWT_AUDIENCE}
+      JwtSettings__ExpiryMinutes: ${JWT_EXPIRY_MINUTES}
     depends_on:
       db:
         condition: service_healthy
