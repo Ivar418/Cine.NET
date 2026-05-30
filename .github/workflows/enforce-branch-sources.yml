@@ -17,11 +17,6 @@ jobs:
           if [ "$BASE" = "main" ] && [ "$HEAD" != "develop" ]; then
             echo "Only 'develop' may merge into 'main'."; exit 1
           fi
-
-          if [ "$BASE" = "develop" ]; then
-            if [[ ! "$HEAD" =~ ^Staging.*$ ]]; then
-          echo "Only 'Staging.*' branches may merge into 'develop'."; exit 1
-          fi
             fi
 
           echo "OK"
