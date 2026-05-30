@@ -1,4 +1,5 @@
-﻿using API.Repositories.Interfaces;
+﻿using API.Mappers;
+using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
@@ -44,7 +45,7 @@ public class AuthService : IAuthService {
         return new AuthResponse {
             AccessToken = _jwtService.GenerateAccessToken(user.Value),
             RefreshToken = refreshToken.Token,
-            User = user.Value
+            User = UserMapper.ToResponse(user.Value)
         };
     }
 
@@ -81,7 +82,7 @@ public class AuthService : IAuthService {
         return new AuthResponse {
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken.Token,
-            User = user
+            User = UserMapper.ToResponse(user)
         };
     }
 }
