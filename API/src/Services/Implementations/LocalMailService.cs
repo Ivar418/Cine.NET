@@ -7,8 +7,7 @@ using MimeKit;
 
 namespace API.Services.Implementations;
 
-public class LocalMailService : ILocalMailService
-{
+public class LocalMailService : ILocalMailService {
     private readonly string _serverUrl;
     private readonly int _serverPort;
     private readonly string _senderEmail;
@@ -17,8 +16,7 @@ public class LocalMailService : ILocalMailService
     private readonly IMailSubscriptionRepository _repository;
 
 
-    public LocalMailService(IMailSubscriptionRepository repository)
-    {
+    public LocalMailService(IMailSubscriptionRepository repository) {
         Env.Load();
         _serverUrl = Env.GetString("MAIL_SERVER_URL") ?? "";
         _serverPort = Env.GetInt("MAIL_SERVER_PORT");
@@ -37,47 +35,47 @@ public class LocalMailService : ILocalMailService
     /// <returns>
     /// A task that returns <c>true</c> after iterating through subscribers and attempting delivery.
     /// </returns>
-    public async Task<bool> SendEmailToSubscribersAsync(TextPart emailContent, string fromName, string subject)
-    {
+    public async Task<bool> SendEmailToSubscribersAsync(TextPart emailContent, string fromName, string subject) {
         var sendToList = await GetAllAsync();
-        foreach (var email in sendToList)
-        {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName, _senderEmail));
-            message.To.Add(new MailboxAddress(email.Email, email.Email));
-            message.Subject = subject;
-            message.Body = emailContent;
+        foreach (var email in sendToList) {
+            try {
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(fromName, _senderEmail));
+                message.To.Add(new MailboxAddress(email.Email, email.Email));
+                message.Subject = subject;
+                message.Body = emailContent;
 
-            using var client = new SmtpClient();
-            client.Connect(_serverUrl, _serverPort, false);
+                using var client = new SmtpClient();
 
-            // Note: only needed if the SMTP server requires authentication
-            // client.Authenticate(_senderUsername, _senderPassword);
+                client.Connect(_serverUrl, _serverPort, false);
 
-            client.Send(message);
-            client.Disconnect(true);
+                // Note: only needed if the SMTP server requires authentication
+                // client.Authenticate(_senderUsername, _senderPassword);
+
+                client.Send(message);
+                client.Disconnect(true);
+            }
+            catch (Exception ex) {
+                return false
+            }
         }
 
         return true;
     }
 
-    public async Task<bool> AddAsync(string email)
-    {
+    public async Task<bool> AddAsync(string email) {
         return await _repository.AddAsync(email);
     }
 
-    public async Task<bool> RemoveAsync(string email)
-    {
+    public async Task<bool> RemoveAsync(string email) {
         return await _repository.RemoveAsync(email);
     }
 
-    public async Task<bool> ExistsAsync(string email)
-    {
+    public async Task<bool> ExistsAsync(string email) {
         return await _repository.ExistsAsync(email);
     }
 
-    public async Task<IEnumerable<EmailSubscription>> GetAllAsync()
-    {
+    public async Task<IEnumerable<EmailSubscription>> GetAllAsync() {
         return await _repository.GetAllAsync();
     }
 }
