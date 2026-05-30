@@ -3,6 +3,7 @@ using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using SharedLibrary.DTOs.Requests;
 
 namespace API.Repositories.Implementations;
 

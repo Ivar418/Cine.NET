@@ -1,7 +1,9 @@
 ﻿using API.Services.Interfaces;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
+using LoginRequest = SharedLibrary.DTOs.Requests.LoginRequest;
 
 namespace API.Controllers;
 
@@ -32,5 +34,15 @@ public class AuthController : ControllerBase {
             return Unauthorized("Invalid refresh token.");
 
         return Ok(refreshResponse);
+    }
+
+    [Route("logout")]
+    [HttpPost]
+    public async Task<IActionResult> Logout([FromBody] LogoutRequest refreshToken) {
+        var result = await _authService.RevokeRefreshToken(refreshToken.RefreshToken);
+        if (!result)
+            return BadRequest("Failed to logout.");
+
+        return Ok("Logged out successfully.");
     }
 }
