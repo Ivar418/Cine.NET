@@ -281,14 +281,8 @@ Groetjessssss,
 
 CineNet."
                 };
-                try {
                     await localMailService.SendEmailToSubscribersAsync(textPart, "CineNet", "Kom nu kijken!!");
-                }
-                catch (Exception e) {
-                    if (e is not SocketException) {
-                        throw;
-                    }
-                }
+
             }
 
             if (!await db.Users.AnyAsync()) {
