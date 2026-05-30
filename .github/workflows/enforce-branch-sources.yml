@@ -17,6 +17,5 @@ jobs:
           if [ "$BASE" = "main" ] && [ "$HEAD" != "develop" ]; then
             echo "Only 'develop' may merge into 'main'."; exit 1
           fi
-            fi
-
+          
           echo "OK"
