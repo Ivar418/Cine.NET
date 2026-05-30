@@ -1,4 +1,5 @@
 ﻿using API.Domain.Model;
+using SharedLibrary.DTOs.Requests;
 
 namespace API.Repositories.Interfaces;
 

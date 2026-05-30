@@ -1,6 +1,7 @@
 ﻿using API.Mappers;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Identity.Data;
 using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
 
@@ -84,5 +85,18 @@ public class AuthService : IAuthService {
             RefreshToken = newRefreshToken.Token,
             User = UserMapper.ToResponse(user)
         };
+    }
+
+
+    public async Task<bool> RevokeRefreshToken(string refreshToken) {
+        var token = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
+        if (token != null) {
+            token.Revoke();
+            await _refreshTokenRepository.SaveChangesAsync();
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }

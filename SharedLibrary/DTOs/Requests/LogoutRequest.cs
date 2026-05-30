@@ -1,5 +1,5 @@
 ﻿namespace SharedLibrary.DTOs.Requests;
 
-public class RefreshRequest {
+public class LogoutRequest {
     public required string RefreshToken { get; set; }
 }
