@@ -56,7 +56,7 @@ public class LocalMailService : ILocalMailService {
                 client.Disconnect(true);
             }
             catch (Exception ex) {
-                return false
+                return false;
             }
         }
 
