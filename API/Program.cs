@@ -78,7 +78,7 @@ builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
 // Authentication
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
 
 // Get JWT variables or set them from .env

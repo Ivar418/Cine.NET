@@ -3,13 +3,17 @@ using API.Domain.Model;
 using SharedLibrary.Domain.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using SharedLibrary.DTOs.Requests;
+using SharedLibrary.DTOs.Responses;
 
 namespace API.Services.Implementations {
     public class UserService : IUserService {
         private readonly IUserRepository _repository;
+        private readonly IAuthService _authService;
 
-        public UserService(IUserRepository repository) {
+        public UserService(IUserRepository repository, IAuthService authService) {
             _repository = repository;
+            _authService = authService;
         }
 
         public async Task<ResultOf<IReadOnlyList<User>>> GetAllUsersAsync() {
@@ -20,12 +24,27 @@ namespace API.Services.Implementations {
             return await _repository.GetByIdAsync(id);
         }
 
-        public async Task<ResultOf<User?>> GetByUserNameAsync(string userName) {
-            return await _repository.GetByUserNameAsync(userName);
+        public async Task<ResultOf<User?>> GetByUsername(string username) {
+            return await _repository.GetByUsername(username);
         }
 
         public async Task<ResultOf<UserCredential?>> GetCredentialsByUserId(int id) {
             return await _repository.GetCredentialsByUserId(id);
+        }
+
+        public async Task<ResultOf<AuthResponse?>> CreateUserAsync(CreateUserRequest user) {
+            if (await _repository.GetByUsername(user.UserName) is { IsSuccess: true, Value: not null }) {
+                return ResultOf<AuthResponse?>.Failure("Username already exists");
+            }
+
+            if (await _repository.AddUserAsync(user) is
+                { IsSuccess: true, Value: not null } result) {
+                return await _authService.AddCredentials(
+                    result.Value,
+                    user.Password);
+            }
+
+            return ResultOf<AuthResponse?>.Failure("Failed to create user");
         }
     }
 }

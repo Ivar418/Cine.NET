@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
+using SharedLibrary.DTOs.Requests;
 
 namespace API.Repositories.Implementations;
 
@@ -43,9 +44,9 @@ public class UserRepository : IUserRepository {
         }
     }
 
-    public async Task<ResultOf<User?>> GetByUserNameAsync(string userName) {
+    public async Task<ResultOf<User?>> GetByUsername(string username) {
         try {
-            var user = await _db.Users.Where(u => u.UserName == userName).FirstOrDefaultAsync();
+            var user = await _db.Users.Where(u => u.UserName == username).FirstOrDefaultAsync();
             if (user == null) return ResultOf<User?>.Failure("User not found");
             return ResultOf<User?>.Success(user);
         }
@@ -64,5 +65,19 @@ public class UserRepository : IUserRepository {
         catch (Exception ex) {
             return ResultOf<UserCredential?>.Failure(ex.Message);
         }
+    }
+
+    public async Task<ResultOf<User?>> AddUserAsync(CreateUserRequest user) {
+
+            var userExists = await _db.Users.AnyAsync(u => u.UserName == user.UserName);
+            if (userExists) return ResultOf<User?>.Failure("User already exists");
+            var addedUser = await _db.AddAsync(new User(
+                userName: user.UserName,
+                firstName: user.FirstName,
+                lastName: user.LastName,
+                email: user.Email
+            ));
+            await _db.SaveChangesAsync();
+            return ResultOf<User?>.Success(addedUser.Entity);
     }
 }

@@ -1,24 +1,27 @@
-﻿using API.Mappers;
+﻿using API.Domain.Common;
+using API.Domain.Model;
+using API.Mappers;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Identity.Data;
+using SharedLibrary.Domain.Entities;
 using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
 
 namespace API.Services.Implementations;
 
 public class AuthService : IAuthService {
-    private readonly IUserService _userService;
     private readonly IJwtService _jwtService;
-    private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IAuthRepository _authRepository;
+private readonly IUserRepository _userRE;
 
     public AuthService(
-        IUserService userService,
+        IUserRepository userRE,
         IJwtService jwtService,
-        IRefreshTokenRepository refreshTokenRepository) {
-        _userService = userService;
+        IAuthRepository authRepository) {
+        _userRE = userRE;
         _jwtService = jwtService;
-        _refreshTokenRepository = refreshTokenRepository;
+        _authRepository = authRepository;
     }
 
     public string PasswordHasher(string password) {
@@ -32,17 +35,17 @@ public class AuthService : IAuthService {
         return BCrypt.Net.BCrypt.Verify(password, passwordHash);
     }
 
-    public async Task<AuthResponse?> LoginUser(string userName, string password) {
-        var user = await _userService.GetByUserNameAsync(userName);
+    public async Task<AuthResponse?> LoginUser(string username, string password) {
+        var user = await _userRE.GetByUsername(username);
         if (user.IsFailure || user.Value == null) {
             return null;
         }
 
-        var authUser = await _userService.GetCredentialsByUserId(user.Value.Id);
+        var authUser = await _userRE.GetCredentialsByUserId(user.Value.Id);
         if (authUser.IsFailure || authUser.Value == null) return null;
         if (VerifyPassword(password, authUser.Value.PasswordHash) == false) return null;
         var refreshToken = _jwtService.GenerateRefreshToken(user.Value);
-        await _refreshTokenRepository.AddAsync(refreshToken);
+        await _authRepository.AddRefreshTokenAsyncWithSave(refreshToken);
         return new AuthResponse {
             AccessToken = _jwtService.GenerateAccessToken(user.Value),
             RefreshToken = refreshToken.Token,
@@ -54,8 +57,8 @@ public class AuthService : IAuthService {
     public async Task<AuthResponse?> NewRefreshToken(
         RefreshRequest request) {
         var refreshToken =
-            await _refreshTokenRepository
-                .GetByTokenAsync(request.RefreshToken);
+            await _authRepository
+                .GetRefreshTokenAsync(request.RefreshToken);
 
         if (refreshToken == null)
             return null;
@@ -74,10 +77,10 @@ public class AuthService : IAuthService {
         var newRefreshToken =
             _jwtService.GenerateRefreshToken(user);
 
-        await _refreshTokenRepository
-            .AddAsync(newRefreshToken);
+        await _authRepository
+            .AddRefreshTokenAsyncWithSave(newRefreshToken);
 
-        await _refreshTokenRepository
+        await _authRepository
             .SaveChangesAsync();
 
         return new AuthResponse {
@@ -89,14 +92,35 @@ public class AuthService : IAuthService {
 
 
     public async Task<bool> RevokeRefreshToken(string refreshToken) {
-        var token = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
+        var token = await _authRepository.GetRefreshTokenAsync(refreshToken);
         if (token != null) {
             token.Revoke();
-            await _refreshTokenRepository.SaveChangesAsync();
+            await _authRepository.SaveChangesAsync();
             return true;
         }
         else {
             return false;
+        }
+    }
+
+    public async Task<ResultOf<AuthResponse?>> AddCredentials(User user, string password) {
+        try {
+            var passwordHash = PasswordHasher(password);
+            var authUser = new UserCredential(userId: user.Id, passwordHash: passwordHash);
+            await _authRepository.AddUserCredentials(authUser);
+
+            var accessToken = _jwtService.GenerateAccessToken(user);
+            var refreshToken = _jwtService.GenerateRefreshToken(user);
+            _authRepository.AddRefreshTokenAsyncWithSave(refreshToken);
+            var authResponse = new AuthResponse {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken.Token,
+                User = UserMapper.ToResponse(user)
+            };
+            return ResultOf<AuthResponse?>.Success(authResponse);
+        }
+        catch (Exception e) {
+            return ResultOf<AuthResponse?>.Failure(e.Message);
         }
     }
 }
