@@ -7,7 +7,7 @@ namespace API.Repositories.Interfaces;
 public interface IAuthRepository {
     Task<RefreshToken?> GetRefreshTokenAsync(string token);
 
-    Task AddRefreshTokenAsyncWithSave(RefreshToken refreshToken);
+    Task AddRefreshTokenAsync(RefreshToken refreshToken);
 
     Task SaveChangesAsync();
     Task<ResultOf<UserCredential?>> AddUserCredentials(UserCredential userCredential);

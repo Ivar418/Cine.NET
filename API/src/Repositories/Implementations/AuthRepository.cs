@@ -20,7 +20,7 @@ public class AuthRepository : IAuthRepository {
         return result;
     }
 
-    public async Task AddRefreshTokenAsyncWithSave(RefreshToken refreshToken) {
+    public async Task AddRefreshTokenAsync(RefreshToken refreshToken) {
         await _db.RefreshTokens.AddAsync(refreshToken);
         await SaveChangesAsync();
     }

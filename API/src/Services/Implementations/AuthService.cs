@@ -45,7 +45,7 @@ public class AuthService : IAuthService {
         if (authUser.IsFailure || authUser.Value == null) return null;
         if (VerifyPassword(password, authUser.Value.PasswordHash) == false) return null;
         var refreshToken = _jwtService.GenerateRefreshToken(user.Value);
-        await _authRepository.AddRefreshTokenAsyncWithSave(refreshToken);
+        await _authRepository.AddRefreshTokenAsync(refreshToken);
         return new AuthResponse {
             AccessToken = _jwtService.GenerateAccessToken(user.Value),
             RefreshToken = refreshToken.Token,
@@ -78,7 +78,7 @@ public class AuthService : IAuthService {
             _jwtService.GenerateRefreshToken(user);
 
         await _authRepository
-            .AddRefreshTokenAsyncWithSave(newRefreshToken);
+            .AddRefreshTokenAsync(newRefreshToken);
 
         return new AuthResponse {
             AccessToken = newAccessToken,
@@ -108,7 +108,7 @@ public class AuthService : IAuthService {
 
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = _jwtService.GenerateRefreshToken(user);
-        await _authRepository.AddRefreshTokenAsyncWithSave(refreshToken);
+        await _authRepository.AddRefreshTokenAsync(refreshToken);
         var authResponse = new AuthResponse {
             AccessToken = accessToken,
             RefreshToken = refreshToken.Token,
