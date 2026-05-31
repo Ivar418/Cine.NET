@@ -1,4 +1,5 @@
 using System.Text;
+using API.Domain.Common;
 using API.Domain.Model;
 using API.Infrastructure.Database;
 using API.Repositories.Implementations;
@@ -27,6 +28,10 @@ builder.Services.AddHttpContextAccessor();
 // API docs: enable Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+//Register global eception handler
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // DI: register application services
 /*
@@ -78,7 +83,7 @@ builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
 // Authentication
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
 
 // Get JWT variables or set them from .env
@@ -240,6 +245,9 @@ app.MapHealthChecks("/health");
 
 // Routing: map controller endpoints
 app.MapControllers();
+
+// Error handling: global exception handler
+app.UseExceptionHandler();
 
 // Database: apply pending migrations at startup and seed some mock data
 _ = Task.Run(async () => {
