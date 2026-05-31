@@ -11,15 +11,20 @@ namespace API.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase {
     private readonly IAuthService _authService;
+    private readonly IUserService _userService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService) {
+    public AuthController(IAuthService authService, IUserService userService, ILogger<AuthController> logger) {
+        _logger = logger;
         _authService = authService;
+        _userService = userService;
     }
+
 
     [Route("login")]
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginRequest request) {
-        var loginResponse = await _authService.LoginUser(request.UserName, request.Password);
+        var loginResponse = await _authService.LoginUser(request.Username, request.Password);
         if (loginResponse == null)
             return Unauthorized("Invalid username or password.");
 
@@ -44,5 +49,18 @@ public class AuthController : ControllerBase {
             return BadRequest("Failed to logout.");
 
         return Ok("Logged out successfully.");
+    }
+
+    [Route("register")]
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateUserRequest request) {
+        var result = await _userService.CreateUserAsync(request);
+        if (result.IsFailure)
+            return BadRequest(new { error = result.Error });
+        return result switch {
+            { IsSuccess: true, Value: not null } => Ok(result.Value),
+            { IsSuccess: true, Value: null } => StatusCode(500, new { error = "User creation failed" }),
+            _ => StatusCode(500, new { error = "Unexpected result" })
+        };
     }
 }
