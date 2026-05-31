@@ -41,7 +41,7 @@ namespace API.Services.Implementations {
             if (addUserAsync is { IsFailure: true } || addUserAsync.Value is null) {
                 return ResultOf<AuthResponse?>.Failure(addUserAsync.Error ?? "User creation failed");
             }
-
+            await _repository.SaveChangesAsync();
             var addCredentialsAsync = await _authService.AddCredentials(addUserAsync.Value, user.Password);
             if (addCredentialsAsync.IsFailure) {
                 return ResultOf<AuthResponse?>.Failure(addCredentialsAsync.Error ??
