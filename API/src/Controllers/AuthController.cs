@@ -54,19 +54,13 @@ public class AuthController : ControllerBase {
     [Route("register")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserRequest request) {
-        try {
-            var result = await _userService.CreateUserAsync(request);
-            if (result.IsFailure)
-                return BadRequest(new { error = result.Error });
-            return result switch {
-                { IsSuccess: true, Value: not null } => Ok(result.Value),
-                { IsSuccess: true, Value: null } => StatusCode(500, new { error = "User creation failed" }),
-                _ => StatusCode(500, new { error = "Unexpected result" })
-            };
-        }
-        catch (Exception ex) {
-            _logger.LogError(ex, "Error creating user");
-            return StatusCode(500, new { error = "An error occurred" });
-        }
+        var result = await _userService.CreateUserAsync(request);
+        if (result.IsFailure)
+            return BadRequest(new { error = result.Error });
+        return result switch {
+            { IsSuccess: true, Value: not null } => Ok(result.Value),
+            { IsSuccess: true, Value: null } => StatusCode(500, new { error = "User creation failed" }),
+            _ => StatusCode(500, new { error = "Unexpected result" })
+        };
     }
 }
