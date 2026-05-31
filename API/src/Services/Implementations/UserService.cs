@@ -48,6 +48,7 @@ namespace API.Services.Implementations {
                                                        "Failed to create user credentials");
             }
 
+            await _repository.SaveChangesAsync();
             return ResultOf<AuthResponse?>.Success(addCredentialsAsync.Value);
         }
     }

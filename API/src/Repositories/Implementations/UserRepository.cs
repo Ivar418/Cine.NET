@@ -67,17 +67,19 @@ public class UserRepository : IUserRepository {
         }
     }
 
-    public async Task<ResultOf<User?>> AddUserAsync(CreateUserRequest user) {
+    public async Task<ResultOf<User>> AddUserAsync(CreateUserRequest user) {
+        var userExists = await _db.Users.AnyAsync(u => u.UserName == user.UserName);
+        if (userExists) return ResultOf<User>.Failure("User already exists");
+        var addedUser = await _db.AddAsync(new User(
+            userName: user.UserName,
+            firstName: user.FirstName,
+            lastName: user.LastName,
+            email: user.Email
+        ));
+        return ResultOf<User>.Success(addedUser.Entity);
+    }
 
-            var userExists = await _db.Users.AnyAsync(u => u.UserName == user.UserName);
-            if (userExists) return ResultOf<User?>.Failure("User already exists");
-            var addedUser = await _db.AddAsync(new User(
-                userName: user.UserName,
-                firstName: user.FirstName,
-                lastName: user.LastName,
-                email: user.Email
-            ));
-            await _db.SaveChangesAsync();
-            return ResultOf<User?>.Success(addedUser.Entity);
+    public async Task SaveChangesAsync() {
+        await _db.SaveChangesAsync();
     }
 }
