@@ -13,13 +13,13 @@ namespace API.Services.Implementations;
 public class AuthService : IAuthService {
     private readonly IJwtService _jwtService;
     private readonly IAuthRepository _authRepository;
-private readonly IUserRepository _userRE;
+    private readonly IUserRepository _userRepository;
 
     public AuthService(
-        IUserRepository userRE,
+        IUserRepository userRepository,
         IJwtService jwtService,
         IAuthRepository authRepository) {
-        _userRE = userRE;
+        _userRepository = userRepository;
         _jwtService = jwtService;
         _authRepository = authRepository;
     }
@@ -36,12 +36,12 @@ private readonly IUserRepository _userRE;
     }
 
     public async Task<AuthResponse?> LoginUser(string username, string password) {
-        var user = await _userRE.GetByUsername(username);
+        var user = await _userRepository.GetByUsername(username);
         if (user.IsFailure || user.Value == null) {
             return null;
         }
 
-        var authUser = await _userRE.GetCredentialsByUserId(user.Value.Id);
+        var authUser = await _userRepository.GetCredentialsByUserId(user.Value.Id);
         if (authUser.IsFailure || authUser.Value == null) return null;
         if (VerifyPassword(password, authUser.Value.PasswordHash) == false) return null;
         var refreshToken = _jwtService.GenerateRefreshToken(user.Value);
@@ -80,9 +80,6 @@ private readonly IUserRepository _userRE;
         await _authRepository
             .AddRefreshTokenAsyncWithSave(newRefreshToken);
 
-        await _authRepository
-            .SaveChangesAsync();
-
         return new AuthResponse {
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken.Token,
@@ -104,23 +101,19 @@ private readonly IUserRepository _userRE;
     }
 
     public async Task<ResultOf<AuthResponse?>> AddCredentials(User user, string password) {
-        try {
-            var passwordHash = PasswordHasher(password);
-            var authUser = new UserCredential(userId: user.Id, passwordHash: passwordHash);
-            await _authRepository.AddUserCredentials(authUser);
+        var passwordHash = PasswordHasher(password);
+        var authUser = new UserCredential(userId: user.Id, passwordHash: passwordHash);
+        if (await _authRepository.AddUserCredentials(authUser) is { IsFailure: true })
+            return ResultOf<AuthResponse?>.Failure("Could not add credentials");
 
-            var accessToken = _jwtService.GenerateAccessToken(user);
-            var refreshToken = _jwtService.GenerateRefreshToken(user);
-            _authRepository.AddRefreshTokenAsyncWithSave(refreshToken);
-            var authResponse = new AuthResponse {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken.Token,
-                User = UserMapper.ToResponse(user)
-            };
-            return ResultOf<AuthResponse?>.Success(authResponse);
-        }
-        catch (Exception e) {
-            return ResultOf<AuthResponse?>.Failure(e.Message);
-        }
+        var accessToken = _jwtService.GenerateAccessToken(user);
+        var refreshToken = _jwtService.GenerateRefreshToken(user);
+        await _authRepository.AddRefreshTokenAsyncWithSave(refreshToken);
+        var authResponse = new AuthResponse {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken.Token,
+            User = UserMapper.ToResponse(user)
+        };
+        return ResultOf<AuthResponse?>.Success(authResponse);
     }
 }

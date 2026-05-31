@@ -9,6 +9,7 @@ namespace API.Repositories.Interfaces {
         Task<ResultOf<User?>> GetByIdAsync(int id);
         Task<ResultOf<User?>> GetByUsername(string username);
         Task<ResultOf<UserCredential?>> GetCredentialsByUserId(int id);
-        Task<ResultOf<User?>> AddUserAsync(CreateUserRequest user);
+        Task<ResultOf<User>> AddUserAsync(CreateUserRequest user);
+        Task SaveChangesAsync();
     }
 }

@@ -37,14 +37,18 @@ namespace API.Services.Implementations {
                 return ResultOf<AuthResponse?>.Failure("Username already exists");
             }
 
-            if (await _repository.AddUserAsync(user) is
-                { IsSuccess: true, Value: not null } result) {
-                return await _authService.AddCredentials(
-                    result.Value,
-                    user.Password);
+            var addUserAsync = await _repository.AddUserAsync(user);
+            if (addUserAsync is { IsFailure: true } || addUserAsync.Value is null) {
+                return ResultOf<AuthResponse?>.Failure(addUserAsync.Error ?? "User creation failed");
             }
 
-            return ResultOf<AuthResponse?>.Failure("Failed to create user");
+            var addCredentialsAsync = await _authService.AddCredentials(addUserAsync.Value, user.Password);
+            if (addCredentialsAsync.IsFailure) {
+                return ResultOf<AuthResponse?>.Failure(addCredentialsAsync.Error ??
+                                                       "Failed to create user credentials");
+            }
+
+            return ResultOf<AuthResponse?>.Success(addCredentialsAsync.Value);
         }
     }
 }
