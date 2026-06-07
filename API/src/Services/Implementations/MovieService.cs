@@ -3,18 +3,17 @@ using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
+using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses.TMDB;
 
 namespace API.Services.Implementations;
 
-public class MovieService : IMovieService
-{
+public class MovieService : IMovieService {
     private readonly IMovieRepository _movieRepository;
     private readonly IShowingRepository _showingsRepo;
 
 
-    public MovieService(IMovieRepository movieRepository, IShowingRepository showingsRepo)
-    {
+    public MovieService(IMovieRepository movieRepository, IShowingRepository showingsRepo) {
         _movieRepository = movieRepository;
         _showingsRepo = showingsRepo;
     }
@@ -29,22 +28,17 @@ public class MovieService : IMovieService
     /// Failures per language are logged and do not stop processing the remaining languages.
     /// </returns>
     public async Task<ResultOf<IEnumerable<Movie>>> AddMovieAsyncForEachSpecifiedLanguage(int tmdbId,
-        IEnumerable<string>? informationLanguages = null)
-    {
+        IEnumerable<string>? informationLanguages = null) {
         var listOfAddedMovies = new List<Movie>();
         informationLanguages ??= ["en", "nl"];
-        foreach (var informationLanguage in informationLanguages)
-        {
-            try
-            {
+        foreach (var informationLanguage in informationLanguages) {
+            try {
                 var movie = await AddMovieFromTmdbAsync(tmdbId, informationLanguage);
-                if (movie.IsSuccess)
-                {
+                if (movie.IsSuccess) {
                     listOfAddedMovies.Add(movie.Value);
                 }
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Console.Error.WriteLine(
                     $"[MovieService] Failed to add movie with TMDB ID {tmdbId} for language '{informationLanguage}': {ex.Message}");
             }
@@ -53,30 +47,25 @@ public class MovieService : IMovieService
         return ResultOf<IEnumerable<Movie>>.Success(listOfAddedMovies);
     }
 
-    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage)
-    {
+    public async Task<ResultOf<Movie>> AddMovieFromTmdbAsync(int tmdbId, string informationLanguage) {
         return await _movieRepository.AddMovieFromTmdbAsync(tmdbId, informationLanguage);
     }
 
-    public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync(string informationLanguage)
-    {
+    public async Task<ResultOf<ICollection<Movie>>> GetMoviesAsync(string informationLanguage) {
         return await _movieRepository.GetMoviesAsync(informationLanguage);
     }
 
-    public async Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId)
-    {
+    public async Task<ResultOf<Movie>> DeleteMovieByTmdbIdAsync(int tmdbId) {
         return await _movieRepository.DeleteMovieByTmdbIdAsync(tmdbId);
     }
 
-    public async Task<ResultOf<Movie>> GetMovieAsync(int id)
-    {
+    public async Task<ResultOf<Movie>> GetMovieAsync(int id) {
         return await _movieRepository.GetMovieAsync(id);
     }
 
     public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query,
         string? primary_release_year, int? page, bool include_adult,
-        string language)
-    {
+        string language) {
         return await _movieRepository.GetMovieTmdbSearchResultsAsync(query, primary_release_year, page, include_adult,
             language);
     }
@@ -90,11 +79,9 @@ public class MovieService : IMovieService
     /// or a failure when reading the final persisted genre list fails.
     /// </returns>
     public async Task<ResultOf<IEnumerable<Genre>>> FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb(
-        IEnumerable<string>? language = null)
-    {
+        IEnumerable<string>? language = null) {
         language ??= ["en", "nl"];
-        foreach (var languageItem in language)
-        {
+        foreach (var languageItem in language) {
             var genreList = await _movieRepository.GetAllGenresFromTmdb(languageItem);
             var genres = genreList.Value.Genres.Select(genre => new Genre
                 { TmdbId = genre.Id, Name = genre.Name, Language = languageItem });
@@ -115,12 +102,10 @@ public class MovieService : IMovieService
     /// <returns>
     /// A <see cref="ResultOf{T}"/> containing the matching genre from local storage or fetched from TMDB.
     /// </returns>
-    public async Task<ResultOf<Genre>> FetchGenreByLanguage(int tmdbGenreId, string language)
-    {
+    public async Task<ResultOf<Genre>> FetchGenreByLanguage(int tmdbGenreId, string language) {
         var genres = await _movieRepository.GetAllGenresOnDb();
         var result = genres.Value.FirstOrDefault(g => g.TmdbId == tmdbGenreId && g.Language == language);
-        if (result == null)
-        {
+        if (result == null) {
             var fetchResult = await _movieRepository.SaveGenreByTmdbGenreId(language, tmdbGenreId);
             if (fetchResult.IsFailure)
                 return ResultOf<Genre>.Failure(fetchResult.Error);
@@ -130,19 +115,21 @@ public class MovieService : IMovieService
         return ResultOf<Genre>.Success(result);
     }
 
-    public async Task<ResultOf<IEnumerable<Movie>>> GetMoviesWithFutureShowingAsync()
-    {
-        var result = await _showingsRepo.GetUpcomingShowingsAsync(DateTimeOffset.UtcNow);
+    public async Task<ResultOf<IEnumerable<Movie>>>
+        GetMoviesWithFutureShowingAsync(FutureShowingsFilterRequest filter) {
+        var result = await _showingsRepo.GetUpcomingShowingsAsync(filter.From);
 
         if (result.Value != null)
-            return result switch
-            {
+            return result switch {
                 { IsSuccess: true } => ResultOf<IEnumerable<Movie>>.Success(
                     result.Value
                         .Select(s => s.Movie)
                         .DistinctBy(m => m.Id)
                 ),
-                { IsFailure: true } => ResultOf<IEnumerable<Movie>>.Failure(result.Error!),
+                {
+                    IsFailure:
+                    true
+                } => ResultOf<IEnumerable<Movie>>.Failure(result.Error!),
                 _ => ResultOf<IEnumerable<Movie>>.Failure("Unknown error")
             };
         else return ResultOf<IEnumerable<Movie>>.Success(new List<Movie>());
