@@ -5,8 +5,8 @@ using System.Text;
 namespace SharedLibrary.DTOs.Models
 {
     /// <summary>
-    /// A fully resolved seat: physical position, virtual column (for zone calc),
-    /// type and preference category 1–6.
+    /// Represents a seat with detailed information including its physical position,
+    /// virtual column for zone calculations, type, and category indicating preference.
     /// </summary>
     public record SeatInfo(int Row, int Col, int VirtualCol, SeatType Type, int Category);
 }

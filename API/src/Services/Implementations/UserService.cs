@@ -7,6 +7,9 @@ using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
 
 namespace API.Services.Implementations {
+    /// <summary>
+    /// Implementation of user management business logic.
+    /// </summary>
     public class UserService : IUserService {
         private readonly IUserRepository _repository;
         private readonly IAuthService _authService;
@@ -32,6 +35,11 @@ namespace API.Services.Implementations {
             return await _repository.GetCredentialsByUserId(id);
         }
 
+        /// <summary>
+        /// Creates a new user record and then delegates credential creation to <see cref="IAuthService"/>.
+        /// </summary>
+        /// <param name="user">The user creation request DTO.</param>
+        /// <returns>A result containing authentication tokens for the new user.</returns>
         public async Task<ResultOf<AuthResponse?>> CreateUserAsync(CreateUserRequest user) {
             if (await _repository.GetByUsername(user.UserName) is { IsSuccess: true, Value: not null }) {
                 return ResultOf<AuthResponse?>.Failure("Username already exists");

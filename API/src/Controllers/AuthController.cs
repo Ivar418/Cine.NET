@@ -7,6 +7,9 @@ using LoginRequest = SharedLibrary.DTOs.Requests.LoginRequest;
 
 namespace API.Controllers;
 
+/// <summary>
+/// Handles all authentication related requests such as login, registration, and token management.
+/// </summary>
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase {
@@ -20,7 +23,11 @@ public class AuthController : ControllerBase {
         _userService = userService;
     }
 
-
+    /// <summary>
+    /// Authenticates a user and returns Access and Refresh tokens.
+    /// </summary>
+    /// <param name="request">The login credentials.</param>
+    /// <returns>200 OK with tokens, or 401 Unauthorized.</returns>
     [Route("login")]
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginRequest request) {
@@ -31,6 +38,11 @@ public class AuthController : ControllerBase {
         return Ok(loginResponse);
     }
 
+    /// <summary>
+    /// Refreshes an expired access token using a valid refresh token.
+    /// </summary>
+    /// <param name="request">The refresh token request.</param>
+    /// <returns>200 OK with new tokens, or 401 Unauthorized.</returns>
     [Route("refresh")]
     [HttpPost]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshRequest request) {
@@ -41,6 +53,11 @@ public class AuthController : ControllerBase {
         return Ok(refreshResponse);
     }
 
+    /// <summary>
+    /// Logs out a user by revoking their refresh token.
+    /// </summary>
+    /// <param name="refreshToken">The token to revoke.</param>
+    /// <returns>200 OK if successful, or 400 BadRequest.</returns>
     [Route("logout")]
     [HttpPost]
     public async Task<IActionResult> Logout([FromBody] LogoutRequest refreshToken) {
@@ -51,6 +68,11 @@ public class AuthController : ControllerBase {
         return Ok("Logged out successfully.");
     }
 
+    /// <summary>
+    /// Registers a new user and creates their credentials.
+    /// </summary>
+    /// <param name="request">User creation details.</param>
+    /// <returns>200 OK with the created user/token info, or an error status.</returns>
     [Route("register")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserRequest request) {
