@@ -387,16 +387,7 @@ public partial class Checkout
     // ── Payment: redirect to iDeal mock with all required params ─────────
     private void GoToPaymentMock(CreateOrderResponse order)
     {
-        // var returnUrl = Uri.EscapeDataString($"/checkout/payment-result?orderId={order.OrderId}");
-        // // var url = $"/ideal-mock" +
-        // var url = $"/payment-mock" +
-        //           $"?reference={Uri.EscapeDataString(order.OrderCode)}" +
-        //           $"&amount={order.TotalAmount:F2}" +
-        //           $"&merchant={Uri.EscapeDataString("CineNet B.V.")}" +
-        //           $"&description={Uri.EscapeDataString("Bestelling " + order.OrderCode)}" +
-        //           $"&returnUrl={returnUrl}"+
-        //           $"&ChosenPaymentType={Uri.EscapeDataString(selectedPaymentMethod)}";
-        // Nav.NavigateTo(url);
+
         var chosen = selectedPaymentMethod ?? "Ideal";
         // Send enough context so PaymentResult can return customer to step 4 in checkout
         var returnUrl = Uri.EscapeDataString(

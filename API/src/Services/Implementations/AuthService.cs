@@ -10,6 +10,9 @@ using SharedLibrary.DTOs.Responses;
 
 namespace API.Services.Implementations;
 
+/// <summary>
+/// Implementation of authentication services using BCrypt for hashing and JWT for session management.
+/// </summary>
 public class AuthService : IAuthService {
     private readonly IJwtService _jwtService;
     private readonly IAuthRepository _authRepository;
@@ -24,6 +27,10 @@ public class AuthService : IAuthService {
         _authRepository = authRepository;
     }
 
+    /// <summary>
+    /// Hashes the password using BCrypt.
+    /// </summary>
+    /// <exception cref="ArgumentException">Thrown if password is null or whitespace.</exception>
     public string PasswordHasher(string password) {
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("Password cannot be empty.");
@@ -31,10 +38,16 @@ public class AuthService : IAuthService {
         return BCrypt.Net.BCrypt.HashPassword(password);
     }
 
+    /// <summary>
+    /// Verifies the password using BCrypt.
+    /// </summary>
     public bool VerifyPassword(string password, string passwordHash) {
         return BCrypt.Net.BCrypt.Verify(password, passwordHash);
     }
 
+    /// <summary>
+    /// Authenticates a user and returns a token pair.
+    /// </summary>
     public async Task<AuthResponse?> LoginUser(string username, string password) {
         var user = await _userRepository.GetByUsername(username);
         if (user.IsFailure || user.Value == null) {
@@ -53,7 +66,9 @@ public class AuthService : IAuthService {
         };
     }
 
-
+    /// <summary>
+    /// Rotates a refresh token for a new one along with a new access token.
+    /// </summary>
     public async Task<AuthResponse?> NewRefreshToken(
         RefreshRequest request) {
         var refreshToken =
@@ -87,7 +102,9 @@ public class AuthService : IAuthService {
         };
     }
 
-
+    /// <summary>
+    /// Marks a refresh token as revoked in the database.
+    /// </summary>
     public async Task<bool> RevokeRefreshToken(string refreshToken) {
         var token = await _authRepository.GetRefreshTokenAsync(refreshToken);
         if (token != null) {
@@ -100,6 +117,9 @@ public class AuthService : IAuthService {
         }
     }
 
+    /// <summary>
+    /// Creates and saves user credentials (hashed password) and returns initial tokens.
+    /// </summary>
     public async Task<ResultOf<AuthResponse?>> AddCredentials(User user, string password) {
         var passwordHash = PasswordHasher(password);
         var authUser = new UserCredential(userId: user.Id, passwordHash: passwordHash);
