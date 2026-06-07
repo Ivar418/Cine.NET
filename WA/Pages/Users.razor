@@ -29,8 +29,8 @@ else
         @foreach (var u in _users)
         {
             <MudListItem T="UserResponse">
-                <MudText Typo="Typo.body1">@u.Name</MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@u.Id</MudText>
+                <MudText Typo="Typo.body1">@u.FirstName @u.LastName</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@u.UserId</MudText>
             </MudListItem>
         }
     </MudList>
