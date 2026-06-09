@@ -226,6 +226,9 @@ if (!app.Environment.IsDevelopment()) {
     app.UseHttpsRedirection();
 }
 
+// Error handling: global exception handler
+app.UseExceptionHandler();
+
 app.UseStaticFiles(); // serves wwwroot/*
 
 // Routing: enable routing
@@ -246,8 +249,6 @@ app.MapHealthChecks("/health");
 // Routing: map controller endpoints
 app.MapControllers();
 
-// Error handling: global exception handler
-app.UseExceptionHandler();
 
 // Database: apply pending migrations at startup and seed some mock data
 _ = Task.Run(async () => {
