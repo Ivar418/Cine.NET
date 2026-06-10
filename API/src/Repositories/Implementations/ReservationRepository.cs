@@ -22,7 +22,7 @@ public class ReservationRepository : IReservationRepository
     /// <param name="showingId">The showing identifier.</param>
     /// <returns>A list of reservations for the specified showing.</returns>
     public Task<List<Reservation>> GetReservationByShowingAsync(int showingId) =>
-        _db.Reservations.AsNoTracking()
+        _db.Reservations
           .Where(r => r.ShowingId == showingId)
           .OrderByDescending(r => r.CreatedAt)
           .ToListAsync();
@@ -95,7 +95,6 @@ public class ReservationRepository : IReservationRepository
     public async Task<HashSet<string>> GetOccupiedKeysAsync(int showingId)
     {
         var reservations = await _db.Reservations
-            .AsNoTracking()
             .Where(r => r.ShowingId == showingId
                      && (r.Status == "Confirmed" || r.Status == "Pending"))
             .ToListAsync();

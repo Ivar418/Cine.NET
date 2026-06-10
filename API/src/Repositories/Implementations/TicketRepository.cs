@@ -20,7 +20,7 @@ public class TicketRepository: ITicketRepository
     /// </summary>
     /// <returns>A read-only list of tickets.</returns>
     public async Task<IReadOnlyList<Ticket>> GetAllAsync()
-        => await _db.Tickets.AsNoTracking()
+        => await _db.Tickets
             .Include(t => t.Showing)
             .ToListAsync();
 
@@ -30,7 +30,7 @@ public class TicketRepository: ITicketRepository
     /// <param name="id">The ticket identifier.</param>
     /// <returns>The matching ticket, or <c>null</c> when not found.</returns>
     public async Task<Ticket?> GetByIdAsync(int id)
-        => await _db.Tickets.AsNoTracking()
+        => await _db.Tickets
             .Include(t => t.Showing)
             .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -40,7 +40,7 @@ public class TicketRepository: ITicketRepository
     /// <param name="showingId">The showing identifier.</param>
     /// <returns>A read-only list of tickets for the specified showing.</returns>
     public async Task<IReadOnlyList<Ticket>> GetTicketsByShowingIdAsync(int showingId)
-        => await _db.Tickets.AsNoTracking()
+        => await _db.Tickets
             .Where(t => t.ShowingId == showingId)
             .Include(t => t.Showing.Movie)
             .ToListAsync();

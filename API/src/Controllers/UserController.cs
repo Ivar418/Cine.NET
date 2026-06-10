@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 using API.Mappers;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +8,7 @@ using SharedLibrary.DTOs.Requests;
 
 namespace API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/users")]
 public class UserController : ControllerBase {
@@ -18,23 +20,57 @@ public class UserController : ControllerBase {
         _logger = logger;
     }
 
-    [Authorize]
-    [Route("profile/{id:int}")]
+    [Route("me/profile")]
     [HttpGet]
-    public async Task<IActionResult> GetUserProfile(int id) {
-        var user = await _userService.GetUserByIdAsync(id);
+    public async Task<IActionResult> GetUserProfile() {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var user = await _userService.GetUserByIdAsync(currentUserId);
         return user switch {
+            { IsSuccess: true } => Ok(UserMapper.ToResponse(user.Value)),
             { IsFailure: true, Error: "User not found" } => NotFound(new { error = "User not found" }),
             { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
-            { IsSuccess: true } => Ok(user.Value),
             _ => StatusCode(500)
         };
     }
 
-    [Authorize]
-    [Route("claims")]
+    [Route("me/favorites")]
     [HttpGet]
-    public IActionResult GetClaims() {
-        return Ok(User.Claims.Select(c => new { c.Type, c.Value }));
+    public async Task<IActionResult> GetFavoriteMovies(int id) {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var movies = await _userService.GetFavoriteMoviesAsync(userId: currentUserId);
+        return movies switch {
+            { IsFailure: true, Error: "User not found" } => NotFound(new { error = "User not found" }),
+            { IsSuccess: true } => Ok(movies.Value),
+            _ => StatusCode(500, new { error = "An error occurred" })
+        };
+    }
+
+    [Route("me/favorites/{movieId:int}")]
+    [HttpPost]
+    public async Task<IActionResult> AddFavoriteMovie(int movieId) {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var movies = await _userService.AddFavoriteMovieAsync(userId: currentUserId, movieId: movieId);
+        return movies switch {
+            { IsFailure: true, Error: "User not found" } => NotFound(new { error = "User not found" }),
+            { IsFailure: true, Error: "Movie not found" } => NotFound(new { error = "Movie not found" }),
+            { IsSuccess: true } => Ok(movies.Value),
+            _ => StatusCode(500, new { error = "An error occurred" })
+        };
+    }
+
+    [Route("me/favorites/{movieId:int}")]
+    [HttpDelete]
+    public async Task<IActionResult> RemoveFavoriteMovie(int movieId) {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var movies = await _userService.RemoveFavoriteMovieAsync(userId: currentUserId, movieId: movieId);
+        return movies switch {
+            { IsFailure: true, Error: "User not found" } => NotFound(new { error = "User not found" }),
+            { IsFailure: true, Error: "Movie not found" } => NotFound(new { error = "Movie not found" }),
+            { IsSuccess: true } => Ok(movies.Value),
+            _ => StatusCode(500, new { error = "An error occurred" })
+        };
     }
 }

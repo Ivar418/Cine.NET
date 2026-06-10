@@ -9,7 +9,8 @@ namespace API.Mappers {
                 UserName = user.UserName,
                 Email = user.Email,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                FavoriteMovies = FavoriteMappers.ToFavoriteListResponse(user)
             };
         }
 

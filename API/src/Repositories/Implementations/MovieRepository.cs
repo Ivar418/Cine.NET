@@ -27,7 +27,7 @@ public class MovieRepository : IMovieRepository
     /// </summary>
     /// <param name="id">The movie identifier.</param>
     /// <returns>A success result with the movie, or a failure when no movie is found.</returns>
-    public async Task<ResultOf<Movie>> GetMovieAsync(int id)
+    public async Task<ResultOf<Movie>> GetMovieByIdAsync(int id)
     {
         var movie = await _db.Movies.FindAsync(id);
         return movie == null ? ResultOf<Movie>.Failure("Movie not found") : ResultOf<Movie>.Success(movie);

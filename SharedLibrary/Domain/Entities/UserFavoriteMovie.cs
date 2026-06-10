@@ -10,7 +10,8 @@ public class UserFavoriteMovie {
     /// <summary>
     /// Gets or sets the unique identifier for the user favorite movie.
     /// </summary>
-    public int Id { get; set; }
+    public int Id { get; init; }
+
 
     /// <summary>
     /// Gets or sets the identifier of the user associated with the favorite movie.
@@ -19,11 +20,15 @@ public class UserFavoriteMovie {
     /// This property represents the unique ID of the user to whom the favorite movie is linked.
     /// It acts as a foreign key relationship between the User and UserFavoriteMovie entities.
     /// </remarks>
-    public int UserId { get; set; }
+    public required int UserId { get; init; }
+
+    public User User { get; init; } = null!;
 
     /// <summary>
     /// Gets or sets the identifier of the movie associated with the user's favorite movie list.
     /// Represents a unique identifier for a specific movie.
     /// </summary>
-    public string MovieId { get; set; } = null!;
+    public required int MovieId { get; init; }
+
+    public Movie Movie { get; init; } = null!;
 }

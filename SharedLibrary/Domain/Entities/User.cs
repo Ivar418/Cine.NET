@@ -22,7 +22,7 @@ public class User {
         string firstName,
         string lastName,
         string email,
-        HashSet<string>? favoriteMovieIds = null
+        HashSet<int>? favoriteMovieIds = null
     ) {
         SetUserName(userName);
         SetFirstName(firstName);
@@ -67,9 +67,7 @@ public class User {
         RefreshUpdatedAt();
     }
 
-    public void AddFavoriteMovie(string movieId) {
-        movieId = movieId.Trim();
-
+    public void AddFavoriteMovie(int movieId) {
         if (FavoriteMovies.Any(x => x.MovieId == movieId))
             return;
 
@@ -77,8 +75,7 @@ public class User {
         RefreshUpdatedAt();
     }
 
-    public void RemoveFavoriteMovie(string movieId) {
-        movieId = movieId.Trim();
+    public void RemoveFavoriteMovie(int movieId) {
 
         var favorite = FavoriteMovies.FirstOrDefault(x => x.MovieId == movieId);
 
@@ -97,7 +94,7 @@ public class User {
         RefreshUpdatedAt();
     }
 
-    private void SetFavoriteMovies(IEnumerable<string> favoriteMovieIds) {
+    private void SetFavoriteMovies(IEnumerable<int> favoriteMovieIds) {
         ArgumentNullException.ThrowIfNull(favoriteMovieIds);
 
         foreach (var movieId in favoriteMovieIds) {

@@ -34,7 +34,6 @@ public class TicketTypeRepository : ITicketTypeRepository
         try
         {
             var ticketTypes = await _db.TicketTypes
-                .AsNoTracking()
                 .ToListAsync();
 
             return ResultOf<List<TicketType>>.Success(ticketTypes);
