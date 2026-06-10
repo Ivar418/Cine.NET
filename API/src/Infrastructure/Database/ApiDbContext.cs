@@ -13,6 +13,7 @@ public class ApiDbContext : DbContext {
 
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserFavoriteMovie> UserFavoriteMovies => Set<UserFavoriteMovie>();
     public DbSet<UserCredential> UserCredentials => Set<UserCredential>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Movie> Movies => Set<Movie>();
@@ -50,6 +51,7 @@ public class ApiDbContext : DbContext {
                 System.Globalization.DateTimeStyles.None
             )
         );
+        modelBuilder.Entity<UserFavoriteMovie>().ToTable("user_favorite_movies");
         modelBuilder.Entity<Movie>().ToTable("movies").Property(m => m.RowCreatedTimestampUtc).HasConversion(
             v => v.ToString("O"), v =>
                 (DateTimeOffset)System.DateTimeOffset.ParseExact(

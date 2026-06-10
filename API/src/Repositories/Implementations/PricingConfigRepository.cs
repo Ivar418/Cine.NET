@@ -33,7 +33,6 @@ public class PricingConfigRepository : IPricingConfigRepository
         try
         {
             var config = await _db.PricingConfigs
-                .AsNoTracking()
                 .ToDictionaryAsync(x => x.Key, x => x.Value);
 
             return ResultOf<Dictionary<string, decimal>>.Success(config);

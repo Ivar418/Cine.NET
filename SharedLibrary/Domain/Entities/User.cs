@@ -12,6 +12,7 @@ public class User {
     public string FirstName { get; private set; } = null!;
     public string LastName { get; private set; } = null!;
     public string Email { get; private set; } = null!;
+    public ICollection<UserFavoriteMovie> FavoriteMovies { get; private set; } = new HashSet<UserFavoriteMovie>();
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
@@ -20,11 +21,14 @@ public class User {
         string userName,
         string firstName,
         string lastName,
-        string email) {
+        string email,
+        HashSet<int>? favoriteMovieIds = null
+    ) {
         SetUserName(userName);
         SetFirstName(firstName);
         SetLastName(lastName);
         SetEmail(email);
+        SetFavoriteMovies(favoriteMovieIds ?? []);
         CreatedAt = DateTimeOffset.UtcNow;
         UpdatedAt = CreatedAt;
     }
@@ -63,12 +67,40 @@ public class User {
         RefreshUpdatedAt();
     }
 
+    public void AddFavoriteMovie(int movieId) {
+        if (FavoriteMovies.Any(x => x.MovieId == movieId))
+            return;
+
+        FavoriteMovies.Add(new UserFavoriteMovie { UserId = Id, MovieId = movieId });
+        RefreshUpdatedAt();
+    }
+
+    public void RemoveFavoriteMovie(int movieId) {
+
+        var favorite = FavoriteMovies.FirstOrDefault(x => x.MovieId == movieId);
+
+        if (favorite is null)
+            return;
+
+        FavoriteMovies.Remove(favorite);
+        RefreshUpdatedAt();
+    }
+
     public void ChangePhoto(Photo? photo) {
         if (PhotoId == photo?.Id)
             return;
 
         SetPhoto(photo);
         RefreshUpdatedAt();
+    }
+
+    private void SetFavoriteMovies(IEnumerable<int> favoriteMovieIds) {
+        ArgumentNullException.ThrowIfNull(favoriteMovieIds);
+
+        foreach (var movieId in favoriteMovieIds) {
+            AddFavoriteMovie(
+                movieId);
+        }
     }
 
     private void SetUserName(string userName) {
