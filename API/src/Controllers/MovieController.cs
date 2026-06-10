@@ -1,9 +1,14 @@
-﻿using API.Domain.Common;
+﻿/// An IActionResult containing a successful result with the list of movies,
+/// or a BadRequest result with an error description if the operation fails.
+/// Retrieves a list of movies that have scheduled future showings.
+
+using API.Domain.Common;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Domain.Entities;
+using SharedLibrary.DTOs.Requests;
 
 namespace API.Controllers;
 
@@ -17,8 +22,7 @@ namespace API.Controllers;
 /// </remarks>
 [ApiController]
 [Route("api/movies")]
-public class MovieController : ControllerBase
-{
+public class MovieController : ControllerBase {
     /// <summary>
     /// Provides access to movie-related operations and data retrieval logic.
     /// This field is initialized through dependency injection and is used
@@ -33,8 +37,7 @@ public class MovieController : ControllerBase
     /// Provides endpoints for retrieving, searching, and managing movie data,
     /// including integration with external APIs.
     /// </summary>
-    public MovieController(IMovieService movieService)
-    {
+    public MovieController(IMovieService movieService) {
         _movieService = movieService;
     }
 
@@ -49,20 +52,16 @@ public class MovieController : ControllerBase
     /// </returns>
     [HttpGet]
     public async Task<IActionResult> GetAll(
-        [FromQuery] string language = "all")
-    {
-        try
-        {
+        [FromQuery] string language = "all") {
+        try {
             var movies = await _movieService.GetMoviesAsync(language);
-            return movies switch
-            {
+            return movies switch {
                 { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
                 { IsSuccess: true } => Ok(movies.Value),
                 _ => StatusCode(500, new { error = "Unexpected result" })
             };
         }
-        catch (Exception)
-        {
+        catch (Exception) {
             return StatusCode(500, new { error = "An error occurred" });
         }
     }
@@ -79,20 +78,16 @@ public class MovieController : ControllerBase
     /// </returns>
     [HttpDelete]
     [Route("{tmdbId:int}")]
-    public async Task<IActionResult> DeleteByTmdbId(int tmdbId)
-    {
-        try
-        {
+    public async Task<IActionResult> DeleteByTmdbId(int tmdbId) {
+        try {
             var result = await _movieService.DeleteMovieByTmdbIdAsync(tmdbId);
-            return result switch
-            {
+            return result switch {
                 { IsFailure: true, Error: "Movie not found" } => NotFound($"Movie with TmdbId {tmdbId} not found"),
                 { IsSuccess: true } => Ok($"Movie with tmdbId {tmdbId} and title {result.Value.Title} deleted"),
                 _ => StatusCode(500, new { error = "Unexpected result" })
             };
         }
-        catch (Exception)
-        {
+        catch (Exception) {
             return StatusCode(500, new { error = "An error occurred" });
         }
     }
@@ -109,21 +104,17 @@ public class MovieController : ControllerBase
     /// </returns>
     [HttpGet]
     [Route("{id:int}")]
-    public async Task<IActionResult> GetMovieById(int id)
-    {
-        try
-        {
+    public async Task<IActionResult> GetMovieById(int id) {
+        try {
             var movie = await _movieService.GetMovieAsync(id);
-            return movie switch
-            {
+            return movie switch {
                 { IsFailure: true, Error: "Movie not found" } => NotFound(new { error = "Movie not found" }),
                 { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
                 { IsSuccess: true } => Ok(movie.Value),
                 _ => StatusCode(500, new { error = "Unexpected result" })
             };
         }
-        catch (Exception)
-        {
+        catch (Exception) {
             return StatusCode(500, new { error = "An error occurred" });
         }
     }
@@ -148,16 +139,13 @@ public class MovieController : ControllerBase
         [FromQuery] string? primary_release_year,
         [FromQuery] int? page,
         [FromQuery] bool include_adult = false,
-        [FromQuery] string language = "nl")
-    {
-        try
-        {
+        [FromQuery] string language = "nl") {
+        try {
             var result = await _movieService.GetMovieTmdbSearchResultsAsync(query, primary_release_year, page,
                 include_adult, language);
             return Ok(result);
         }
-        catch (Exception)
-        {
+        catch (Exception) {
             return StatusCode(500, new { error = "An error occurred" });
         }
     }
@@ -180,8 +168,7 @@ public class MovieController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AddMovieByTmdbId(
         [FromQuery] int tmdbId,
-        [FromQuery] string? language = null)
-    {
+        [FromQuery] string? language = null) {
         string[]? languages = string.IsNullOrWhiteSpace(language)
             ? null
             : language.Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -191,8 +178,7 @@ public class MovieController : ControllerBase
         if (tmdbId <= 0)
             return BadRequest(new { error = "Invalid TMDB id" });
 
-        try
-        {
+        try {
             var result = await _movieService.AddMovieAsyncForEachSpecifiedLanguage(tmdbId, languages);
 
             if (result.IsFailure)
@@ -208,8 +194,7 @@ public class MovieController : ControllerBase
                 new { id = movies.First().Id },
                 movies);
         }
-        catch (Exception)
-        {
+        catch (Exception) {
             return StatusCode(500, new { error = "An error occurred" });
         }
     }
@@ -222,37 +207,40 @@ public class MovieController : ControllerBase
     /// <returns>An <see cref="IActionResult"/> containing the genre details if found, or an appropriate error message if not.</returns>
     [Route("genres/{genreId:int}")]
     [HttpGet]
-    public async Task<IActionResult> GetGenreByTmdbGenreId(int genreId, [FromQuery] string language = "nl")
-    {
-        try
-        {
+    public async Task<IActionResult> GetGenreByTmdbGenreId(int genreId, [FromQuery] string language = "nl") {
+        try {
             var genre = await _movieService.FetchGenreByLanguage(genreId, language);
-            return genre switch
-            {
+            return genre switch {
                 { IsFailure: true, Error: "Genre not found" } => NotFound(new { error = "Genre not found" }),
                 { IsFailure: true } => StatusCode(500, new { error = "An error occurred" }),
                 { IsSuccess: true } => Ok(genre.Value),
                 _ => StatusCode(500, new { error = "Unexpected result" })
             };
         }
-        catch (Exception)
-        {
+        catch (Exception) {
             return StatusCode(500, new { error = "An error occurred" });
         }
     }
 
     /// <summary>
-    /// Retrieves a list of movies that have scheduled future showings.
+    /// Retrieves the movies that have one or more scheduled showings in the future.
     /// </summary>
+    /// <param name="futureShowingsFilters">An object containing filtering criteria, such as start date and time, to narrow the list of movies with future showings.</param>
     /// <returns>
-    /// An IActionResult containing a successful result with the list of movies,
-    /// or a BadRequest result with an error description if the operation fails.
+    /// An <see cref="IActionResult"/> that contains a list of movies scheduled for future showings if the request succeeds,
+    /// or a <see cref="BadRequestObjectResult"/> with an error message if the request fails.
     /// </returns>
     [HttpGet("future-showings")]
-    public async Task<IActionResult> GetFutureMovies()
-    {
-        var result = await _movieService.GetMoviesWithFutureShowingAsync();
-        if (result.IsFailure) return BadRequest(result.Error);
+    public async Task<IActionResult> GetFutureMovies([FromQuery] FutureShowingsFilterRequest? futureShowingsFilters) {
+        if (futureShowingsFilters == null || futureShowingsFilters.From == null) {
+            futureShowingsFilters = new FutureShowingsFilterRequest(From: DateTimeOffset.UtcNow);
+        }
+
+        var result = await _movieService.GetMoviesWithFutureShowingAsync(futureShowingsFilters);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
         return Ok(result.Value);
     }
 }
