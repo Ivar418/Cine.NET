@@ -60,7 +60,7 @@ public class MovieService : IMovieService {
     }
 
     public async Task<ResultOf<Movie>> GetMovieAsync(int id) {
-        return await _movieRepository.GetMovieAsync(id);
+        return await _movieRepository.GetMovieByIdAsync(id);
     }
 
     public async Task<MovieSearchResultListDto> GetMovieTmdbSearchResultsAsync(string query,
