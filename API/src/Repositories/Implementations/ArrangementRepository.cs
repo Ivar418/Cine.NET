@@ -31,7 +31,6 @@ public class ArrangementRepository : IArrangementRepository
         {
             var arrangements = await _db.Arrangements
                 .Include(a => a.Items)
-                .AsNoTracking()
                 .ToListAsync();
 
             return ResultOf<IReadOnlyList<Arrangement>>.Success(arrangements);
@@ -56,7 +55,6 @@ public class ArrangementRepository : IArrangementRepository
         {
             var arrangement = await _db.Arrangements
                 .Include(a => a.Items)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (arrangement == null)

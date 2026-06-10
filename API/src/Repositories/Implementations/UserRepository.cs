@@ -18,7 +18,7 @@ public class UserRepository : IUserRepository {
     public async Task<ResultOf<IReadOnlyList<User>>> GetAllAsync() {
         try {
             var users = await _db.Users
-                .AsNoTracking()
+                .Include(u => u.FavoriteMovies).Include(u => u.Photo)
                 .ToListAsync();
 
             return ResultOf<IReadOnlyList<User>>.Success(users);
@@ -28,25 +28,26 @@ public class UserRepository : IUserRepository {
         }
     }
 
-    public async Task<ResultOf<User?>> GetByIdAsync(int id) {
+    public async Task<ResultOf<User>> GetByIdAsync(int id) {
         try {
             var user = await _db.Users
-                .AsNoTracking()
+                .Include(u => u.FavoriteMovies).Include(u => u.Photo)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
-                return ResultOf<User?>.Failure("User not found");
+                return ResultOf<User>.Failure("User not found");
 
-            return ResultOf<User?>.Success(user);
+            return ResultOf<User>.Success(user);
         }
         catch (Exception ex) {
-            return ResultOf<User?>.Failure(ex.Message);
+            return ResultOf<User>.Failure(ex.Message);
         }
     }
 
     public async Task<ResultOf<User?>> GetByUsername(string username) {
         try {
-            var user = await _db.Users.Where(u => u.UserName == username).FirstOrDefaultAsync();
+            var user = await _db.Users.Where(u => u.UserName == username).Include(u => u.FavoriteMovies)
+                .Include(u => u.Photo).FirstOrDefaultAsync();
             if (user == null) return ResultOf<User?>.Failure("User not found");
             return ResultOf<User?>.Success(user);
         }
