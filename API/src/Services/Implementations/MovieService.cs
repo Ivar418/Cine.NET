@@ -124,7 +124,7 @@ public class MovieService : IMovieService {
                 { IsSuccess: true } => ResultOf<IEnumerable<Movie>>.Success(
                     result.Value
                         .Select(s => s.Movie)
-                        .DistinctBy(m => m.Id)
+                        .DistinctBy(m => m.TmdbId)
                 ),
                 {
                     IsFailure:
