@@ -1,5 +1,4 @@
 .github
-ansible
 .git
 .gitignore
 docker-compose*

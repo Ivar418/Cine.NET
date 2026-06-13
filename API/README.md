@@ -324,29 +324,6 @@ This automatically updates the Jira ticket with commit references and helps trac
 **Project URL:**
 [Jira - CN Project](https://avd-dt-fsa-01.atlassian.net/jira/software/c/projects/CN)
 
-### Ansible
-
-The project includes Ansible playbooks for deployment to staging and production environments.
-For context: this is only done once or twice during initial deployment on server. The text 
-below is here for reference only. 
-
-**Structure:**
-- `ansible/inventory/` — Host configurations (acc, prod)
-- `ansible/roles/` — Deployment roles:
-  - `certbot/` — SSL certificate management
-  - `nginx/` — Reverse proxy configuration
-  - `webapi/` — Application deployment
-
-**Deploy to ACC (Staging):**
-```bash
-ansible-playbook -i ansible/inventory/acc.ini ansible/site.yml
-```
-
-**Deploy to Production:**
-```bash
-ansible-playbook -i ansible/inventory/prod.ini ansible/site.yml
-```
-
 ### GitHub Actions
 
 Automated CI/CD workflows handle testing and deployment:
@@ -356,7 +333,7 @@ Automated CI/CD workflows handle testing and deployment:
 - `deploy-acc.yml` — Deploy to staging on PR merge
 - `deploy-prod.yml` — Deploy to production on release tag
 
-Workflows automatically trigger builds, run tests, and invoke Ansible playbooks.
+Workflows automatically trigger builds and run tests.
 
 ## Logging
 
