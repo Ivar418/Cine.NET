@@ -1,5 +1,6 @@
 ﻿using API.Domain.Common;
 using SharedLibrary.Domain.Entities;
+using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
 using SharedLibrary.DTOs.Responses.TMDB;
 
@@ -21,5 +22,5 @@ public interface IMovieService
         IEnumerable<string>? informationLanguages = null);
 
     Task<ResultOf<Genre>> FetchGenreByLanguage(int tmdbGenreId, string language);
-    Task<ResultOf<IEnumerable<Movie>>> GetMoviesWithFutureShowingAsync();
+    Task<ResultOf<IEnumerable<Movie>>> GetMoviesWithFutureShowingAsync(FutureShowingsFilterRequest filter);
 }

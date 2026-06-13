@@ -1,4 +1,5 @@
 ﻿using API.Domain.Common;
+using API.Mappers;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
@@ -7,8 +8,7 @@ using SharedLibrary.DTOs.Responses;
 
 namespace API.Services.Implementations;
 
-public class OrderService : IOrderService
-{
+public class OrderService : IOrderService {
     private readonly ITicketRepository _ticketRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IShowingRepository _showingRepository;
@@ -16,8 +16,7 @@ public class OrderService : IOrderService
     public OrderService(
         ITicketRepository ticketRepository,
         IOrderRepository orderRepository,
-        IShowingRepository showingRepository)
-    {
+        IShowingRepository showingRepository) {
         _ticketRepository = ticketRepository;
         _orderRepository = orderRepository;
         _showingRepository = showingRepository;
@@ -31,8 +30,7 @@ public class OrderService : IOrderService
     /// A <see cref="ResultOf{T}"/> containing the created order response,
     /// or a failure when validation or persistence cannot be completed.
     /// </returns>
-    public async Task<ResultOf<CreateOrderResponse>> CreateAsync(CreateOrderRequest request)
-    {
+    public async Task<ResultOf<CreateOrderResponse>> CreateAsync(CreateOrderRequest request) {
         if (request.Tickets is null || request.Tickets.Count == 0)
             return ResultOf<CreateOrderResponse>.Failure("At least one ticket is required.");
 
@@ -42,8 +40,7 @@ public class OrderService : IOrderService
         if (string.IsNullOrWhiteSpace(request.PaymentMethod))
             return ResultOf<CreateOrderResponse>.Failure("PaymentMethod is required.");
 
-        foreach (var reqTicket in request.Tickets)
-        {
+        foreach (var reqTicket in request.Tickets) {
             if (reqTicket.ShowingId <= 0)
                 return ResultOf<CreateOrderResponse>.Failure("Each ticket must have a valid ShowingId.");
             if (string.IsNullOrWhiteSpace(reqTicket.SeatNumber))
@@ -62,10 +59,8 @@ public class OrderService : IOrderService
         var totalAmount = request.Tickets.Sum(t => t.Price);
 
         var persistedTickets = new List<Ticket>();
-        foreach (var reqTicket in request.Tickets)
-        {
-            var ticket = new Ticket
-            {
+        foreach (var reqTicket in request.Tickets) {
+            var ticket = new Ticket {
                 ShowingId = reqTicket.ShowingId,
                 ShowDateTimeUtc = reqTicket.ShowDateTimeUtc.ToString("O"),
                 SeatNumber = reqTicket.SeatNumber,
@@ -78,8 +73,7 @@ public class OrderService : IOrderService
             persistedTickets.Add(ticket);
         }
 
-        var order = new Order
-        {
+        var order = new Order {
             OrderCode = Guid.NewGuid().ToString("N")[..12].ToUpperInvariant(),
             CreatedAtUtc = DateTime.UtcNow,
             TotalAmount = totalAmount,
@@ -95,8 +89,7 @@ public class OrderService : IOrderService
 
         await _orderRepository.AddAsync(order);
 
-        var response = new CreateOrderResponse
-        {
+        var response = new CreateOrderResponse {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
@@ -104,8 +97,7 @@ public class OrderService : IOrderService
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
-            Tickets = persistedTickets.Select(t => new CreatedOrderTicketResponse
-            {
+            Tickets = persistedTickets.Select(t => new CreatedOrderTicketResponse {
                 TicketId = t.Id,
                 ShowingId = t.ShowingId,
                 SeatNumber = t.SeatNumber,
@@ -127,8 +119,7 @@ public class OrderService : IOrderService
     /// A <see cref="ResultOf{T}"/> containing the updated order response,
     /// or a failure when the order is invalid or not found.
     /// </returns>
-    public async Task<ResultOf<CreateOrderResponse>> ConfirmPaymentAsync(int orderId)
-    {
+    public async Task<ResultOf<CreateOrderResponse>> ConfirmPaymentAsync(int orderId) {
         if (orderId <= 0)
             return ResultOf<CreateOrderResponse>.Failure("OrderId must be greater than 0.");
 
@@ -136,12 +127,10 @@ public class OrderService : IOrderService
         if (order is null)
             return ResultOf<CreateOrderResponse>.Failure($"Order with id {orderId} was not found.");
 
-        if (!string.Equals(order.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase))
-        {
+        if (!string.Equals(order.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase)) {
             order.PaymentStatus = "Paid";
 
-            foreach (var orderTicket in order.OrderTickets)
-            {
+            foreach (var orderTicket in order.OrderTickets) {
                 if (orderTicket.Ticket is null) continue;
                 orderTicket.Ticket.PaymentStatus = "Paid";
                 orderTicket.Ticket.QrIsActive = true;
@@ -150,8 +139,7 @@ public class OrderService : IOrderService
             await _orderRepository.SaveChangesAsync();
         }
 
-        var response = new CreateOrderResponse
-        {
+        var response = new CreateOrderResponse {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
@@ -161,8 +149,7 @@ public class OrderService : IOrderService
             CreatedAtUtc = order.CreatedAtUtc,
             Tickets = order.OrderTickets
                 .Where(ot => ot.Ticket is not null)
-                .Select(ot => new CreatedOrderTicketResponse
-                {
+                .Select(ot => new CreatedOrderTicketResponse {
                     TicketId = ot.TicketId,
                     ShowingId = ot.Ticket!.ShowingId,
                     SeatNumber = ot.Ticket.SeatNumber,
@@ -185,8 +172,7 @@ public class OrderService : IOrderService
     /// A <see cref="ResultOf{T}"/> containing the order response,
     /// or a failure when the identifier is invalid or the order does not exist.
     /// </returns>
-    public async Task<ResultOf<CreateOrderResponse>> GetByIdAsync(int orderId)
-    {
+    public async Task<ResultOf<CreateOrderResponse>> GetByIdAsync(int orderId) {
         if (orderId <= 0)
             return ResultOf<CreateOrderResponse>.Failure("OrderId must be greater than 0.");
 
@@ -194,8 +180,7 @@ public class OrderService : IOrderService
         if (order is null)
             return ResultOf<CreateOrderResponse>.Failure($"Order with id {orderId} was not found.");
 
-        var response = new CreateOrderResponse
-        {
+        var response = new CreateOrderResponse {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
@@ -205,8 +190,7 @@ public class OrderService : IOrderService
             CreatedAtUtc = order.CreatedAtUtc,
             Tickets = order.OrderTickets
                 .Where(ot => ot.Ticket is not null)
-                .Select(ot => new CreatedOrderTicketResponse
-                {
+                .Select(ot => new CreatedOrderTicketResponse {
                     TicketId = ot.TicketId,
                     ShowingId = ot.Ticket!.ShowingId,
                     SeatNumber = ot.Ticket.SeatNumber,
@@ -227,12 +211,10 @@ public class OrderService : IOrderService
     /// <returns>
     /// A <see cref="ResultOf{T}"/> containing all mapped order responses.
     /// </returns>
-    public async Task<ResultOf<List<CreateOrderResponse>>> GetAllAsync()
-    {
+    public async Task<ResultOf<List<CreateOrderResponse>>> GetAllAsync() {
         var orders = await _orderRepository.GetAllWithTicketsAsync();
 
-        var responses = orders.Select(order => new CreateOrderResponse
-        {
+        var responses = orders.Select(order => new CreateOrderResponse {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
@@ -242,8 +224,7 @@ public class OrderService : IOrderService
             CreatedAtUtc = order.CreatedAtUtc,
             Tickets = order.OrderTickets
                 .Where(ot => ot.Ticket is not null)
-                .Select(ot => new CreatedOrderTicketResponse
-                {
+                .Select(ot => new CreatedOrderTicketResponse {
                     TicketId = ot.TicketId,
                     ShowingId = ot.Ticket!.ShowingId,
                     SeatNumber = ot.Ticket.SeatNumber,
@@ -257,6 +238,16 @@ public class OrderService : IOrderService
         return ResultOf<List<CreateOrderResponse>>.Success(responses);
     }
 
+    public async Task<ResultOf<List<CreateOrderResponse>>> GetOrdesByUserId(int userId) {
+        var result = await _orderRepository.GetAllOrdersByUserId(userId: userId);
+        if (result.IsSuccess) {
+            return ResultOf<List<CreateOrderResponse>>.Success(result.Value?.Select(o => OrderMapper.ToResponse(o))
+                .ToList() ?? new List<CreateOrderResponse>());
+        }
+
+        return ResultOf<List<CreateOrderResponse>>.Failure(result.Error ?? "Something wen wrong fetching orders");
+    }
+
     /// <summary>
     /// Resets an order and all related tickets back to pending payment state and deactivates ticket QR usage.
     /// </summary>
@@ -265,8 +256,7 @@ public class OrderService : IOrderService
     /// A <see cref="ResultOf{T}"/> containing the updated order response,
     /// or a failure when the identifier is invalid or the order does not exist.
     /// </returns>
-    public async Task<ResultOf<CreateOrderResponse>> ResetToPendingAsync(int orderId)
-    {
+    public async Task<ResultOf<CreateOrderResponse>> ResetToPendingAsync(int orderId) {
         if (orderId <= 0)
             return ResultOf<CreateOrderResponse>.Failure("OrderId must be greater than 0.");
 
@@ -276,8 +266,7 @@ public class OrderService : IOrderService
 
         order.PaymentStatus = "Pending";
 
-        foreach (var orderTicket in order.OrderTickets)
-        {
+        foreach (var orderTicket in order.OrderTickets) {
             if (orderTicket.Ticket is null) continue;
             orderTicket.Ticket.PaymentStatus = "Pending";
             orderTicket.Ticket.QrIsActive = false;
@@ -285,8 +274,7 @@ public class OrderService : IOrderService
 
         await _orderRepository.SaveChangesAsync();
 
-        var response = new CreateOrderResponse
-        {
+        var response = new CreateOrderResponse {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
@@ -296,8 +284,7 @@ public class OrderService : IOrderService
             CreatedAtUtc = order.CreatedAtUtc,
             Tickets = order.OrderTickets
                 .Where(ot => ot.Ticket is not null)
-                .Select(ot => new CreatedOrderTicketResponse
-                {
+                .Select(ot => new CreatedOrderTicketResponse {
                     TicketId = ot.TicketId,
                     ShowingId = ot.Ticket!.ShowingId,
                     SeatNumber = ot.Ticket.SeatNumber,

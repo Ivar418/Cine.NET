@@ -6,6 +6,6 @@ public class OrderTicket
     public int TicketId { get; set; }
 
     public Order Order { get; set; } = null!;
-    public Ticket Ticket { get; set; } = null!;
+    public Ticket? Ticket { get; set; } = null!;
 }
 

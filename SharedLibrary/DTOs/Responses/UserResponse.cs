@@ -1,4 +1,6 @@
-﻿namespace SharedLibrary.DTOs.Responses;
+﻿using SharedLibrary.DTOs.Responses.Users;
+
+namespace SharedLibrary.DTOs.Responses;
 
 public class UserResponse {
     public int UserId { get; set; }
@@ -8,4 +10,6 @@ public class UserResponse {
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
     public string Email { get; set; } = null!;
+
+    public UserFavoriteMoviesListResponse FavoriteMovies { get; set; } = null!;
 }

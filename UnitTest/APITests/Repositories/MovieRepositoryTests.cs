@@ -22,7 +22,7 @@ public class MovieRepositoryTests
     }
 
     // -------------------------------------------------------
-    // GetMovieAsync
+    // GetMovieByIdAsync
     // -------------------------------------------------------
 
     [Fact]
@@ -36,7 +36,7 @@ public class MovieRepositoryTests
 
         var repo = new MovieRepository(db);
 
-        var result = await repo.GetMovieAsync(movie.Id);
+        var result = await repo.GetMovieByIdAsync(movie.Id);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(movie.Id, result.Value!.Id);
@@ -48,7 +48,7 @@ public class MovieRepositoryTests
         var db = TestDbContextFactory.CreateDbContext(nameof(GetMovieAsync_WhenNotExists_ReturnsFailure));
         var repo = new MovieRepository(db);
 
-        var result = await repo.GetMovieAsync(999);
+        var result = await repo.GetMovieByIdAsync(999);
 
         Assert.True(result.IsFailure);
         Assert.Equal("Movie not found", result.Error);
