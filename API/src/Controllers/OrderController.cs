@@ -1,18 +1,17 @@
-﻿using API.Services.Interfaces;
+﻿using System.Security.Claims;
+using API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.DTOs.Requests;
 
-namespace API.Controllers
-{
+namespace API.Controllers {
     [ApiController]
     [Route("api/orders")]
-    public class OrderController : ControllerBase
-    {
+    public class OrderController : ControllerBase {
         private readonly IOrderService _orderService;
         private readonly IOrderPdfService _orderPdfService;
 
-        public OrderController(IOrderService orderService, IOrderPdfService orderPdfService)
-        {
+        public OrderController(IOrderService orderService, IOrderPdfService orderPdfService) {
             _orderService = orderService;
             _orderPdfService = orderPdfService;
         }
@@ -25,9 +24,20 @@ namespace API.Controllers
         /// or a <c>400 Bad Request</c> response when retrieval fails.
         /// </returns>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
+        public async Task<IActionResult> GetAll() {
             var result = await _orderService.GetAllAsync();
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok(result.Value);
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyOrders() {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _orderService.GetOrdesByUserId(currentUserId);
 
             if (!result.IsSuccess)
                 return BadRequest(result.Error);
@@ -44,12 +54,10 @@ namespace API.Controllers
         /// or a <c>400 Bad Request</c> response when validation or creation fails.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> Create(CreateOrderRequest request)
-        {
+        public async Task<IActionResult> Create(CreateOrderRequest request) {
             var result = await _orderService.CreateAsync(request);
 
-            if (!result.IsSuccess)
-            {
+            if (!result.IsSuccess) {
                 return BadRequest(result.Error);
             }
 
@@ -65,12 +73,10 @@ namespace API.Controllers
         /// or <c>404 Not Found</c> when the order does not exist.
         /// </returns>
         [HttpGet("{orderId:int}")]
-        public async Task<IActionResult> GetById(int orderId)
-        {
+        public async Task<IActionResult> GetById(int orderId) {
             var result = await _orderService.GetByIdAsync(orderId);
 
-            if (!result.IsSuccess)
-            {
+            if (!result.IsSuccess) {
                 return NotFound(result.Error);
             }
 
@@ -86,8 +92,7 @@ namespace API.Controllers
         /// or a <c>400 Bad Request</c> response when confirmation fails.
         /// </returns>
         [HttpPost("{orderId:int}/confirm-payment")]
-        public async Task<IActionResult> ConfirmPayment(int orderId)
-        {
+        public async Task<IActionResult> ConfirmPayment(int orderId) {
             var result = await _orderService.ConfirmPaymentAsync(orderId);
 
             if (!result.IsSuccess)
@@ -104,8 +109,7 @@ namespace API.Controllers
         /// A PDF file response on success, or a <c>400 Bad Request</c> response when generation fails.
         /// </returns>
         [HttpGet("{orderId:int}/reservation-pdf")]
-        public async Task<IActionResult> GetReservationPdf(int orderId)
-        {
+        public async Task<IActionResult> GetReservationPdf(int orderId) {
             var result = await _orderPdfService.GenerateReservationPdfAsync(orderId);
 
             if (!result.IsSuccess)
@@ -122,8 +126,7 @@ namespace API.Controllers
         /// A PDF file response on success, or a <c>400 Bad Request</c> response when generation fails.
         /// </returns>
         [HttpGet("{orderId:int}/tickets-pdf")]
-        public async Task<IActionResult> GetTicketsPdf(int orderId)
-        {
+        public async Task<IActionResult> GetTicketsPdf(int orderId) {
             var result = await _orderPdfService.GeneratePaidTicketsPdfAsync(orderId);
 
             if (!result.IsSuccess)
@@ -141,8 +144,7 @@ namespace API.Controllers
         /// or a <c>400 Bad Request</c> response when the reset operation fails.
         /// </returns>
         [HttpPost("{orderId:int}/reset-to-pending")]
-        public async Task<IActionResult> ResetToPending(int orderId)
-        {
+        public async Task<IActionResult> ResetToPending(int orderId) {
             var result = await _orderService.ResetToPendingAsync(orderId);
 
             if (!result.IsSuccess)
