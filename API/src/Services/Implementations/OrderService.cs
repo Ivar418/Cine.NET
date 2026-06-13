@@ -80,7 +80,8 @@ public class OrderService : IOrderService {
             OrderType = request.OrderType,
             PaymentStatus = paymentStatus,
             PaymentMethod = request.PaymentMethod,
-            IsPrinted = false
+            IsPrinted = false,
+            UserId = request.UserId ?? null
         };
 
         order.OrderTickets = persistedTickets
@@ -105,7 +106,8 @@ public class OrderService : IOrderService {
                 Price = t.Price,
                 PaymentStatus = t.PaymentStatus,
                 TicketCode = t.QrCodeGuid
-            }).ToList()
+            }).ToList(),
+            UserId = order.UserId
         };
 
         return ResultOf<CreateOrderResponse>.Success(response);
