@@ -3,8 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Order
-{
+public class Order {
     public int Id { get; set; }
     public string OrderCode { get; set; } = string.Empty;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
@@ -15,6 +14,7 @@ public class Order
     public PaymentMethod? PaymentMethodNavigation { get; set; }
     public int? CashierEmployeeId { get; set; }
     public bool IsPrinted { get; set; } = false;
-
+    public int? UserId { get; init; }
+    public User? User { get; init; }
     public ICollection<OrderTicket> OrderTickets { get; set; } = new List<OrderTicket>();
 }

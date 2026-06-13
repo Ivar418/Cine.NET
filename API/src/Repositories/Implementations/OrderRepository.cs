@@ -1,4 +1,5 @@
-﻿using API.Infrastructure.Database;
+﻿using API.Domain.Common;
+using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
 using SharedLibrary.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -67,5 +68,16 @@ public class OrderRepository : IOrderRepository
     public async Task SaveChangesAsync()
     {
         await _db.SaveChangesAsync();
+    }
+
+    public Task<ResultOf<List<Order>>> GetAllOrdersByUserId(int userId) {
+        var orders = _db.Orders
+            .Include(o => o.OrderTickets)
+            .ThenInclude(ot => ot.Ticket)
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.CreatedAtUtc)
+            .ToList();
+
+        return Task.FromResult(ResultOf<List<Order>>.Success(orders));
     }
 }

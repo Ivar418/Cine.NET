@@ -1,4 +1,5 @@
-﻿using SharedLibrary.Domain.Entities;
+﻿using API.Domain.Common;
+using SharedLibrary.Domain.Entities;
 
 namespace API.Repositories.Interfaces;
 
@@ -9,4 +10,5 @@ public interface IOrderRepository
     Task<Order?> GetByIdWithTicketsAsync(int orderId);
     Task<List<Order>> GetAllWithTicketsAsync();
     Task SaveChangesAsync();
+    Task<ResultOf<List<Order>>> GetAllOrdersByUserId(int userId);
 }
