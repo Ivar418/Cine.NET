@@ -1,8 +1,0 @@
-﻿---
-- name: Deploy WA
-  hosts: acc,prod
-  become: true
-
-  roles:
-    - nginx
-    - wa
