@@ -4,6 +4,7 @@ using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Domain.Entities;
+using SharedLibrary.Domain.Entities.Enums;
 using SharedLibrary.DTOs.Requests;
 
 namespace API.Controllers {
@@ -146,22 +147,24 @@ namespace API.Controllers {
                 return Forbid();
             }
 
-             // Pending, Paid, Failed, Cancelled
-             // PaymentMethods: See DB payment_methods : Pin, iDEAL, Credit Card
-             // Reservations are also possible
+            // Pending, Paid, Failed, Cancelled
+            // PaymentMethods: See DB payment_methods : Pin, iDEAL, Credit Card
+            // Reservations are also possible
             var result = order switch {
                 { IsFailure: true } => ResultOf<byte[]>.Failure("Failed to generate PDF"),
-                { IsSuccess: true, Value.PaymentMethod: "Reservation" } => await _orderPdfService.GenerateReservationPdfAsync(orderId),
-                { IsSuccess: true, Value.PaymentMethod: "Reserveren" } => await _orderPdfService.GenerateReservationPdfAsync(orderId),
-                { IsSuccess: true, Value.PaymentMethod: "Pin" } => await _orderPdfService.GeneratePaidTicketsPdfAsync(orderId),
-                { IsSuccess: true, Value.PaymentMethod: "iDEAL" } => await _orderPdfService.GeneratePaidTicketsPdfAsync(orderId),
-                { IsSuccess: true, Value.PaymentMethod: "Creditard" } => await _orderPdfService.GeneratePaidTicketsPdfAsync(orderId),
+                { IsSuccess: true, Value.PaymentMethod: PaymentMethods.Reservation } => await _orderPdfService
+                    .GenerateReservationPdfAsync(orderId),
+                { IsSuccess: true, Value.PaymentMethod: PaymentMethods.Pin } => await _orderPdfService
+                    .GeneratePaidTicketsPdfAsync(orderId),
+                { IsSuccess: true, Value.PaymentMethod: PaymentMethods.iDEAL } => await _orderPdfService
+                    .GeneratePaidTicketsPdfAsync(orderId),
+                { IsSuccess: true, Value.PaymentMethod: PaymentMethods.CreditCard } => await _orderPdfService
+                    .GeneratePaidTicketsPdfAsync(orderId),
                 _ => ResultOf<byte[]>.Failure("Invalid payment method")
-        };
+            };
             if (!result.IsSuccess)
-                return BadRequest("Failed to generate PDF");
+                return BadRequest($"Failed to generate PDF: {result.Error}");
             return File(result.Value!, "application/pdf", $"tickets-order#{orderId}.pdf");
-
         }
 
         /// <summary>
