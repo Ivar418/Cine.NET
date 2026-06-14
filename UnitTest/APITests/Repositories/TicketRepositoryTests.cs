@@ -1,38 +1,33 @@
 ﻿using API.Repositories.Implementations;
 using SharedLibrary.Domain.Entities;
+using SharedLibrary.Domain.Entities.Enums;
 using SharedLibrary.Util;
 using UnitTest.Helpers;
 using Xunit;
 
 namespace UnitTest.APITests.Repositories;
 
-public class TicketRepositoryTests
-{
-    private static Movie BuildMovie(int id = 1)
-    {
-        return new Movie
-        {
+public class TicketRepositoryTests {
+    private static Movie BuildMovie(int id = 1) {
+        return new Movie {
             Id = id,
             Title = $"Movie {id}",
             TmdbId = id,
             InformationLanguage = "en",
-            RowCreatedTimestampUtc = DateTimeOffsetConverters.StringToDateTimeOffsetConverter("2026-01-01T00:00:00.0000000+00:00")
+            RowCreatedTimestampUtc =
+                DateTimeOffsetConverters.StringToDateTimeOffsetConverter("2026-01-01T00:00:00.0000000+00:00")
         };
     }
 
-    private static Auditorium BuildAuditorium(int id = 1)
-    {
-        return new Auditorium
-        {
+    private static Auditorium BuildAuditorium(int id = 1) {
+        return new Auditorium {
             Id = id,
             Name = $"Room {id}"
         };
     }
 
-    private static Showing BuildShowing(int id, int movieId, int auditoriumId)
-    {
-        return new Showing
-        {
+    private static Showing BuildShowing(int id, int movieId, int auditoriumId) {
+        return new Showing {
             Id = id,
             MovieId = movieId,
             AuditoriumId = auditoriumId,
@@ -40,17 +35,15 @@ public class TicketRepositoryTests
         };
     }
 
-    private static Ticket BuildTicket(int id, int showingId, string seat = "A1")
-    {
-        return new Ticket
-        {
+    private static Ticket BuildTicket(int id, int showingId, string seat = "A1") {
+        return new Ticket {
             Id = id,
             ShowingId = showingId,
             SeatNumber = seat,
             TicketType = "Regular",
             Price = 15.00m,
             Status = "Active",
-            PaymentStatus = "Pending",
+            PaymentStatus = PaymentStatuses.Pending,
             ShowDateTimeUtc = "2026-01-01T20:00:00.0000000+00:00",
             RowCreatedTimestampUtc = "2026-01-01T00:00:00.0000000+00:00"
         };
@@ -61,8 +54,7 @@ public class TicketRepositoryTests
     // -------------------------------------------------------
 
     [Fact]
-    public async Task GetAllAsync_ReturnsAllTickets()
-    {
+    public async Task GetAllAsync_ReturnsAllTickets() {
         var db = TestDbContextFactory.CreateDbContext(nameof(GetAllAsync_ReturnsAllTickets));
 
         var movie = BuildMovie();
@@ -91,8 +83,7 @@ public class TicketRepositoryTests
     // -------------------------------------------------------
 
     [Fact]
-    public async Task GetByIdAsync_WhenExists_ReturnsTicket()
-    {
+    public async Task GetByIdAsync_WhenExists_ReturnsTicket() {
         var db = TestDbContextFactory.CreateDbContext(nameof(GetByIdAsync_WhenExists_ReturnsTicket));
 
         var movie = BuildMovie(2);
@@ -116,8 +107,7 @@ public class TicketRepositoryTests
     }
 
     [Fact]
-    public async Task GetByIdAsync_WhenNotExists_ReturnsNull()
-    {
+    public async Task GetByIdAsync_WhenNotExists_ReturnsNull() {
         var db = TestDbContextFactory.CreateDbContext(nameof(GetByIdAsync_WhenNotExists_ReturnsNull));
         var repo = new TicketRepository(db);
 
@@ -131,9 +121,9 @@ public class TicketRepositoryTests
     // -------------------------------------------------------
 
     [Fact]
-    public async Task GetTicketsByShowingIdAsync_WhenFound_ReturnsFilteredTickets()
-    {
-        var db = TestDbContextFactory.CreateDbContext(nameof(GetTicketsByShowingIdAsync_WhenFound_ReturnsFilteredTickets));
+    public async Task GetTicketsByShowingIdAsync_WhenFound_ReturnsFilteredTickets() {
+        var db = TestDbContextFactory.CreateDbContext(
+            nameof(GetTicketsByShowingIdAsync_WhenFound_ReturnsFilteredTickets));
 
         var movie = BuildMovie(3);
         var auditorium = BuildAuditorium(3);
@@ -161,8 +151,7 @@ public class TicketRepositoryTests
     }
 
     [Fact]
-    public async Task GetTicketsByShowingIdAsync_WhenNotFound_ReturnsEmptyList()
-    {
+    public async Task GetTicketsByShowingIdAsync_WhenNotFound_ReturnsEmptyList() {
         var db = TestDbContextFactory.CreateDbContext(nameof(GetTicketsByShowingIdAsync_WhenNotFound_ReturnsEmptyList));
         var repo = new TicketRepository(db);
 
@@ -176,8 +165,7 @@ public class TicketRepositoryTests
     // -------------------------------------------------------
 
     [Fact]
-    public async Task AddAsync_SavesTicket()
-    {
+    public async Task AddAsync_SavesTicket() {
         var db = TestDbContextFactory.CreateDbContext(nameof(AddAsync_SavesTicket));
         var repo = new TicketRepository(db);
 
@@ -193,8 +181,7 @@ public class TicketRepositoryTests
     // -------------------------------------------------------
 
     [Fact]
-    public async Task UpdateAsync_UpdatesTicket()
-    {
+    public async Task UpdateAsync_UpdatesTicket() {
         var db = TestDbContextFactory.CreateDbContext(nameof(UpdateAsync_UpdatesTicket));
 
         var ticket = BuildTicket(41, 60);
@@ -204,13 +191,13 @@ public class TicketRepositoryTests
         var repo = new TicketRepository(db);
 
         ticket.Status = "Used";
-        ticket.PaymentStatus = "Paid";
+        ticket.PaymentStatus = PaymentStatuses.Paid;
 
         await repo.UpdateAsync(ticket);
 
         var updated = db.Tickets.Single();
         Assert.Equal("Used", updated.Status);
-        Assert.Equal("Paid", updated.PaymentStatus);
+        Assert.Equal(PaymentStatuses.Paid, updated.PaymentStatus);
     }
 
     // -------------------------------------------------------
@@ -218,8 +205,7 @@ public class TicketRepositoryTests
     // -------------------------------------------------------
 
     [Fact]
-    public async Task DeleteAsync_WhenExists_RemovesTicket()
-    {
+    public async Task DeleteAsync_WhenExists_RemovesTicket() {
         var db = TestDbContextFactory.CreateDbContext(nameof(DeleteAsync_WhenExists_RemovesTicket));
 
         var ticket = BuildTicket(51, 70);
@@ -234,8 +220,7 @@ public class TicketRepositoryTests
     }
 
     [Fact]
-    public async Task DeleteAsync_WhenNotExists_DoesNothing()
-    {
+    public async Task DeleteAsync_WhenNotExists_DoesNothing() {
         var db = TestDbContextFactory.CreateDbContext(nameof(DeleteAsync_WhenNotExists_DoesNothing));
 
         var ticket = BuildTicket(61, 80);
@@ -249,6 +234,3 @@ public class TicketRepositoryTests
         Assert.Single(db.Tickets);
     }
 }
-
-
-

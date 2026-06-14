@@ -4,6 +4,7 @@ using API.Services.Interfaces;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
+using SharedLibrary.Domain.Entities.Enums;
 using SharedLibrary.DTOs.Models;
 
 
@@ -59,15 +60,6 @@ namespace API.Infrastructure.Database {
 
                 // Fill the genres table with all genres from TMDB for all specified languages (en, nl)
                 await movieService.FetchAllGenresForAllSpecifiedLanguagesAndSaveToDb();
-            }
-
-            if (!await db.PaymentMethods.AnyAsync()) {
-                db.PaymentMethods.AddRange(
-                    new PaymentMethod { Code = "PIN", DisplayName = "PIN" },
-                    new PaymentMethod { Code = "IDEAL", DisplayName = "iDEAL" },
-                    new PaymentMethod { Code = "CREDITCARD", DisplayName = "Credit Card" }
-                );
-                await db.SaveChangesAsync();
             }
 
             if (!await db.TicketTypes.AnyAsync()) {
@@ -171,7 +163,7 @@ namespace API.Infrastructure.Database {
                         SeatNumber = "A1",
                         Price = 9.50m,
                         TicketType = "Adult",
-                        PaymentStatus = "Pending",
+                        PaymentStatus = PaymentStatuses.Pending,
                         QrIsActive = false
                     };
                     await db.Tickets.AddAsync(ticket);
@@ -181,9 +173,9 @@ namespace API.Infrastructure.Database {
                         OrderCode = "DUMMYORDER001",
                         CreatedAtUtc = DateTime.UtcNow,
                         TotalAmount = ticket.Price,
-                        OrderType = "Reservation",
-                        PaymentStatus = "Pending",
-                        PaymentMethod = "IDEAL",
+                        OrderType = OrderTypes.Reservation,
+                        PaymentStatuses = PaymentStatuses.Pending,
+                        PaymentMethod = PaymentMethods.iDEAL,
                         IsPrinted = false,
                         OrderTickets = new List<OrderTicket> {
                             new OrderTicket { TicketId = ticket.Id, Ticket = ticket }
