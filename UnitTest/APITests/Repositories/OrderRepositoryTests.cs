@@ -1,5 +1,6 @@
 ﻿using API.Repositories.Implementations;
 using SharedLibrary.Domain.Entities;
+using SharedLibrary.Domain.Entities.Enums;
 using UnitTest.Helpers;
 using Xunit;
 
@@ -137,10 +138,10 @@ public class OrderRepositoryTests
 
         var repo = new OrderRepository(db);
 
-        order.PaymentStatus = "Paid";
+        order.PaymentStatuses = PaymentStatuses.Paid;
         await repo.SaveChangesAsync();
 
-        Assert.Equal("Paid", db.Orders.Single().PaymentStatus);
+        Assert.Equal(PaymentStatuses.Paid, db.Orders.Single().PaymentStatuses);
     }
 }
 

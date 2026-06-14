@@ -1,3 +1,6 @@
+using SharedLibrary.Domain.Entities;
+using SharedLibrary.Domain.Entities.Enums;
+
 namespace SharedLibrary.DTOs.Responses;
 
 public class CreatedOrderTicketResponse
@@ -7,6 +10,6 @@ public class CreatedOrderTicketResponse
     public required string SeatNumber { get; set; }
     public required string TicketType { get; set; }
     public decimal Price { get; set; }
-    public required string PaymentStatus { get; set; }
+    public required PaymentStatuses PaymentStatuses { get; set; }
     public string? TicketCode { get; set; }
 }

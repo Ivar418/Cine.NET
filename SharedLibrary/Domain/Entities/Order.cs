@@ -1,4 +1,6 @@
-﻿namespace SharedLibrary.Domain.Entities;
+﻿using SharedLibrary.Domain.Entities.Enums;
+
+namespace SharedLibrary.Domain.Entities;
 
 using System;
 using System.Collections.Generic;
@@ -8,10 +10,9 @@ public class Order {
     public string OrderCode { get; set; } = string.Empty;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public decimal TotalAmount { get; set; }
-    public string OrderType { get; set; } = "Reservation";
-    public string PaymentStatus { get; set; } = "Pending";
-    public string PaymentMethod { get; set; } = "Unknown";
-    public PaymentMethod? PaymentMethodNavigation { get; set; }
+    public OrderTypes OrderType { get; set; } = OrderTypes.Reservation;
+    public PaymentStatuses PaymentStatuses { get; set; } = PaymentStatuses.Pending;
+    public PaymentMethods PaymentMethod { get; set; } = PaymentMethods.Unknown;
     public int? CashierEmployeeId { get; set; }
     public bool IsPrinted { get; set; } = false;
     public int? UserId { get; init; }
