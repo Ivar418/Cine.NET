@@ -201,7 +201,8 @@ public class OrderService : IOrderService {
                     PaymentStatus = ot.Ticket.PaymentStatus,
                     TicketCode = ot.Ticket.QrCodeGuid
                 })
-                .ToList()
+                .ToList(),
+            UserId = order.UserId
         };
 
         return ResultOf<CreateOrderResponse>.Success(response);
