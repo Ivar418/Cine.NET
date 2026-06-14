@@ -5,16 +5,15 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using QRCoder;
+using SharedLibrary.Domain.Entities.Enums;
 
 namespace API.Services.Implementations;
 
-public class OrderPdfService : IOrderPdfService
-{
+public class OrderPdfService : IOrderPdfService {
     private readonly IOrderRepository _orderRepository;
     private readonly IShowingRepository _showingRepository;
 
-    public OrderPdfService(IOrderRepository orderRepository, IShowingRepository showingRepository)
-    {
+    public OrderPdfService(IOrderRepository orderRepository, IShowingRepository showingRepository) {
         _orderRepository = orderRepository;
         _showingRepository = showingRepository;
         QuestPDF.Settings.License = LicenseType.Community;
@@ -28,8 +27,7 @@ public class OrderPdfService : IOrderPdfService
     /// A <see cref="ResultOf{T}"/> containing the PDF bytes on success,
     /// or a failure when the order cannot be found.
     /// </returns>
-    public async Task<ResultOf<byte[]>> GenerateReservationPdfAsync(int orderId)
-    {
+    public async Task<ResultOf<byte[]>> GenerateReservationPdfAsync(int orderId) {
         var order = await _orderRepository.GetByIdWithTicketsAsync(orderId);
         if (order is null)
             return ResultOf<byte[]>.Failure($"Order with id {orderId} was not found.");
@@ -38,11 +36,9 @@ public class OrderPdfService : IOrderPdfService
         var firstTicket = order.OrderTickets.FirstOrDefault()?.Ticket;
         ShowingInfo? showingInfo = null;
 
-        if (firstTicket is not null)
-        {
+        if (firstTicket is not null) {
             var showingResult = await _showingRepository.GetShowingDisplayByIdAsync(firstTicket.ShowingId);
-            if (showingResult.IsSuccess && showingResult.Value is not null)
-            {
+            if (showingResult.IsSuccess && showingResult.Value is not null) {
                 showingInfo = new ShowingInfo(
                     showingResult.Value.MovieTitle,
                     showingResult.Value.AuditoriumName,
@@ -54,24 +50,20 @@ public class OrderPdfService : IOrderPdfService
         var reservationCode = order.OrderCode;
         var reservationQrPng = GenerateQrPng(reservationCode);
 
-        var pdfBytes = Document.Create(container =>
-        {
-            container.Page(page =>
-            {
+        var pdfBytes = Document.Create(container => {
+            container.Page(page => {
                 page.Size(PageSizes.A4);
                 page.Margin(2, Unit.Centimetre);
                 page.DefaultTextStyle(x => x.FontSize(12));
 
-                page.Header().Element(header =>
-                {
+                page.Header().Element(header => {
                     header.Text("Cine.NET — Reservering")
                         .SemiBold()
                         .FontSize(22)
                         .FontColor(Colors.Blue.Darken2);
                 });
 
-                page.Content().PaddingTop(20).Column(col =>
-                {
+                page.Content().PaddingTop(20).Column(col => {
                     col.Item().Text("Bedankt voor uw reservering!").SemiBold().FontSize(16);
                     col.Item().PaddingTop(10).Text($"Reserveringscode: {reservationCode}").SemiBold();
 
@@ -83,8 +75,7 @@ public class OrderPdfService : IOrderPdfService
 
                     col.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
-                    if (showingInfo is not null)
-                    {
+                    if (showingInfo is not null) {
                         col.Item().PaddingTop(15).Text($"Film: {showingInfo.MovieTitle}").FontSize(14);
                         col.Item().PaddingTop(5).Text($"Zaal: {showingInfo.AuditoriumName}");
                         col.Item().PaddingTop(5).Text($"Datum/Tijd: {showingInfo.StartsAt:dddd d MMMM yyyy HH:mm}");
@@ -96,13 +87,12 @@ public class OrderPdfService : IOrderPdfService
                     col.Item().PaddingTop(5).Text($"Aangemaakt op: {order.CreatedAtUtc:dd-MM-yyyy HH:mm}");
 
                     col.Item().PaddingTop(30).Text(
-                        "Laat deze reserveringscode zien aan de kassa om uw tickets op te halen.")
+                            "Laat deze reserveringscode zien aan de kassa om uw tickets op te halen.")
                         .Italic()
                         .FontColor(Colors.Grey.Darken1);
                 });
 
-                page.Footer().AlignCenter().Text(text =>
-                {
+                page.Footer().AlignCenter().Text(text => {
                     text.Span("Cine.NET — ").FontColor(Colors.Grey.Medium);
                     text.Span($"Reservering #{order.Id}").FontColor(Colors.Grey.Medium);
                 });
@@ -120,13 +110,12 @@ public class OrderPdfService : IOrderPdfService
     /// A <see cref="ResultOf{T}"/> containing the PDF bytes on success,
     /// or a failure when the order is missing, unpaid, or has no tickets.
     /// </returns>
-    public async Task<ResultOf<byte[]>> GeneratePaidTicketsPdfAsync(int orderId)
-    {
+    public async Task<ResultOf<byte[]>> GeneratePaidTicketsPdfAsync(int orderId) {
         var order = await _orderRepository.GetByIdWithTicketsAsync(orderId);
         if (order is null)
             return ResultOf<byte[]>.Failure($"Order with id {orderId} was not found.");
 
-        if (!order.PaymentStatus.Equals("Paid", StringComparison.OrdinalIgnoreCase))
+        if (order.PaymentStatuses != PaymentStatuses.Paid)
             return ResultOf<byte[]>.Failure("Tickets PDF can only be generated for paid orders.");
 
         var tickets = order.OrderTickets
@@ -139,12 +128,10 @@ public class OrderPdfService : IOrderPdfService
 
         // Load showing info per unique showing
         var showingCache = new Dictionary<int, ShowingInfo>();
-        foreach (var ticket in tickets)
-        {
+        foreach (var ticket in tickets) {
             if (showingCache.ContainsKey(ticket.ShowingId)) continue;
             var showingResult = await _showingRepository.GetShowingDisplayByIdAsync(ticket.ShowingId);
-            if (showingResult.IsSuccess && showingResult.Value is not null)
-            {
+            if (showingResult.IsSuccess && showingResult.Value is not null) {
                 showingCache[ticket.ShowingId] = new ShowingInfo(
                     showingResult.Value.MovieTitle,
                     showingResult.Value.AuditoriumName,
@@ -153,37 +140,31 @@ public class OrderPdfService : IOrderPdfService
             }
         }
 
-        var pdfBytes = Document.Create(container =>
-        {
-            foreach (var ticket in tickets)
-            {
+        var pdfBytes = Document.Create(container => {
+            foreach (var ticket in tickets) {
                 showingCache.TryGetValue(ticket.ShowingId, out var showing);
                 var ticketCode = string.IsNullOrWhiteSpace(ticket.QrCodeGuid)
                     ? order.OrderCode
                     : ticket.QrCodeGuid;
                 var ticketQrPng = GenerateQrPng(ticketCode);
 
-                container.Page(page =>
-                {
+                container.Page(page => {
                     page.Size(PageSizes.A4);
                     page.Margin(2, Unit.Centimetre);
                     page.DefaultTextStyle(x => x.FontSize(12));
 
-                    page.Header().Element(header =>
-                    {
+                    page.Header().Element(header => {
                         header.Text("Cine.NET — Ticket")
                             .SemiBold()
                             .FontSize(22)
                             .FontColor(Colors.Blue.Darken2);
                     });
 
-                    page.Content().PaddingTop(20).Column(col =>
-                    {
+                    page.Content().PaddingTop(20).Column(col => {
                         col.Item().Text("Uw ticket").SemiBold().FontSize(16);
                         col.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
-                        if (showing is not null)
-                        {
+                        if (showing is not null) {
                             col.Item().PaddingTop(15).Text($"Film: {showing.MovieTitle}").FontSize(14).SemiBold();
                             col.Item().PaddingTop(5).Text($"Zaal: {showing.AuditoriumName}");
                             col.Item().PaddingTop(5).Text($"Datum/Tijd: {showing.StartsAt:dddd d MMMM yyyy HH:mm}");
@@ -199,11 +180,10 @@ public class OrderPdfService : IOrderPdfService
                         col.Item().PaddingTop(8).Text($"Ordernummer: {ticketCode}")
                             .FontFamily("Courier New")
                             .FontSize(12)
-                            .FontColor(Colors.Grey.Darken3); 
+                            .FontColor(Colors.Grey.Darken3);
                     });
 
-                    page.Footer().AlignCenter().Text(text =>
-                    {
+                    page.Footer().AlignCenter().Text(text => {
                         text.Span("Cine.NET — ").FontColor(Colors.Grey.Medium);
                         text.Span($"Ticket #{ticket.Id}").FontColor(Colors.Grey.Medium);
                     });
@@ -219,8 +199,7 @@ public class OrderPdfService : IOrderPdfService
     /// </summary>
     /// <param name="value">The value to encode in the QR code.</param>
     /// <returns>A byte array containing PNG image data.</returns>
-    private static byte[] GenerateQrPng(string value)
-    {
+    private static byte[] GenerateQrPng(string value) {
         using var generator = new QRCodeGenerator();
         using var data = generator.CreateQrCode(value, QRCodeGenerator.ECCLevel.Q);
         var qr = new PngByteQRCode(data);
@@ -229,4 +208,3 @@ public class OrderPdfService : IOrderPdfService
 
     private record ShowingInfo(string MovieTitle, string AuditoriumName, DateTimeOffset StartsAt);
 }
-

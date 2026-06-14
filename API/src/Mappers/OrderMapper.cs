@@ -9,7 +9,7 @@ public class OrderMapper {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatus = order.PaymentStatus,
+            PaymentStatuses = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
