@@ -40,7 +40,7 @@ namespace UnitTest.APITests.Controllers {
                 OrderId = orderId,
                 OrderCode = "ABC123",
                 OrderType = OrderTypes.Online,
-                PaymentStatuses = PaymentStatuses.Pending,
+                PaymentStatus = PaymentStatuses.Pending,
                 PaymentMethod = PaymentMethods.CreditCard,
                 TotalAmount = 12.50m,
                 CreatedAtUtc = DateTime.UtcNow,
@@ -140,7 +140,7 @@ namespace UnitTest.APITests.Controllers {
         [Fact]
         public async Task ConfirmPayment_WhenSucceeds_ReturnsOkWithUpdatedOrder() {
             var response = SampleOrderResponse();
-            response.PaymentStatuses = PaymentStatuses.Paid;
+            response.PaymentStatus = PaymentStatuses.Paid;
             _orderServiceMock
                 .Setup(s => s.ConfirmPaymentAsync(1))
                 .ReturnsAsync(ResultOf<CreateOrderResponse>.Success(response));
@@ -247,7 +247,7 @@ namespace UnitTest.APITests.Controllers {
         [Fact]
         public async Task ResetToPending_WhenSucceeds_ReturnsOkWithOrder() {
             var response = SampleOrderResponse();
-            response.PaymentStatuses = PaymentStatuses.Pending;
+            response.PaymentStatus = PaymentStatuses.Pending;
             _orderServiceMock
                 .Setup(s => s.ResetToPendingAsync(1))
                 .ReturnsAsync(ResultOf<CreateOrderResponse>.Success(response));

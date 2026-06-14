@@ -41,7 +41,7 @@ Console.WriteLine($"API URL: {apiUrl}");
 
 // HTTP
 builder.Services.AddScoped(sp =>
-    new HttpClient { BaseAddress = new Uri(apiUrl) });
+    new HttpClient { BaseAddress = new Uri(apiUrl ?? throw new InvalidOperationException("ApiUrl is not configured.")) });
 
 // WA API/SERVICES
 builder.Services.AddScoped<IUserApi, UserApi>();

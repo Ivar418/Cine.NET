@@ -4,6 +4,7 @@
 @using SharedLibrary.DTOs.Responses
 @using Microsoft.JSInterop
 @using Microsoft.AspNetCore.Components
+@using SharedLibrary.Domain.Entities.Enums
 @layout AdminLayout
 @inject IOrderApi OrderApi
 @inject ISnackbar Snackbar
@@ -21,18 +22,18 @@
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           Immediate="true"
-                          Style="min-width:260px" />
+                          Style="min-width:260px"/>
 
             <MudSelect T="string" @bind-Value="_statusFilter" Label="Status" Style="min-width:160px">
                 <MudSelectItem Value=@("All")>Alle</MudSelectItem>
-                <MudSelectItem Value=@("Pending")>Pending</MudSelectItem>
-                <MudSelectItem Value=@("Paid")>Betaald</MudSelectItem>
+                <MudSelectItem Value=@(PaymentStatuses.Pending.ToString())>Pending</MudSelectItem>
+                <MudSelectItem Value=@(PaymentStatuses.Paid.ToString())>Betaald</MudSelectItem>
             </MudSelect>
 
             <MudSelect T="string" @bind-Value="_typeFilter" Label="Type" Style="min-width:160px">
                 <MudSelectItem Value=@("All")>Alle</MudSelectItem>
-                <MudSelectItem Value=@("Reservation")>Reservering</MudSelectItem>
-                <MudSelectItem Value=@("Payment")>Betaling</MudSelectItem>
+                <MudSelectItem Value=@(OrderTypes.Reservation.ToString())>Reservering</MudSelectItem>
+                <MudSelectItem Value=@(OrderTypes.Payment.ToString())>Betaling</MudSelectItem>
             </MudSelect>
 
             <MudButton Variant="Variant.Outlined"
@@ -44,16 +45,13 @@
     </MudPaper>
 
     @* ── Table ────────────────────────────────────────────────────────── *@
-    @if (_loading)
-    {
-        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+    @if (_loading) {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4"/>
     }
-    else if (_orders.Count == 0)
-    {
+    else if (_orders.Count == 0) {
         <MudAlert Severity="Severity.Info">Geen bestellingen gevonden.</MudAlert>
     }
-    else
-    {
+    else {
         <MudTable Items="@FilteredOrders"
                   Hover="true"
                   Dense="true"
@@ -77,14 +75,14 @@
                 </MudTd>
                 <MudTd>
                     <MudChip T="string" Size="Size.Small"
-                             Color="@(context.OrderType == "Reservation" ? Color.Info : Color.Primary)">
-                        @(context.OrderType == "Reservation" ? "Reservering" : "Betaling")
+                             Color="@(context.OrderType == OrderTypes.Reservation ? Color.Info : Color.Primary)">
+                        @(context.OrderType == OrderTypes.Reservation ? "Reservering" : "Betaling")
                     </MudChip>
                 </MudTd>
                 <MudTd>
                     <MudChip T="string" Size="Size.Small"
                              Color="@StatusColor(context.PaymentStatus)">
-                        @context.PaymentStatus
+                        @context.PaymentStatus.ToString()
                     </MudChip>
                 </MudTd>
                 <MudTd>@context.PaymentMethod</MudTd>
@@ -97,28 +95,26 @@
                         <MudIconButton Icon="@Icons.Material.Filled.Visibility"
                                        Size="Size.Small"
                                        Title="Details"
-                                       OnClick="() => OpenDetail(context)" />
+                                       OnClick="() => OpenDetail(context)"/>
 
                         @* Pay button — only for pending reservations *@
-                        @if (context.PaymentStatus == "Pending")
-                        {
+                        @if (context.PaymentStatus == PaymentStatuses.Pending) {
                             <MudIconButton Icon="@Icons.Material.Filled.Payment"
                                            Color="Color.Success"
                                            Size="Size.Small"
                                            Title="Markeer als betaald en genereer tickets"
                                            OnClick="() => ConfirmPaymentAsync(context)"
-                                           Disabled="@_busy" />
+                                           Disabled="@_busy"/>
                         }
 
                         @* Download tickets PDF — only for paid orders *@
-                        @if (context.PaymentStatus == "Paid")
-                        {
+                        @if (context.PaymentStatus == PaymentStatuses.Paid) {
                             <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf"
                                            Color="Color.Primary"
                                            Size="Size.Small"
                                            Title="Download tickets PDF"
                                            OnClick="() => DownloadTicketsPdfAsync(context)"
-                                           Disabled="@_busy" />
+                                           Disabled="@_busy"/>
                         }
                     </MudStack>
                 </MudTd>
@@ -128,8 +124,7 @@
 </MudContainer>
 
 @* ── Detail dialog ────────────────────────────────────────────────────── *@
-@if (_detailOrder is not null)
-{
+@if (_detailOrder is not null) {
     <MudDialog @bind-Visible="_showDetail" Options='new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true }'>
         <TitleContent>
             <MudText Typo="Typo.h6">
@@ -142,9 +137,11 @@
                 <MudText><strong>Status:</strong> @_detailOrder.PaymentStatus</MudText>
                 <MudText><strong>Betaalmethode:</strong> @_detailOrder.PaymentMethod</MudText>
                 <MudText><strong>Totaal:</strong> €@_detailOrder.TotalAmount.ToString("F2")</MudText>
-                <MudText><strong>Aangemaakt:</strong> @_detailOrder.CreatedAtUtc.ToLocalTime().ToString("dd-MM-yyyy HH:mm")</MudText>
+                <MudText>
+                    <strong>Aangemaakt:</strong> @_detailOrder.CreatedAtUtc.ToLocalTime().ToString("dd-MM-yyyy HH:mm")
+                </MudText>
 
-                <MudDivider Class="my-2" />
+                <MudDivider Class="my-2"/>
                 <MudText Typo="Typo.subtitle1">Tickets (@_detailOrder.Tickets.Count)</MudText>
 
                 <MudTable Items="@_detailOrder.Tickets" Dense="true" Elevation="0" Striped="true">
@@ -175,8 +172,7 @@
             </MudStack>
         </DialogContent>
         <DialogActions>
-            @if (_detailOrder.PaymentStatus == "Pending")
-            {
+            @if (_detailOrder.PaymentStatus == PaymentStatuses.Pending) {
                 <MudButton Color="Color.Success"
                            Variant="Variant.Filled"
                            StartIcon="@Icons.Material.Filled.Payment"
@@ -185,8 +181,7 @@
                     Betaling bevestigen
                 </MudButton>
             }
-            @if (_detailOrder.PaymentStatus == "Paid")
-            {
+            @if (_detailOrder.PaymentStatus == PaymentStatuses.Paid) {
                 <MudButton Color="Color.Primary"
                            Variant="Variant.Filled"
                            StartIcon="@Icons.Material.Filled.PictureAsPdf"
@@ -211,49 +206,41 @@
     private bool _showDetail = false;
     private CreateOrderResponse? _detailOrder = null;
 
-    [SupplyParameterFromQuery]
-    public bool PaymentComplete { get; set; }
+    [SupplyParameterFromQuery] public bool PaymentComplete { get; set; }
 
-    [SupplyParameterFromQuery]
-    public int? PaymentCompleteOrderId { get; set; }
+    [SupplyParameterFromQuery] public int? PaymentCompleteOrderId { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await LoadOrdersAsync();
 
         // Show success message if returning from payment
-        if (PaymentComplete && PaymentCompleteOrderId.HasValue)
-        {
+        if (PaymentComplete && PaymentCompleteOrderId.HasValue) {
             var order = _orders.FirstOrDefault(o => o.OrderId == PaymentCompleteOrderId.Value);
-            if (order != null)
-            {
+            if (order != null) {
                 Snackbar.Add($"Order {order.OrderCode} is betaald! Tickets zijn geprint.", Severity.Success);
             }
         }
     }
 
-    private async Task LoadOrdersAsync()
-    {
+    private async Task LoadOrdersAsync() {
         _loading = true;
         _orders = await OrderApi.GetAllOrdersAsync();
         _loading = false;
     }
 
     private IEnumerable<CreateOrderResponse> FilteredOrders => _orders
-        .Where(o => _statusFilter == "All" || o.PaymentStatus == _statusFilter)
-        .Where(o => _typeFilter == "All" || o.OrderType == _typeFilter)
+        .Where(o => _statusFilter == "All" || (Enum.TryParse<PaymentStatuses>(_statusFilter, out var statusEnum) && o.PaymentStatus == statusEnum))
+        .Where(o => _typeFilter == "All" || (Enum.TryParse<OrderTypes>(_typeFilter, out var typeEnum) && o.OrderType == typeEnum))
         .Where(o => string.IsNullOrWhiteSpace(_search) ||
                     o.OrderCode.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
-                    o.PaymentMethod.Contains(_search, StringComparison.OrdinalIgnoreCase));
+                    o.PaymentMethod.ToString().Contains(_search, StringComparison.OrdinalIgnoreCase));
 
-    private void OpenDetail(CreateOrderResponse order)
-    {
+    private void OpenDetail(CreateOrderResponse order) {
         _detailOrder = order;
         _showDetail = true;
     }
 
-    private void ConfirmPaymentAsync(CreateOrderResponse order)
-    {
+    private void ConfirmPaymentAsync(CreateOrderResponse order) {
         // Redirect to payment mock with PaymentResult as return target (not directly back to admin panel)
         var returnUrl = Uri.EscapeDataString($"/checkout/payment-result?orderId={order.OrderId}&fromAdmin=true");
         var url = $"/payment-mock" +
@@ -266,14 +253,12 @@
         Nav.NavigateTo(url);
     }
 
-    private async Task DownloadTicketsPdfAsync(CreateOrderResponse order)
-    {
+    private async Task DownloadTicketsPdfAsync(CreateOrderResponse order) {
         _busy = true;
         var pdf = await OrderApi.GetTicketsPdfAsync(order.OrderId);
         _busy = false;
 
-        if (pdf is null)
-        {
+        if (pdf is null) {
             Snackbar.Add("PDF genereren mislukt.", Severity.Error);
             return;
         }
@@ -282,12 +267,11 @@
         await JS.InvokeVoidAsync("downloadBase64Pdf", base64, $"tickets-{order.OrderCode}.pdf");
     }
 
-    private static Color StatusColor(string status) => status switch
-    {
-        "Paid" => Color.Success,
-        "Pending" => Color.Warning,
-        "Cancelled" => Color.Error,
+    private static Color StatusColor(PaymentStatuses status) => status switch {
+        PaymentStatuses.Paid => Color.Success,
+        PaymentStatuses.Pending => Color.Warning,
+        PaymentStatuses.Cancelled => Color.Error,
         _ => Color.Default
     };
-}
 
+}

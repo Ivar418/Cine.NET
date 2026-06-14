@@ -5,5 +5,7 @@ public enum PaymentMethods {
     Pin = 2,
     iDEAL = 3,
     Reservation = 4,
-    Unknown = 5
+    Unknown = 5,
+    CreditCardOnline=6,
+    Giftcard=7,
 }
