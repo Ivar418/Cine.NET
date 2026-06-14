@@ -5,5 +5,6 @@ public enum OrderTypes {
     Online = 2,
     Touch = 3,
     Website = 4,
-    Cashier = 5
+    Cashier = 5,
+    Payment  =6
 }
