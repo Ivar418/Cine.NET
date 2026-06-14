@@ -86,7 +86,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatuses = order.PaymentStatuses,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
@@ -96,7 +96,7 @@ public class OrderService : IOrderService {
                 SeatNumber = t.SeatNumber,
                 TicketType = t.TicketType,
                 Price = t.Price,
-                PaymentStatuses = t.PaymentStatus,
+                PaymentStatus = t.PaymentStatus,
                 TicketCode = t.QrCodeGuid
             }).ToList(),
             UserId = order.UserId
@@ -137,7 +137,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatuses = order.PaymentStatuses,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
@@ -149,7 +149,7 @@ public class OrderService : IOrderService {
                     SeatNumber = ot.Ticket.SeatNumber,
                     TicketType = ot.Ticket.TicketType,
                     Price = ot.Ticket.Price,
-                    PaymentStatuses = ot.Ticket.PaymentStatus,
+                    PaymentStatus = ot.Ticket.PaymentStatus,
                     TicketCode = ot.Ticket.QrCodeGuid
                 })
                 .ToList()
@@ -178,7 +178,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatuses = order.PaymentStatuses,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
@@ -190,7 +190,7 @@ public class OrderService : IOrderService {
                     SeatNumber = ot.Ticket.SeatNumber,
                     TicketType = ot.Ticket.TicketType,
                     Price = ot.Ticket.Price,
-                    PaymentStatuses = ot.Ticket.PaymentStatus,
+                    PaymentStatus = ot.Ticket.PaymentStatus,
                     TicketCode = ot.Ticket.QrCodeGuid
                 })
                 .ToList()
@@ -212,7 +212,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatuses = order.PaymentStatuses,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
@@ -224,7 +224,7 @@ public class OrderService : IOrderService {
                     SeatNumber = ot.Ticket.SeatNumber,
                     TicketType = ot.Ticket.TicketType,
                     Price = ot.Ticket.Price,
-                    PaymentStatuses = ot.Ticket.PaymentStatus,
+                    PaymentStatus = ot.Ticket.PaymentStatus,
                     TicketCode = ot.Ticket.QrCodeGuid
                 }).ToList()
         }).ToList();
@@ -272,7 +272,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatuses = order.PaymentStatuses,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
@@ -284,7 +284,7 @@ public class OrderService : IOrderService {
                     SeatNumber = ot.Ticket.SeatNumber,
                     TicketType = ot.Ticket.TicketType,
                     Price = ot.Ticket.Price,
-                    PaymentStatuses = ot.Ticket.PaymentStatus,
+                    PaymentStatus = ot.Ticket.PaymentStatus,
                     TicketCode = ot.Ticket.QrCodeGuid
                 })
                 .ToList()

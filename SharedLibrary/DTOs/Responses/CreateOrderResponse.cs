@@ -7,7 +7,7 @@ public class CreateOrderResponse {
     public int OrderId { get; set; }
     public required string OrderCode { get; set; }
     public required OrderTypes OrderType { get; set; }
-    public required PaymentStatuses PaymentStatuses { get; set; }
+    public required PaymentStatuses PaymentStatus { get; set; }
     public required PaymentMethods PaymentMethod { get; set; }
     public decimal TotalAmount { get; set; }
     public DateTime CreatedAtUtc { get; set; }

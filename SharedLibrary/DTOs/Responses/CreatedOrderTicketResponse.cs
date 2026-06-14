@@ -10,6 +10,6 @@ public class CreatedOrderTicketResponse
     public required string SeatNumber { get; set; }
     public required string TicketType { get; set; }
     public decimal Price { get; set; }
-    public required PaymentStatuses PaymentStatuses { get; set; }
+    public required PaymentStatuses PaymentStatus { get; set; }
     public string? TicketCode { get; set; }
 }
