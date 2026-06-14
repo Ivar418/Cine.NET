@@ -1,5 +1,6 @@
 @page "/checkout/{ShowingId:int}"
 @namespace WA.Pages
+@using SharedLibrary.Domain.Entities.Enums
 @using SharedLibrary.DTOs.Models
 @using WA.Components
 @using WA.Layout
@@ -99,9 +100,12 @@
             {
                 <MudPaper Elevation="2" Class="pa-3" Style="overflow-x:auto">
                     <MudStack Row="true" Spacing="2" Class="mb-3" AlignItems="AlignItems.Center">
-                        <MudChip T="string" Color="Color.Dark" Size="Size.Small" Icon="@Icons.Material.Filled.Movie">@_state.Showing.Movie.Title</MudChip>
-                        <MudChip T="string" Color="Color.Dark" Size="Size.Small" Icon="@Icons.Material.Filled.Schedule">@_state.Showing.StartsAt.LocalDateTime.ToString("dd MMM yyyy HH:mm")</MudChip>
-                        <MudChip T="string" Color="Color.Dark" Size="Size.Small" Icon="@Icons.Material.Filled.EventSeat">@_state.Showing.Auditorium.Name</MudChip>
+                        @if (_state.Showing is not null)
+                        {
+                            <MudChip T="string" Color="Color.Dark" Size="Size.Small" Icon="@Icons.Material.Filled.Movie">@_state.Showing.Movie.Title</MudChip>
+                            <MudChip T="string" Color="Color.Dark" Size="Size.Small" Icon="@Icons.Material.Filled.Schedule">@_state.Showing.StartsAt.LocalDateTime.ToString("dd MMM yyyy HH:mm")</MudChip>
+                            <MudChip T="string" Color="Color.Dark" Size="Size.Small" Icon="@Icons.Material.Filled.EventSeat">@_state.Showing.Auditorium.Name</MudChip>
+                        }
                         <MudSpacer/>
                         <MudText Typo="Typo.caption" Style="color:var(--mud-palette-text-secondary)">
                             @string.Format(L["free_spots"], (_state.AllSeats.Count - _state.OccupiedKeys.Count))
@@ -269,7 +273,7 @@
                     <MudPaper Class="pa-4" Style="width:100%; cursor:pointer">
                         <MudStack AlignItems="AlignItems.Center" Spacing="2">
                             <MudIcon Icon="@paymentIcons[paymentMethod]" Size="Size.Large"/>
-                            <MudText>@L[$"payment_method_{paymentMethod}"]</MudText>
+                            <MudText>@L[$"payment_method_{paymentMethod.ToString()}"]</MudText>
                         </MudStack>
                     </MudPaper>
                 </MudButton>
@@ -282,7 +286,7 @@
         <MudPaper Class="pa-4 mb-4">
             <MudStack Spacing="2">
                 <MudText Typo="Typo.h6">@L["confirm_order"]</MudText>
-                <MudText Typo="Typo.body2">@L["payment_method"]: <strong>@L[$"payment_method_{selectedPaymentMethod}"]</strong></MudText>
+                <MudText Typo="Typo.body2">@L["payment_method"]: <strong>@L[$"payment_method_{selectedPaymentMethod.ToString()}"]</strong></MudText>
             </MudStack>
         </MudPaper>
 
@@ -306,13 +310,13 @@
             <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="() => step = 4" Disabled="@_orderBusy">
                 ← @L["back"]
             </MudButton>
-            <MudButton Variant="Variant.Filled" Color="@(selectedPaymentMethod == "Reserveren" ? Color.Success : Color.Primary)" OnClick="ProcessOrderAsync" Disabled="@_orderBusy" StartIcon="@(selectedPaymentMethod == "Reserveren" ? Icons.Material.Filled.BookmarkAdd : Icons.Material.Filled.Payment)">
+            <MudButton Variant="Variant.Filled" Color="@(selectedPaymentMethod == PaymentMethods.Reservation ? Color.Success : Color.Primary)" OnClick="ProcessOrderAsync" Disabled="@_orderBusy" StartIcon="@(selectedPaymentMethod == PaymentMethods.Reservation ? Icons.Material.Filled.BookmarkAdd : Icons.Material.Filled.Payment)">
                 @if (_orderBusy)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/>
                     <text>@L["processing"]</text>
                 }
-                else if (selectedPaymentMethod == "Reserveren")
+                else if (selectedPaymentMethod == PaymentMethods.Reservation)
                 {
                     <text>@L["confirm_reservation"]</text>
                 }

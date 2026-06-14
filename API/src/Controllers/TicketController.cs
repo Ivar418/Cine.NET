@@ -117,7 +117,7 @@ namespace API.Controllers {
         }
 
         [Authorize]
-        [HttpGet("me/${orderId:int}")]
+        [HttpGet("me/{orderId:int}")]
         public async Task<IActionResult> GetByOrderId(int orderId) {
             var currentUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
             var tickets = await _ticketService.GetTicketsByOrderIdAsync(orderId, currentUserId);
