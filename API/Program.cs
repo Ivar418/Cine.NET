@@ -199,7 +199,8 @@ else {
     allowedOrigins.AddRange(new[] {
         "https://acc-cinenetwa.ivarvisser.nl",
         "http://localhost:5031", // Blazor WASM local dev
-        "http://localhost:8082" // KotlinMP local dev
+        "http://localhost:8082", // KotlinMP local dev
+        "http://localhost:8080"
     });
 }
 
