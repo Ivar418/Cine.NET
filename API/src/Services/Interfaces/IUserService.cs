@@ -12,6 +12,7 @@ namespace API.Services.Interfaces {
         Task<ResultOf<User?>> GetByUsername(string username);
         Task<ResultOf<UserCredential?>> GetCredentialsByUserId(int id);
         Task<ResultOf<AuthResponse?>> CreateUserAsync(CreateUserRequest user);
+        Task<ResultOf<User>> UpdateUserAsync(int id, UpdateUserRequest request);
         Task<ResultOf<UserFavoriteMoviesListResponse>> GetFavoriteMoviesAsync(int userId);
         Task<ResultOf<UserFavoriteMoviesListResponse>> AddFavoriteMovieAsync(int userId, int movieId);
         Task<ResultOf<UserFavoriteMoviesListResponse>> RemoveFavoriteMovieAsync(int userId, int movieId);
