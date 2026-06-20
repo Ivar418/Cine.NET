@@ -16,4 +16,8 @@ public class UserCredential {
         UserId = userId;
         PasswordHash = passwordHash;
     }
+
+    public void SetPasswordHash(string newPasswordHash) {
+        PasswordHash = newPasswordHash;
+    }
 }

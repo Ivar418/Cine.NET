@@ -55,4 +55,12 @@ public interface IAuthService {
     /// <param name="password">The plain-text password to be hashed and stored.</param>
     /// <returns>A result containing the initial <see cref="AuthResponse"/> if successful.</returns>
     public Task<ResultOf<AuthResponse?>> AddCredentials(User user, string password);
+
+    /// <summary>
+    /// Updates the password for a user.
+    /// </summary>
+    /// <param name="user">The user entity.</param>
+    /// <param name="newPassword">The new plain-text password.</param>
+    /// <returns>A result indicating success or failure.</returns>
+    public Task<ResultOf<bool>> UpdatePassword(User user, string newPassword);
 }

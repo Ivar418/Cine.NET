@@ -296,7 +296,7 @@ This ensures that:
 
 ## Project File
 
-See `WebApi_PocV1.csproj` for dependencies and target framework configuration.
+See `API.csproj` for dependencies and target framework configuration.
 
 ## Deployment
 

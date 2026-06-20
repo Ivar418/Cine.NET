@@ -62,6 +62,37 @@ public class UserService : IUserService {
         return ResultOf<AuthResponse?>.Success(addCredentialsAsync.Value);
     }
 
+    public async Task<ResultOf<User>> UpdateUserAsync(int id, UpdateUserRequest request) {
+        var userResult = await _repository.GetByIdAsync(id);
+        if (userResult.IsFailure) {
+            return ResultOf<User>.Failure(userResult.Error ?? "User not found");
+        }
+
+        var user = userResult.Value!;
+
+        if (!string.IsNullOrEmpty(request.FirstName)) {
+            user.ChangeName(firstName: request.FirstName);
+        }
+
+        if (!string.IsNullOrEmpty(request.LastName)) {
+            user.ChangeName(lastName: request.LastName);
+        }
+
+        if (!string.IsNullOrEmpty(request.Email)) {
+            user.ChangeEmail(request.Email);
+        }
+
+        if (!string.IsNullOrEmpty(request.Password)) {
+            var updatePasswordResult = await _authService.UpdatePassword(user, request.Password);
+            if (updatePasswordResult.IsFailure) {
+                return ResultOf<User>.Failure(updatePasswordResult.Error ?? "Failed to update password");
+            }
+        }
+
+        await _repository.SaveChangesAsync();
+        return ResultOf<User>.Success(user);
+    }
+
     public async Task<ResultOf<UserFavoriteMoviesListResponse>> GetFavoriteMoviesAsync(int userId) {
         return await GetUserByIdAsync(userId) switch {
             { IsSuccess: true, Value: var user } => ResultOf<UserFavoriteMoviesListResponse>.Success(
