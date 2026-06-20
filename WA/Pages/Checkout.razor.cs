@@ -302,16 +302,6 @@ public partial class Checkout {
             Price = GetSeatPrice(seat)
         }).ToList();
 
-        var apiPaymentMethod = selectedPaymentMethod switch {
-            PaymentMethods.iDEAL => "IDEAL",
-            PaymentMethods.CreditCard => "CREDITCARD",
-            PaymentMethods.Pin => "PIN",
-            PaymentMethods.CreditCardOnline => "CREDITCARDONLINE",
-            PaymentMethods.Reservation => "RESERVATION",
-            PaymentMethods.Giftcard => "GIFTCARD",
-            _ => "UNKNOWN"
-        };
-
         var orderType = selectedPaymentMethod == PaymentMethods.Reservation
             ? OrderTypes.Reservation
             : OrderTypes.Payment;
