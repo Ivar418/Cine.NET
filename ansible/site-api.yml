@@ -1,8 +1,0 @@
----
-- name: Deploy API
-  hosts: acc,prod
-  become: true
-
-  roles:
-    - nginx
-    - webapi

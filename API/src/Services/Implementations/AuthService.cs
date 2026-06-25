@@ -136,4 +136,23 @@ public class AuthService : IAuthService {
         };
         return ResultOf<AuthResponse?>.Success(authResponse);
     }
+
+    /// <summary>
+    /// Updates the password for a user.
+    /// </summary>
+    /// <param name="user">The user entity.</param>
+    /// <param name="newPassword">The new plain-text password.</param>
+    /// <returns>A result indicating success or failure.</returns>
+    public async Task<ResultOf<bool>> UpdatePassword(User user, string newPassword) {
+        var userCredentialResult = await _userRepository.GetCredentialsByUserId(user.Id);
+        if (userCredentialResult.IsFailure || userCredentialResult.Value == null) {
+            return ResultOf<bool>.Failure("User credentials not found.");
+        }
+
+        var userCredential = userCredentialResult.Value;
+        userCredential.SetPasswordHash(PasswordHasher(newPassword));
+
+        await _authRepository.SaveChangesAsync();
+        return ResultOf<bool>.Success(true);
+    }
 }

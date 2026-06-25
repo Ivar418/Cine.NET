@@ -1,9 +1,11 @@
-﻿using API.Services.Interfaces;
+﻿using System.Security.Claims;
+using API.Services.Interfaces;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
 using LoginRequest = SharedLibrary.DTOs.Requests.LoginRequest;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 

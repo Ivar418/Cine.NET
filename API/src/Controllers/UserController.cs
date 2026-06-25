@@ -33,6 +33,21 @@ public class UserController : ControllerBase {
         };
     }
 
+    [Route("me/profile")]
+    [HttpPut]
+    public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserRequest request) {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var result = await _userService.UpdateUserAsync(currentUserId, request);
+
+        return result switch {
+            { IsSuccess: true } => Ok(UserMapper.ToResponse(result.Value)),
+            { IsFailure: true, Error: "User not found" } => NotFound(new { error = "User not found" }),
+            { IsFailure: true } => BadRequest(new { error = result.Error }),
+            _ => StatusCode(500, new { error = "An unexpected error occurred" })
+        };
+    }
+
     [Route("me/favorites")]
     [HttpGet]
     public async Task<IActionResult> GetFavoriteMovies(int id) {

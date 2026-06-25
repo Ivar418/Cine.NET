@@ -1,17 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using API.Domain.Common;
+using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Domain.Entities;
 using API.Infrastructure.Database;
 using API.Repositories.Interfaces;
+using Sprache;
 
 
 namespace API.Repositories.Implementations;
 
-public class TicketRepository: ITicketRepository
-{
+public class TicketRepository : ITicketRepository {
     private readonly ApiDbContext _db;
 
-    public TicketRepository(ApiDbContext db)
-    {
+    public TicketRepository(ApiDbContext db) {
         _db = db;
     }
 
@@ -49,8 +49,7 @@ public class TicketRepository: ITicketRepository
     /// Persists a new ticket.
     /// </summary>
     /// <param name="ticket">The ticket entity to store.</param>
-    public async Task AddAsync(Ticket ticket)
-    {
+    public async Task AddAsync(Ticket ticket) {
         await _db.Tickets.AddAsync(ticket);
         await _db.SaveChangesAsync();
     }
@@ -59,8 +58,7 @@ public class TicketRepository: ITicketRepository
     /// Updates an existing ticket.
     /// </summary>
     /// <param name="ticket">The ticket entity with updated values.</param>
-    public async Task UpdateAsync(Ticket ticket)
-    {
+    public async Task UpdateAsync(Ticket ticket) {
         _db.Tickets.Update(ticket);
         await _db.SaveChangesAsync();
     }
@@ -69,13 +67,32 @@ public class TicketRepository: ITicketRepository
     /// Deletes a ticket by identifier when it exists.
     /// </summary>
     /// <param name="id">The ticket identifier.</param>
-    public async Task DeleteAsync(int id)
-    {
+    public async Task DeleteAsync(int id) {
         var ticket = await _db.Tickets.FindAsync(id);
-        if (ticket != null)
-        {
+        if (ticket != null) {
             _db.Tickets.Remove(ticket);
             await _db.SaveChangesAsync();
         }
+    }
+
+    public async Task<ResultOf<List<Ticket>>> GetTicketsByOrderIdAsync(int orderId) {
+        var ticketIds = await _db.OrderTickets
+            .Where(t => t.OrderId == orderId)
+            .Select(t => t.TicketId)
+            .ToListAsync();
+
+        if (!ticketIds.Any()) {
+            return ResultOf<List<Ticket>>.Failure("No ticket mappings found for the given orderId");
+        }
+
+        var tickets = await _db.Tickets
+            .Where(t => ticketIds.Contains(t.Id))
+            .ToListAsync();
+
+        if (!tickets.Any()) {
+            return ResultOf<List<Ticket>>.Failure("No tickets found for the given orderId");
+        }
+
+        return ResultOf<List<Ticket>>.Success(tickets);
     }
 }

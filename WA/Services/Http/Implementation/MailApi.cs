@@ -41,7 +41,6 @@ public class MailApi : IMailApi
 
     public async Task SendOrderConfirmationAsync(int orderId)
     {
-        throw new NotImplementedException();
         var res = await _http.PostAsJsonAsync($"api/mail/order-confirmation/{orderId}", new { });
 
         if (!res.IsSuccessStatusCode)

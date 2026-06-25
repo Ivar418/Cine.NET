@@ -1,19 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using API.Mappers;
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using SharedLibrary.DTOs.Requests;
 
 
-namespace API.Controllers
-{
+namespace API.Controllers {
     [ApiController]
     [Route("api/tickets")]
-    public class TicketController : ControllerBase
-    {
+    public class TicketController : ControllerBase {
         private readonly ITicketService _ticketService;
 
-        public TicketController(ITicketService ticketService)
-        {
+        public TicketController(ITicketService ticketService) {
             _ticketService = ticketService;
         }
 
@@ -24,8 +22,7 @@ namespace API.Controllers
         /// An <see cref="IActionResult"/> containing all tickets.
         /// </returns>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
+        public async Task<IActionResult> GetAll() {
             var tickets = await _ticketService.GetAllTicketsAsync();
             var response = TicketMapper.ToResponse(tickets);
             return Ok(response);
@@ -40,8 +37,7 @@ namespace API.Controllers
         /// or <c>404 Not Found</c> when the ticket does not exist.
         /// </returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
-        {
+        public async Task<IActionResult> GetById(int id) {
             var ticket = await _ticketService.GetTicketByIdAsync(id);
             if (ticket == null)
                 return NotFound();
@@ -58,8 +54,7 @@ namespace API.Controllers
         /// An <see cref="IActionResult"/> containing all matching tickets.
         /// </returns>
         [HttpGet("showing/{showingId}")]
-        public async Task<IActionResult> GetByShowingId(int showingId)
-        {
+        public async Task<IActionResult> GetByShowingId(int showingId) {
             var tickets = await _ticketService.GetShowingTicketsAsync(showingId);
             var response = TicketMapper.ToResponse(tickets);
             return Ok(response);
@@ -74,8 +69,7 @@ namespace API.Controllers
         /// including a route reference to retrieve it.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> Create(TicketRequest request)
-        {
+        public async Task<IActionResult> Create(TicketRequest request) {
             var ticket = TicketMapper.ToEntity(request);
             var created = await _ticketService.CreateTicketAsync(ticket);
             var response = TicketMapper.ToResponse(created);
@@ -92,8 +86,7 @@ namespace API.Controllers
         /// or <c>404 Not Found</c> when the ticket does not exist.
         /// </returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, TicketRequest request)
-        {
+        public async Task<IActionResult> Update(int id, TicketRequest request) {
             var existing = await _ticketService.GetTicketByIdAsync(id);
             if (existing == null)
                 return NotFound();
@@ -114,8 +107,7 @@ namespace API.Controllers
         /// or <c>404 Not Found</c> when the ticket does not exist.
         /// </returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
+        public async Task<IActionResult> Delete(int id) {
             var ticket = await _ticketService.GetTicketByIdAsync(id);
             if (ticket == null)
                 return NotFound();
@@ -123,6 +115,17 @@ namespace API.Controllers
             await _ticketService.DeleteTicketAsync(id);
             return NoContent();
         }
-    }
 
+        [Authorize]
+        [HttpGet("me/{orderId:int}")]
+        public async Task<IActionResult> GetByOrderId(int orderId) {
+            var currentUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+            var tickets = await _ticketService.GetTicketsByOrderIdAsync(orderId, currentUserId);
+            if (tickets.IsFailure) {
+                return NotFound();
+            }
+            var response = TicketMapper.ToResponse(tickets.Value!);
+            return Ok(response);
+        }
+    }
 }

@@ -1,4 +1,5 @@
-﻿using SharedLibrary.Domain.Entities;
+﻿using API.Domain.Common;
+using SharedLibrary.Domain.Entities;
 
 namespace API.Repositories.Interfaces;
 
@@ -10,5 +11,7 @@ public interface ITicketRepository
     Task AddAsync(Ticket ticket);
     Task UpdateAsync(Ticket ticket);
     Task DeleteAsync(int id);
+    Task<ResultOf<List<Ticket>>> GetTicketsByOrderIdAsync(int orderId);
+
 
 }

@@ -3,6 +3,7 @@ using API.Mappers;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using SharedLibrary.Domain.Entities;
+using SharedLibrary.Domain.Entities.Enums;
 using SharedLibrary.DTOs.Requests;
 using SharedLibrary.DTOs.Responses;
 
@@ -31,15 +32,6 @@ public class OrderService : IOrderService {
     /// or a failure when validation or persistence cannot be completed.
     /// </returns>
     public async Task<ResultOf<CreateOrderResponse>> CreateAsync(CreateOrderRequest request) {
-        if (request.Tickets is null || request.Tickets.Count == 0)
-            return ResultOf<CreateOrderResponse>.Failure("At least one ticket is required.");
-
-        if (string.IsNullOrWhiteSpace(request.OrderType))
-            return ResultOf<CreateOrderResponse>.Failure("OrderType is required.");
-
-        if (string.IsNullOrWhiteSpace(request.PaymentMethod))
-            return ResultOf<CreateOrderResponse>.Failure("PaymentMethod is required.");
-
         foreach (var reqTicket in request.Tickets) {
             if (reqTicket.ShowingId <= 0)
                 return ResultOf<CreateOrderResponse>.Failure("Each ticket must have a valid ShowingId.");
@@ -55,7 +47,7 @@ public class OrderService : IOrderService {
                 return ResultOf<CreateOrderResponse>.Failure($"Showing with id {reqTicket.ShowingId} does not exist.");
         }
 
-        var paymentStatus = "Pending";
+        var paymentStatus = PaymentStatuses.Pending;
         var totalAmount = request.Tickets.Sum(t => t.Price);
 
         var persistedTickets = new List<Ticket>();
@@ -78,9 +70,10 @@ public class OrderService : IOrderService {
             CreatedAtUtc = DateTime.UtcNow,
             TotalAmount = totalAmount,
             OrderType = request.OrderType,
-            PaymentStatus = paymentStatus,
+            PaymentStatuses = paymentStatus,
             PaymentMethod = request.PaymentMethod,
-            IsPrinted = false
+            IsPrinted = false,
+            UserId = request.UserId ?? null
         };
 
         order.OrderTickets = persistedTickets
@@ -93,7 +86,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatus = order.PaymentStatus,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
@@ -105,7 +98,8 @@ public class OrderService : IOrderService {
                 Price = t.Price,
                 PaymentStatus = t.PaymentStatus,
                 TicketCode = t.QrCodeGuid
-            }).ToList()
+            }).ToList(),
+            UserId = order.UserId
         };
 
         return ResultOf<CreateOrderResponse>.Success(response);
@@ -127,12 +121,12 @@ public class OrderService : IOrderService {
         if (order is null)
             return ResultOf<CreateOrderResponse>.Failure($"Order with id {orderId} was not found.");
 
-        if (!string.Equals(order.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase)) {
-            order.PaymentStatus = "Paid";
+        if (order.PaymentStatuses != PaymentStatuses.Paid) {
+            order.PaymentStatuses = PaymentStatuses.Paid;
 
             foreach (var orderTicket in order.OrderTickets) {
                 if (orderTicket.Ticket is null) continue;
-                orderTicket.Ticket.PaymentStatus = "Paid";
+                orderTicket.Ticket.PaymentStatus = PaymentStatuses.Paid;
                 orderTicket.Ticket.QrIsActive = true;
             }
 
@@ -143,7 +137,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatus = order.PaymentStatus,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
@@ -184,7 +178,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatus = order.PaymentStatus,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
@@ -199,7 +193,8 @@ public class OrderService : IOrderService {
                     PaymentStatus = ot.Ticket.PaymentStatus,
                     TicketCode = ot.Ticket.QrCodeGuid
                 })
-                .ToList()
+                .ToList(),
+            UserId = order.UserId
         };
 
         return ResultOf<CreateOrderResponse>.Success(response);
@@ -218,7 +213,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatus = order.PaymentStatus,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,
@@ -264,11 +259,11 @@ public class OrderService : IOrderService {
         if (order is null)
             return ResultOf<CreateOrderResponse>.Failure($"Order with id {orderId} was not found.");
 
-        order.PaymentStatus = "Pending";
+        order.PaymentStatuses = PaymentStatuses.Pending;
 
         foreach (var orderTicket in order.OrderTickets) {
             if (orderTicket.Ticket is null) continue;
-            orderTicket.Ticket.PaymentStatus = "Pending";
+            orderTicket.Ticket.PaymentStatus = PaymentStatuses.Pending;
             orderTicket.Ticket.QrIsActive = false;
         }
 
@@ -278,7 +273,7 @@ public class OrderService : IOrderService {
             OrderId = order.Id,
             OrderCode = order.OrderCode,
             OrderType = order.OrderType,
-            PaymentStatus = order.PaymentStatus,
+            PaymentStatus = order.PaymentStatuses,
             PaymentMethod = order.PaymentMethod,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = order.CreatedAtUtc,

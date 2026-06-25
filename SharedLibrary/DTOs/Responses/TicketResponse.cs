@@ -1,4 +1,6 @@
-﻿namespace SharedLibrary.DTOs.Responses;
+﻿using SharedLibrary.Domain.Entities.Enums;
+
+namespace SharedLibrary.DTOs.Responses;
 
 public class TicketResponse
 {
@@ -9,7 +11,7 @@ public class TicketResponse
     public string SeatNumber { get; set; } = null!;
     public string TicketType { get; set; } = null!;
     public string Status { get; set; } = null!;
-    public string PaymentStatus { get; set; } = null!;
+    public PaymentStatuses PaymentStatus { get; set; }
     public string? QrCodeGuid { get; set; }
     public bool QrIsActive { get; set; }
     public decimal Price { get; set; }

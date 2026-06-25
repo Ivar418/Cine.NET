@@ -35,15 +35,15 @@ public class User {
 
     protected User() { }
 
-    public void ChangeName(string firstName, string lastName) {
-        var normalisedFirstName = firstName.Trim();
-        var normalisedLastName = lastName.Trim();
+    public void ChangeName(string? firstName = null, string? lastName = null) {
+        var normalisedFirstName = firstName?.Trim();
+        var normalisedLastName = lastName?.Trim();
         if (normalisedFirstName == FirstName && normalisedLastName == LastName) {
             return;
         }
 
-        SetFirstName(firstName);
-        SetLastName(lastName);
+        if (firstName != null) SetFirstName(firstName);
+        if (lastName != null) SetLastName(lastName);
         RefreshUpdatedAt();
     }
 
@@ -76,7 +76,6 @@ public class User {
     }
 
     public void RemoveFavoriteMovie(int movieId) {
-
         var favorite = FavoriteMovies.FirstOrDefault(x => x.MovieId == movieId);
 
         if (favorite is null)
